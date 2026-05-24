@@ -7,7 +7,13 @@ function FeatureCard({
   title,
   description,
   glow,
-}: any) {
+}: {
+  href: string;
+  icon: string;
+  title: string;
+  description: string;
+  glow: string;
+}) {
   return (
     <Link
       href={href}
@@ -18,30 +24,18 @@ function FeatureCard({
       <div className="relative z-10">
         <div className="mb-5 text-5xl">{icon}</div>
 
-        <h2 className="mb-3 text-2xl font-black text-white">
-          {title}
-        </h2>
+        <h2 className="mb-3 text-2xl font-black text-white">{title}</h2>
 
-        <p className="leading-7 text-gray-400">
-          {description}
-        </p>
+        <p className="leading-7 text-gray-400">{description}</p>
       </div>
     </Link>
   );
 }
 
-function Metric({
-  value,
-  label,
-}: {
-  value: string;
-  label: string;
-}) {
+function Metric({ value, label }: { value: string; label: string }) {
   return (
     <div className="rounded-3xl border border-white/10 bg-black/35 p-5">
-      <div className="text-4xl font-black text-cyan-200">
-        {value}
-      </div>
+      <div className="text-4xl font-black text-cyan-200">{value}</div>
 
       <div className="mt-2 text-xs uppercase tracking-[0.25em] text-gray-500">
         {label}
@@ -49,6 +43,44 @@ function Metric({
     </div>
   );
 }
+
+const liveSignals = [
+  {
+    brand: "Nike",
+    signal: "Campaign momentum spike detected",
+  },
+  {
+    brand: "McDonald's",
+    signal: "Audience cluster expanded",
+  },
+  {
+    brand: "Netflix",
+    signal: "Streaming ecosystem overlap increased",
+  },
+];
+
+const platformCapabilities = [
+  "CSV intelligence ingestion",
+  "Relationship graph engine",
+  "Strategic ecosystem scoring",
+  "Timeline intelligence",
+  "Campaign clustering",
+  "Audience analytics",
+  "IAB taxonomy enrichment",
+  "Competitive overlap detection",
+  "Semantic-style search engine",
+];
+
+const intelligenceFlow = [
+  "Monitoring Signals",
+  "Entity Recognition",
+  "Relationship Linking",
+  "Strategic Classification",
+  "Audience Mapping",
+  "Timeline Intelligence",
+  "Momentum Analysis",
+  "Strategic Insights",
+];
 
 export default function HomePage() {
   return (
@@ -61,15 +93,13 @@ export default function HomePage() {
         <div className="pointer-events-none absolute inset-0 opacity-30 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:80px_80px]" />
 
         <div className="relative z-10 mx-auto max-w-[1800px] px-10 py-12">
-
-          <section className="mb-12 grid grid-cols-1 gap-8 xl:grid-cols-[1.1fr_500px]">
-
+          <section className="mb-12 grid grid-cols-1 gap-8 xl:grid-cols-[1.1fr_760px]">
             <div className="flex flex-col justify-center">
               <div className="mb-6 inline-flex w-fit rounded-full border border-fuchsia-300/30 bg-fuchsia-500/10 px-5 py-3 text-xs uppercase tracking-[0.35em] text-fuchsia-200 backdrop-blur-xl">
                 Brand Galaxy AI Intelligence Platform
               </div>
 
-              <h1 className="mb-8 text-8xl font-black tracking-tight leading-none">
+              <h1 className="mb-8 text-8xl font-black leading-none tracking-tight">
                 Advertising
                 <br />
                 Intelligence
@@ -79,8 +109,8 @@ export default function HomePage() {
 
               <p className="max-w-4xl text-xl leading-9 text-gray-300">
                 A connected strategic intelligence platform for brands,
-                campaigns, products, audiences, monitoring signals,
-                competitive ecosystems and AI-powered analytics.
+                campaigns, products, audiences, monitoring signals, competitive
+                ecosystems and AI-powered analytics.
               </p>
 
               <div className="mt-10 flex flex-wrap gap-4">
@@ -107,53 +137,68 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-[2.5rem] border border-fuchsia-300/20 bg-white/[0.06] p-8 backdrop-blur-2xl shadow-[0_0_80px_rgba(217,70,239,0.14)]">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <div className="relative overflow-hidden rounded-[2.5rem] border border-fuchsia-300/20 bg-white/[0.06] p-7 backdrop-blur-2xl shadow-[0_0_80px_rgba(217,70,239,0.14)]">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(217,70,239,0.16),transparent_55%)]" />
 
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(217,70,239,0.16),transparent_55%)]" />
+                <div className="relative z-10">
+                  <div className="mb-4 text-xs uppercase tracking-[0.3em] text-fuchsia-200">
+                    Live Intelligence Status
+                  </div>
 
-              <div className="relative z-10">
-                <div className="mb-4 text-xs uppercase tracking-[0.3em] text-fuchsia-200">
-                  Live Intelligence Status
+                  <h2 className="mb-8 text-4xl font-black">
+                    Strategic Command Layer
+                  </h2>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <Metric value="250+" label="Entities" />
+                    <Metric value="900+" label="Relationships" />
+                    <Metric value="40+" label="Campaigns" />
+                    <Metric value="AI" label="Insights" />
+                  </div>
                 </div>
+              </div>
 
-                <h2 className="mb-8 text-4xl font-black">
-                  Strategic Command Layer
-                </h2>
+              <div className="relative overflow-hidden rounded-[2.5rem] border border-cyan-300/20 bg-cyan-500/10 p-7 backdrop-blur-2xl shadow-[0_0_60px_rgba(34,211,238,0.12)]">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.12),transparent_60%)]" />
 
-                <div className="grid grid-cols-2 gap-4">
-                  <Metric value="250+" label="Entities" />
-                  <Metric value="900+" label="Relationships" />
-                  <Metric value="40+" label="Campaigns" />
-                  <Metric value="AI" label="Insights" />
-                </div>
-
-                <div className="mt-8 space-y-4">
-                  {[
-                    "Semantic-style intelligence search",
-                    "Strategic ecosystem scoring",
-                    "Timeline intelligence engine",
-                    "Audience relationship analytics",
-                    "Campaign clustering",
-                    "Galaxy relationship visualization",
-                  ].map((item) => (
-                    <div
-                      key={item}
-                      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/30 p-4"
-                    >
-                      <div className="h-3 w-3 rounded-full bg-cyan-300 shadow-[0_0_20px_rgba(34,211,238,0.9)]" />
-
-                      <div className="text-gray-200">
-                        {item}
-                      </div>
+                <div className="relative z-10">
+                  <div className="mb-5">
+                    <div className="text-[10px] uppercase tracking-[0.35em] text-cyan-200">
+                      Live Intelligence Feed
                     </div>
-                  ))}
+
+                    <div className="mt-2 text-2xl font-black text-white">
+                      Strategic Signal Stream
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {liveSignals.map((item) => (
+                      <div
+                        key={item.brand}
+                        className="rounded-2xl border border-white/10 bg-black/30 p-3"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm font-black text-white">
+                            {item.brand}
+                          </div>
+
+                          <div className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_16px_rgba(34,211,238,0.9)]" />
+                        </div>
+
+                        <div className="mt-1 text-xs text-gray-300">
+                          {item.signal}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
           </section>
 
           <section className="mb-12 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-5">
-
             <FeatureCard
               href="/analytics/war-room"
               icon="🛰️"
@@ -193,13 +238,10 @@ export default function HomePage() {
               description="Search brands, campaigns, products, audiences and strategic graph signals."
               glow="hover:shadow-[0_0_60px_rgba(99,102,241,0.18)]"
             />
-
           </section>
 
           <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_500px]">
-
             <div className="rounded-[2.5rem] border border-white/10 bg-white/[0.06] p-8 backdrop-blur-2xl">
-
               <div className="mb-4 text-xs uppercase tracking-[0.3em] text-fuchsia-200">
                 Platform Capabilities
               </div>
@@ -209,54 +251,28 @@ export default function HomePage() {
               </h2>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {[
-                  "CSV intelligence ingestion",
-                  "Relationship graph engine",
-                  "Strategic ecosystem scoring",
-                  "Timeline intelligence",
-                  "Campaign clustering",
-                  "Audience analytics",
-                  "IAB taxonomy enrichment",
-                  "Competitive overlap detection",
-                  "Semantic-style search engine",
-                ].map((item) => (
+                {platformCapabilities.map((item) => (
                   <div
                     key={item}
                     className="rounded-3xl border border-white/10 bg-black/30 p-5"
                   >
-                    <div className="mb-3 text-cyan-200">
-                      ✦
-                    </div>
+                    <div className="mb-3 text-cyan-200">✦</div>
 
-                    <div className="leading-7 text-gray-200">
-                      {item}
-                    </div>
+                    <div className="leading-7 text-gray-200">{item}</div>
                   </div>
                 ))}
               </div>
             </div>
 
             <div className="rounded-[2.5rem] border border-cyan-300/20 bg-cyan-500/10 p-8 backdrop-blur-2xl">
-
               <div className="mb-4 text-xs uppercase tracking-[0.3em] text-cyan-200">
                 Intelligence Flow
               </div>
 
-              <h2 className="mb-8 text-4xl font-black">
-                Live AI Pipeline
-              </h2>
+              <h2 className="mb-8 text-4xl font-black">Live AI Pipeline</h2>
 
               <div className="space-y-5">
-                {[
-                  "Monitoring Signals",
-                  "Entity Recognition",
-                  "Relationship Linking",
-                  "Strategic Classification",
-                  "Audience Mapping",
-                  "Timeline Intelligence",
-                  "Momentum Analysis",
-                  "Strategic Insights",
-                ].map((step, index) => (
+                {intelligenceFlow.map((step, index) => (
                   <div
                     key={step}
                     className="flex items-center gap-4 rounded-2xl border border-white/10 bg-black/30 p-4"
@@ -265,16 +281,12 @@ export default function HomePage() {
                       {index + 1}
                     </div>
 
-                    <div className="text-gray-200">
-                      {step}
-                    </div>
+                    <div className="text-gray-200">{step}</div>
                   </div>
                 ))}
               </div>
             </div>
-
           </section>
-
         </div>
       </main>
     </>
