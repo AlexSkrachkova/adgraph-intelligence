@@ -150,7 +150,7 @@ export default function HomePage() {
                     Strategic Command Layer
                   </h2>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-[1fr_1.15fr] gap-4">
                     <Metric value="250+" label="Entities" />
                     <Metric value="900+" label="Relationships" />
                     <Metric value="40+" label="Campaigns" />
