@@ -45,7 +45,7 @@ function getNodeId(type: string, id: string) {
 
 function Card({ title, children }: any) {
   return (
-    <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-xl shadow-[0_0_50px_rgba(217,70,239,0.08)]">
+    <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-xl shadow-[0_0_50px_rgba(217,70,239,0.08)] transition duration-500 hover:-translate-y-0.5 hover:border-white/20">
       <h2 className="mb-5 text-xl font-black text-white">{title}</h2>
       {children}
     </div>
@@ -54,7 +54,7 @@ function Card({ title, children }: any) {
 
 function Metric({ label, value }: any) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-black/35 p-5">
+    <div className="rounded-3xl border border-white/10 bg-black/35 p-5 transition duration-500 hover:border-fuchsia-300/20 hover:bg-black/45">
       <div className="text-4xl font-black text-fuchsia-200">{value}</div>
       <div className="mt-1 text-xs uppercase tracking-[0.18em] text-gray-400">
         {label}
@@ -508,16 +508,16 @@ export default function StrategyIntelligencePage() {
     <>
       <NavBar />
 
-      <main className="relative min-h-screen overflow-hidden bg-[#020617] p-10 text-white">
+      <main className="relative min-h-screen overflow-hidden bg-[#020617] px-4 py-8 text-white sm:px-6 lg:p-10">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(217,70,239,0.22),transparent_28%),radial-gradient(circle_at_80%_10%,rgba(34,211,238,0.18),transparent_25%),radial-gradient(circle_at_50%_80%,rgba(99,102,241,0.18),transparent_30%)]" />
 
         <div className="relative z-10">
-          <div className="mb-10">
+          <div className="mb-10 animate-[fadeIn_0.7s_ease-out]">
             <div className="mb-4 inline-flex rounded-full border border-cyan-300/30 bg-cyan-500/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-cyan-200">
               Strategy Intelligence Layer
             </div>
 
-            <h1 className="mb-4 text-7xl font-black tracking-tight">
+            <h1 className="mb-4 text-5xl font-black tracking-tight sm:text-6xl lg:text-7xl">
               Strategy Intelligence
             </h1>
 
@@ -529,8 +529,8 @@ export default function StrategyIntelligencePage() {
           </div>
 
           {loading ? (
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-8">
-              Loading strategy intelligence...
+            <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-8 text-gray-300 shadow-[0_0_50px_rgba(34,211,238,0.08)]">
+              Loading strategy intelligence graph...
             </div>
           ) : (
             <>
@@ -553,7 +553,7 @@ export default function StrategyIntelligencePage() {
                   <button
                     onClick={() => runStrategySearch()}
                     disabled={!strategyQuery.trim()}
-                    className="rounded-2xl border border-cyan-300/30 bg-cyan-500/20 px-6 py-4 font-semibold text-cyan-100 hover:bg-cyan-500/30 disabled:opacity-40"
+                    className="rounded-2xl border border-cyan-300/30 bg-cyan-500/20 px-6 py-4 font-semibold text-cyan-100 transition duration-300 hover:bg-cyan-500/30 disabled:opacity-40"
                   >
                     Analyze
                   </button>
@@ -573,7 +573,7 @@ export default function StrategyIntelligencePage() {
                         setStrategyQuery(suggestion);
                         runStrategySearch(suggestion);
                       }}
-                      className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-gray-300 hover:border-cyan-300/40 hover:text-cyan-100"
+                      className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-gray-300 transition duration-300 hover:border-cyan-300/40 hover:text-cyan-100"
                     >
                       {suggestion}
                     </button>
@@ -606,7 +606,7 @@ export default function StrategyIntelligencePage() {
                           strategyAnswer.matchedNodes.map((node) => (
                             <div
                               key={node.id}
-                              className="rounded-2xl border border-white/10 bg-white/5 p-3"
+                              className="rounded-2xl border border-white/10 bg-white/5 p-3 transition duration-300 hover:border-cyan-300/20 hover:bg-white/[0.08]"
                             >
                               <div className="text-xs uppercase text-gray-500">
                                 {node.type}
@@ -633,7 +633,7 @@ export default function StrategyIntelligencePage() {
                           strategyAnswer.relatedNodes.map((node) => (
                             <div
                               key={node.id}
-                              className="rounded-2xl border border-white/10 bg-white/5 p-3"
+                              className="rounded-2xl border border-white/10 bg-white/5 p-3 transition duration-300 hover:border-cyan-300/20 hover:bg-white/[0.08]"
                             >
                               <div className="text-xs uppercase text-gray-500">
                                 {node.type}
@@ -740,7 +740,7 @@ export default function StrategyIntelligencePage() {
                         </div>
 
                         <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-gray-300 xl:grid-cols-4">
-                          <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                          <div className="rounded-2xl border border-white/10 bg-white/5 p-3 transition duration-300 hover:border-cyan-300/20 hover:bg-white/[0.08]">
                             {item.products} products
                           </div>
 
@@ -761,15 +761,15 @@ export default function StrategyIntelligencePage() {
                             />
                           </div>
 
-                          <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                          <div className="rounded-2xl border border-white/10 bg-white/5 p-3 transition duration-300 hover:border-cyan-300/20 hover:bg-white/[0.08]">
                             {item.campaigns} campaigns
                           </div>
 
-                          <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                          <div className="rounded-2xl border border-white/10 bg-white/5 p-3 transition duration-300 hover:border-cyan-300/20 hover:bg-white/[0.08]">
                             {item.audiences} audiences
                           </div>
 
-                          <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                          <div className="rounded-2xl border border-white/10 bg-white/5 p-3 transition duration-300 hover:border-cyan-300/20 hover:bg-white/[0.08]">
                             {item.connectedCount} total signals
                           </div>
                         </div>

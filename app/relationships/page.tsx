@@ -367,7 +367,7 @@ function PlanetNode({ data }: any) {
 
   return (
     <div
-      className={`group relative flex items-center justify-center rounded-full transition-all duration-500 ${size} ${
+      className={`group relative flex items-center justify-center rounded-full transition-all duration-700 ease-out hover:scale-[1.04] ${size} ${
         selected ? "scale-110" : ""
       } ${dimmed ? "opacity-25 blur-[1px] scale-90" : "opacity-100"} ${
         intelligenceHighlighted ? "scale-110" : ""
@@ -857,7 +857,7 @@ function SelectedEntityPanel({
 }: any) {
   if (!selectedNode && !intelligenceAnswer) {
     return (
-      <aside className="rounded-[2rem] border border-white/10 bg-white/[0.055] p-5 min-h-[780px] shadow-[0_0_42px_rgba(34,211,238,0.08)] backdrop-blur-xl">
+      <aside className="min-h-[640px] rounded-[2rem] border border-white/10 bg-white/[0.055] p-5 shadow-[0_0_42px_rgba(34,211,238,0.08)] backdrop-blur-xl xl:min-h-[780px]">
         <div className="rounded-3xl border border-cyan-300/18 bg-cyan-500/8 p-5 mb-5">
           <div className="text-xs uppercase tracking-[0.3em] text-cyan-200 mb-2">
             Command Deck
@@ -893,7 +893,7 @@ function SelectedEntityPanel({
 
   if (intelligenceAnswer && !selectedNode) {
     return (
-      <aside className="rounded-[2rem] border border-white/10 bg-white/[0.055] p-5 min-h-[780px] overflow-y-auto shadow-[0_0_42px_rgba(34,211,238,0.08)] backdrop-blur-xl">
+      <aside className="min-h-[640px] overflow-y-auto rounded-[2rem] border border-white/10 bg-white/[0.055] p-5 shadow-[0_0_42px_rgba(34,211,238,0.08)] backdrop-blur-xl xl:min-h-[780px]">
         <div className="text-xs tracking-[0.25em] text-cyan-300 uppercase mb-2">
           Ask Brand Galaxy
         </div>
@@ -929,7 +929,7 @@ function SelectedEntityPanel({
   const entity = selectedNode.entity;
 
   return (
-    <aside className="rounded-[2rem] border border-white/10 bg-white/[0.055] p-5 min-h-[780px] overflow-y-auto shadow-[0_0_42px_rgba(34,211,238,0.08)] backdrop-blur-xl">
+    <aside className="min-h-[640px] overflow-y-auto rounded-[2rem] border border-white/10 bg-white/[0.055] p-5 shadow-[0_0_42px_rgba(34,211,238,0.08)] backdrop-blur-xl xl:min-h-[780px]">
       <div className="text-xs tracking-[0.25em] text-cyan-300 uppercase mb-2">
         {selectedNode.entityType} signal
       </div>
@@ -1420,18 +1420,18 @@ export default function RelationshipExplorer() {
     <>
       <NavBar />
 
-      <main className="relative min-h-screen overflow-hidden bg-[#020617] text-white p-10">
+      <main className="relative min-h-screen overflow-hidden bg-[#020617] px-4 py-8 text-white sm:px-6 lg:p-10">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_80%_10%,rgba(99,102,241,0.12),transparent_25%),radial-gradient(circle_at_50%_80%,rgba(15,23,42,0.38),transparent_35%)]" />
         <div className="pointer-events-none absolute inset-0 opacity-28 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:80px_80px]" />
 
         <div className="relative z-10">
-          <div className="mb-8 flex flex-col xl:flex-row xl:items-end xl:justify-between gap-6">
+          <div className="mb-8 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
             <div>
               <div className="mb-4 inline-flex rounded-full border border-cyan-300/24 bg-cyan-500/8 px-4 py-2 text-xs uppercase tracking-[0.3em] text-cyan-200 backdrop-blur-xl">
                 Brand Galaxy Map
               </div>
 
-              <h1 className="text-6xl font-black mb-3 tracking-tight text-white">
+              <h1 className="mb-3 text-5xl font-black tracking-tight text-white sm:text-6xl">
                 Galaxy Map
               </h1>
 
@@ -1475,7 +1475,7 @@ export default function RelationshipExplorer() {
             </div>
           </div>
 
-          <div className="mb-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
             <button
               onClick={() => {
                 setActiveScenarioId(null);
@@ -1483,7 +1483,7 @@ export default function RelationshipExplorer() {
                 setFocusedBrandNodeId(null);
                 setIntelligenceAnswer(null);
               }}
-              className={`rounded-3xl border p-5 text-left transition backdrop-blur-xl ${
+              className={`rounded-3xl border p-5 text-left transition duration-300 hover:-translate-y-0.5 backdrop-blur-xl ${
                 !activeScenario
                   ? "border-cyan-300/42 bg-cyan-500/14 shadow-[0_0_24px_rgba(34,211,238,0.12)]"
                   : "border-white/10 bg-white/[0.055] hover:bg-white/10"
@@ -1498,7 +1498,7 @@ export default function RelationshipExplorer() {
               <button
                 key={scenario.id}
                 onClick={() => activateScenario(scenario)}
-                className={`rounded-3xl border p-5 text-left transition backdrop-blur-xl ${
+                className={`rounded-3xl border p-5 text-left transition duration-300 hover:-translate-y-0.5 backdrop-blur-xl ${
                   activeScenarioId === scenario.id
                     ? "border-cyan-300/42 bg-cyan-500/14 shadow-[0_0_24px_rgba(34,211,238,0.12)]"
                     : "border-white/10 bg-white/[0.055] hover:bg-white/10"
@@ -1517,7 +1517,7 @@ export default function RelationshipExplorer() {
             ))}
           </div>
 
-          <div className="mb-6 grid grid-cols-1 xl:grid-cols-[1fr_1fr] gap-4">
+          <div className="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-[1fr_1fr]">
             <div className="rounded-3xl border border-white/10 bg-white/[0.055] p-3 backdrop-blur-xl shadow-[0_0_26px_rgba(255,255,255,0.03)]">
               <input
                 value={searchQuery}
@@ -1542,7 +1542,7 @@ export default function RelationshipExplorer() {
                 <button
                   onClick={() => askBrandGalaxy()}
                   disabled={!questionQuery.trim()}
-                  className="rounded-2xl border border-cyan-300/30 bg-cyan-500/16 px-5 font-semibold text-cyan-100 hover:bg-cyan-500/24 disabled:opacity-40"
+                  className="rounded-2xl border border-cyan-300/30 bg-cyan-500/16 px-5 font-semibold text-cyan-100 transition duration-300 hover:bg-cyan-500/24 disabled:opacity-40"
                 >
                   Ask
                 </button>
@@ -1559,7 +1559,7 @@ export default function RelationshipExplorer() {
                       setQuestionQuery(suggestion);
                       askBrandGalaxy(suggestion);
                     }}
-                    className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-gray-300 hover:border-cyan-300/40 hover:text-cyan-100"
+                    className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-gray-300 transition duration-300 hover:border-cyan-300/40 hover:text-cyan-100"
                   >
                     {suggestion}
                   </button>
@@ -1586,7 +1586,7 @@ export default function RelationshipExplorer() {
                         setFocusedBrandNodeId(node.data.nodeId);
                       }
                     }}
-                    className="rounded-2xl border border-white/10 bg-black/25 p-4 text-left hover:border-cyan-300/50 transition"
+                    className="rounded-2xl border border-white/10 bg-black/25 p-4 text-left transition duration-300 hover:-translate-y-0.5 hover:border-cyan-300/50 hover:bg-white/[0.07]"
                   >
                     <div className="text-xs uppercase text-cyan-300 mb-1">
                       {node.data.entityType}
@@ -1601,8 +1601,8 @@ export default function RelationshipExplorer() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 xl:grid-cols-[1fr_440px] gap-6">
-            <div className="relative h-[850px] rounded-[2rem] border border-white/10 overflow-hidden bg-black shadow-[0_0_45px_rgba(34,211,238,0.08)]">
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_440px]">
+            <div className="relative h-[680px] overflow-hidden rounded-[2rem] border border-white/10 bg-black shadow-[0_0_45px_rgba(34,211,238,0.08)] sm:h-[760px] xl:h-[850px]">
               <div
                 className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center opacity-64"
                 style={{
