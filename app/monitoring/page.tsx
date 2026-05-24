@@ -54,34 +54,72 @@ export default function MonitoringPage() {
   }, []);
 
   const fallbackSignals = useMemo(() => {
-    return [
-      ...campaigns.slice(0, 5).map((item) => ({
-        id: `campaign-${item.id}`,
-        type: "Campaign",
-        title: item.name,
-        description: item.objective || "Campaign signal detected.",
-      })),
-      ...brands.slice(0, 5).map((item) => ({
-        id: `brand-${item.id}`,
-        type: "Brand",
-        title: item.name,
-        description: "Brand entity available for monitoring intelligence.",
-      })),
-      ...products.slice(0, 5).map((item) => ({
-        id: `product-${item.id}`,
-        type: "Product",
-        title: item.name,
-        description:
-          item.description || item.category || "Product signal detected.",
-      })),
-      ...audiences.slice(0, 5).map((item) => ({
-        id: `audience-${item.id}`,
-        type: "Audience",
-        title: item.name,
-        description: item.description || "Audience segment detected.",
-      })),
-    ];
-  }, [campaigns, brands, products, audiences]);
+  return [
+    ...campaigns.slice(0, 5).map((item) => ({
+      id: `campaign-${item.id}`,
+      type: "CAMPAIGN SIGNAL",
+      title: item.name,
+      advertiser: item.brand || "Brand Galaxy",
+      brand: item.brand || item.name,
+      product: "Strategic Campaign",
+      network: "Cross-Platform",
+      duration: 30,
+      description:
+        item.objective ||
+        "AI-detected campaign activity connected to the Brand Galaxy ecosystem.",
+      transcript:
+        "Campaign signal classified and linked to strategic advertising intelligence.",
+    })),
+
+    ...brands.slice(0, 5).map((item) => ({
+      id: `brand-${item.id}`,
+      type: "BRAND SIGNAL",
+      title: item.name,
+      advertiser: item.name,
+      brand: item.name,
+      product: "Brand Ecosystem",
+      network: "Brand Galaxy",
+      duration: 15,
+      description:
+        "Brand entity detected across ecosystem intelligence relationships.",
+      transcript:
+        "Brand connected to campaigns, products, and audience targeting layers.",
+    })),
+
+    ...products.slice(0, 5).map((item) => ({
+      id: `product-${item.id}`,
+      type: "PRODUCT SIGNAL",
+      title: item.name,
+      advertiser: item.brand || "Brand Galaxy",
+      brand: item.brand || "Product Intelligence",
+      product: item.name,
+      network: "Commerce Intelligence",
+      duration: 20,
+      description:
+        item.description ||
+        item.category ||
+        "Product signal detected in strategic ecosystem analysis.",
+      transcript:
+        "Product mapped into campaign and audience intelligence graph.",
+    })),
+
+    ...audiences.slice(0, 5).map((item) => ({
+      id: `audience-${item.id}`,
+      type: "AUDIENCE SIGNAL",
+      title: item.name,
+      advertiser: "Audience Intelligence",
+      brand: item.name,
+      product: "Targeting Segment",
+      network: "AI Audience Layer",
+      duration: 10,
+      description:
+        item.description ||
+        "Audience targeting segment detected in monitoring ecosystem.",
+      transcript:
+        "Audience signal classified for strategic targeting analysis.",
+    })),
+  ];
+}, [campaigns, brands, products, audiences]);
 
   const feed = spots.length > 0 ? spots : fallbackSignals;
 
