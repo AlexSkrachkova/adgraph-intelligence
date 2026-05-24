@@ -858,27 +858,40 @@ function SelectedEntityPanel({
   if (!selectedNode && !intelligenceAnswer) {
     return (
       <aside className="min-h-[640px] rounded-[2rem] border border-white/10 bg-white/[0.055] p-5 shadow-[0_0_42px_rgba(34,211,238,0.08)] backdrop-blur-xl xl:min-h-[780px]">
-        <div className="rounded-3xl border border-cyan-300/18 bg-cyan-500/8 p-5 mb-5">
-          <div className="text-xs uppercase tracking-[0.3em] text-cyan-200 mb-2">
+        <div className="mb-5 rounded-3xl border border-cyan-300/18 bg-cyan-500/8 p-5">
+          <div className="mb-2 text-xs uppercase tracking-[0.3em] text-cyan-200">
             Command Deck
           </div>
 
-          <h2 className="text-3xl font-black mb-3">Brand Galaxy</h2>
+          <h2 className="mb-3 text-3xl font-black">Brand Galaxy</h2>
 
-          <p className="text-gray-300 leading-6 text-sm">
+          <p className="text-sm leading-6 text-gray-300">
             Select a sector, click a planet, or ask Brand Galaxy a question.
           </p>
         </div>
 
-        {activeScenario && (
-          <div className="rounded-3xl border border-indigo-400/24 bg-indigo-500/8 p-5">
-            <div className="text-4xl mb-3">{activeScenario.emoji}</div>
+        <div className="rounded-3xl border border-white/10 bg-black/24 p-5">
+          <div className="mb-3 text-sm font-semibold text-cyan-200">
+            Ready Intelligence Actions
+          </div>
 
-            <div className="text-indigo-200 text-sm font-semibold mb-2">
+          <div className="space-y-3 text-sm text-gray-300">
+            <div>✦ Explore brand ecosystems</div>
+            <div>✦ Inspect campaign and audience signals</div>
+            <div>✦ Compare competitive orbits</div>
+            <div>✦ Generate strategic context from graph data</div>
+          </div>
+        </div>
+
+        {activeScenario && (
+          <div className="mt-5 rounded-3xl border border-indigo-400/24 bg-indigo-500/8 p-5">
+            <div className="mb-3 text-4xl">{activeScenario.emoji}</div>
+
+            <div className="mb-2 text-sm font-semibold text-indigo-200">
               Active Sector
             </div>
 
-            <div className="text-xl font-bold text-white mb-2">
+            <div className="mb-2 text-xl font-bold text-white">
               {activeScenario.title}
             </div>
 
@@ -894,13 +907,11 @@ function SelectedEntityPanel({
   if (intelligenceAnswer && !selectedNode) {
     return (
       <aside className="min-h-[640px] overflow-y-auto rounded-[2rem] border border-white/10 bg-white/[0.055] p-5 shadow-[0_0_42px_rgba(34,211,238,0.08)] backdrop-blur-xl xl:min-h-[780px]">
-        <div className="text-xs tracking-[0.25em] text-cyan-300 uppercase mb-2">
+        <div className="mb-2 text-xs uppercase tracking-[0.25em] text-cyan-300">
           Ask Brand Galaxy
         </div>
 
-        <h2 className="text-3xl font-black mb-4">
-          {intelligenceAnswer.title}
-        </h2>
+        <h2 className="mb-4 text-3xl font-black">{intelligenceAnswer.title}</h2>
 
         <div className="mb-6 rounded-3xl border border-cyan-300/24 bg-cyan-500/8 p-5 text-gray-200 leading-7">
           {intelligenceAnswer.summary}
@@ -912,13 +923,13 @@ function SelectedEntityPanel({
         />
 
         <div className="mt-5 rounded-3xl border border-white/10 bg-black/24 p-5">
-          <div className="text-cyan-200 font-semibold mb-3">
+          <div className="mb-3 font-semibold text-cyan-200">
             Suggested questions
           </div>
 
           <div className="space-y-2 text-sm text-gray-300">
             {intelligenceAnswer.suggestions.map((suggestion: string) => (
-              <div key={suggestion}>{suggestion}</div>
+              <div key={suggestion}>✦ {suggestion}</div>
             ))}
           </div>
         </div>
@@ -928,37 +939,166 @@ function SelectedEntityPanel({
 
   const entity = selectedNode.entity;
 
+  const totalSignals =
+    ecosystemProfile.companies.length +
+    ecosystemProfile.products.length +
+    ecosystemProfile.campaigns.length +
+    ecosystemProfile.audiences.length +
+    ecosystemProfile.brands.length;
+
+  const campaignMomentum = Math.min(
+    100,
+    ecosystemProfile.campaigns.length * 28 +
+      ecosystemProfile.audiences.length * 14 +
+      ecosystemProfile.products.length * 10
+  );
+
+  const audienceAffinity = Math.min(
+    100,
+    ecosystemProfile.audiences.length * 34 +
+      ecosystemProfile.campaigns.length * 12
+  );
+
+  const ecosystemHealth = Math.min(
+    100,
+    ecosystemProfile.score +
+      ecosystemProfile.companies.length * 4 +
+      ecosystemProfile.products.length * 4
+  );
+
+  const signalDensityLabel =
+    totalSignals >= 8
+      ? "High-density ecosystem"
+      : totalSignals >= 4
+      ? "Developing ecosystem"
+      : totalSignals > 0
+      ? "Early signal ecosystem"
+      : "No ecosystem signals";
+
+  const strategicOpportunities = [
+    ecosystemProfile.campaigns.length === 0
+      ? "Add campaign signals to improve strategic momentum."
+      : "Campaign layer is active and can support positioning analysis.",
+    ecosystemProfile.audiences.length === 0
+      ? "Audience coverage is weak. Add audience segments for better targeting intelligence."
+      : "Audience layer is connected and supports targeting analysis.",
+    ecosystemProfile.products.length === 0
+      ? "Product-level coverage is missing. Add products to strengthen the ecosystem."
+      : "Product signals improve ecosystem strength and brand context.",
+  ];
+
   return (
     <aside className="min-h-[640px] overflow-y-auto rounded-[2rem] border border-white/10 bg-white/[0.055] p-5 shadow-[0_0_42px_rgba(34,211,238,0.08)] backdrop-blur-xl xl:min-h-[780px]">
-      <div className="text-xs tracking-[0.25em] text-cyan-300 uppercase mb-2">
+      <div className="mb-2 text-xs uppercase tracking-[0.25em] text-cyan-300">
         {selectedNode.entityType} signal
       </div>
 
-      <h2 className="text-3xl font-black mb-6">{entity?.name || "Unknown"}</h2>
+      <h2 className="mb-5 text-3xl font-black">{entity?.name || "Unknown"}</h2>
 
-      <div className="mb-6 rounded-3xl border border-cyan-300/24 bg-cyan-500/8 p-5 shadow-[0_0_28px_rgba(34,211,238,0.08)]">
-        <div className="text-sm text-cyan-200 font-semibold mb-3">
+      <div className="mb-5 rounded-3xl border border-cyan-300/24 bg-cyan-500/8 p-5 shadow-[0_0_28px_rgba(34,211,238,0.08)]">
+        <div className="mb-3 text-sm font-semibold text-cyan-200">
           Galaxy Intelligence Score
         </div>
 
-        <div className="text-6xl font-black text-white mb-2">
+        <div className="mb-2 text-6xl font-black text-white">
           {ecosystemProfile.score}
         </div>
 
-        <div className="text-sm text-gray-300">
+        <div className="mb-4 text-sm text-gray-300">
           Signal density:
-          <span className="text-cyan-200 font-semibold ml-2">
+          <span className="ml-2 font-semibold text-cyan-200">
             {ecosystemProfile.intensity}
           </span>
         </div>
+
+        <div className="h-3 overflow-hidden rounded-full bg-white/10">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-fuchsia-400 to-violet-400 transition-all duration-700"
+            style={{ width: `${Math.min(100, ecosystemProfile.score)}%` }}
+          />
+        </div>
+
+        <div className="mt-3 text-xs uppercase tracking-[0.2em] text-gray-400">
+          {signalDensityLabel}
+        </div>
       </div>
 
-      <div className="mb-6 rounded-3xl border border-white/10 bg-black/24 p-5 shadow-[0_0_24px_rgba(255,255,255,0.03)]">
-        <div className="text-cyan-200 text-sm font-semibold mb-3">
+      <div className="mb-5 grid grid-cols-1 gap-3">
+        <div className="rounded-3xl border border-white/10 bg-black/24 p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="text-sm font-semibold text-fuchsia-200">
+              Campaign Momentum
+            </div>
+            <div className="text-sm font-black text-white">
+              {campaignMomentum}
+            </div>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-white/10">
+            <div
+              className="h-full rounded-full bg-fuchsia-400 transition-all duration-700"
+              style={{ width: `${campaignMomentum}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-white/10 bg-black/24 p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="text-sm font-semibold text-amber-200">
+              Audience Affinity
+            </div>
+            <div className="text-sm font-black text-white">
+              {audienceAffinity}
+            </div>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-white/10">
+            <div
+              className="h-full rounded-full bg-amber-300 transition-all duration-700"
+              style={{ width: `${audienceAffinity}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-white/10 bg-black/24 p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="text-sm font-semibold text-emerald-200">
+              Ecosystem Health
+            </div>
+            <div className="text-sm font-black text-white">
+              {ecosystemHealth}
+            </div>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-white/10">
+            <div
+              className="h-full rounded-full bg-emerald-300 transition-all duration-700"
+              style={{ width: `${ecosystemHealth}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-5 rounded-3xl border border-white/10 bg-black/24 p-5 shadow-[0_0_24px_rgba(255,255,255,0.03)]">
+        <div className="mb-3 text-sm font-semibold text-cyan-200">
           AI Strategic Galaxy Summary
         </div>
 
-        <div className="text-gray-200 leading-7 text-sm">{aiSummary}</div>
+        <div className="text-sm leading-7 text-gray-200">{aiSummary}</div>
+      </div>
+
+      <div className="mb-5 rounded-3xl border border-violet-300/20 bg-violet-500/8 p-5">
+        <div className="mb-3 text-sm font-semibold text-violet-200">
+          Strategic Opportunities
+        </div>
+
+        <div className="space-y-3">
+          {strategicOpportunities.map((opportunity) => (
+            <div
+              key={opportunity}
+              className="rounded-2xl border border-white/10 bg-black/25 p-3 text-sm leading-6 text-gray-300"
+            >
+              ✦ {opportunity}
+            </div>
+          ))}
+        </div>
       </div>
 
       <CompetitiveOverlapPanel
@@ -967,7 +1107,7 @@ function SelectedEntityPanel({
         nodeLookup={nodeLookup}
       />
 
-      <div className="grid grid-cols-2 gap-3 mb-6">
+      <div className="mb-6 grid grid-cols-2 gap-3">
         <IntelligenceMetric
           label="Companies"
           value={ecosystemProfile.companies.length}
