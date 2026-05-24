@@ -34,7 +34,7 @@ function FeatureCard({
 
 function Metric({ value, label }: { value: string; label: string }) {
   return (
-    <div className="min-h-[140px] rounded-3xl border border-white/10 bg-black/35 p-5">
+    <div className="rounded-3xl border border-white/10 bg-black/35 p-5">
       <div className="text-4xl font-black text-cyan-200">{value}</div>
 
       <div className="mt-2 text-xs uppercase tracking-[0.25em] text-gray-500">
