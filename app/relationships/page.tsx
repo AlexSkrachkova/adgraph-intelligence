@@ -17,6 +17,8 @@ const GALAXY_BACKGROUND = "/wallpaperflare.com_wallpaper.jpg";
 
 const hiddenBrandNames = ["Nintendo Switch", "Samsung Galaxy"];
 
+type RelationshipFilter = "all" | "competitors" | "products" | "campaigns" | "audiences";
+
 const demoScenarios = [
   {
     id: "gaming",
@@ -473,6 +475,169 @@ function getRelationshipLabel(type: string) {
   return type;
 }
 
+
+function getRelationshipCategory(type: string): RelationshipFilter {
+  if (type === "competes_with") return "competitors";
+  if (type === "has_product") return "products";
+  if (type === "runs_campaign" || type === "promotes") return "campaigns";
+  if (type === "targets") return "audiences";
+  return "all";
+}
+
+function getRelationshipStrength(rel: any) {
+  if (typeof rel.weight === "number") {
+    return Math.max(10, Math.min(100, Math.round(rel.weight * 100)));
+  }
+
+  if (rel.relationship_type === "competes_with") return 88;
+  if (rel.relationship_type === "targets") return 76;
+  if (rel.relationship_type === "runs_campaign" || rel.relationship_type === "promotes") return 72;
+  if (rel.relationship_type === "has_product") return 68;
+  if (rel.relationship_type === "owned_by") return 95;
+
+  return 55;
+}
+
+function getRelationshipWhy(type: string) {
+  if (type === "competes_with") {
+    return "Direct competitor relationship based on shared market/category positioning.";
+  }
+
+  if (type === "owned_by") {
+    return "Ownership relationship connecting a commercial brand to its company entity.";
+  }
+
+  if (type === "has_product") {
+    return "Product relationship connecting the brand to a product or product family.";
+  }
+
+  if (type === "runs_campaign" || type === "promotes") {
+    return "Campaign relationship connecting the brand or product to an advertising activation.";
+  }
+
+  if (type === "targets") {
+    return "Audience relationship showing which audience segment is connected to this signal.";
+  }
+
+  return "Relationship exists in the Brand Galaxy graph dataset.";
+}
+
+function getRelationshipBadge(strength: number, type: string) {
+  if (type === "competes_with" && strength >= 80) return "High Competitive Overlap";
+  if (type === "owned_by") return "Ownership Signal";
+  if (type === "targets") return "Audience Link";
+  if (type === "runs_campaign" || type === "promotes") return "Campaign Activation";
+  if (type === "has_product") return "Product Link";
+  if (strength >= 80) return "High Strength";
+  if (strength >= 60) return "Medium Strength";
+  return "Emerging Signal";
+}
+
+function buildRelationshipInsights(selectedNode: any, relationships: any[], nodeLookup: Record<string, any>) {
+  if (!selectedNode?.nodeId) return [];
+
+  return relationships
+    .filter((rel: any) => {
+      const sourceNodeId = `${rel.source_type}-${rel.source_id}`;
+      const targetNodeId = `${rel.target_type}-${rel.target_id}`;
+
+      return sourceNodeId === selectedNode.nodeId || targetNodeId === selectedNode.nodeId;
+    })
+    .map((rel: any) => {
+      const sourceNodeId = `${rel.source_type}-${rel.source_id}`;
+      const targetNodeId = `${rel.target_type}-${rel.target_id}`;
+      const otherNodeId = sourceNodeId === selectedNode.nodeId ? targetNodeId : sourceNodeId;
+      const otherNode = nodeLookup[otherNodeId]?.data;
+      const strength = getRelationshipStrength(rel);
+
+      return {
+        id: rel.id || `${sourceNodeId}-${targetNodeId}-${rel.relationship_type}`,
+        type: rel.relationship_type,
+        category: getRelationshipCategory(rel.relationship_type),
+        strength,
+        badge: getRelationshipBadge(strength, rel.relationship_type),
+        why: getRelationshipWhy(rel.relationship_type),
+        otherNode,
+      };
+    })
+    .filter((item: any) => item.otherNode)
+    .filter(
+      (item: any) =>
+        !(
+          item.otherNode.entityType === "brand" &&
+          hiddenBrandNames.includes(item.otherNode.entity?.name)
+        )
+    )
+    .sort((a: any, b: any) => b.strength - a.strength);
+}
+
+function RelationshipInsightPanel({
+  selectedNode,
+  relationships,
+  nodeLookup,
+}: any) {
+  const insights = buildRelationshipInsights(selectedNode, relationships, nodeLookup);
+
+  if (!selectedNode) return null;
+
+  if (insights.length === 0) {
+    return (
+      <div className="mb-5 rounded-3xl border border-white/10 bg-black/24 p-5">
+        <div className="mb-2 text-sm font-semibold text-cyan-200">
+          Relationship Intelligence
+        </div>
+        <div className="text-sm text-gray-400">
+          No direct relationship intelligence found for this object yet.
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-5 rounded-3xl border border-cyan-300/20 bg-cyan-500/8 p-5">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="text-sm font-semibold text-cyan-200">
+          Relationship Intelligence
+        </div>
+        <div className="rounded-full border border-cyan-300/20 bg-black/25 px-3 py-1 text-xs text-cyan-100">
+          {insights.length} direct signals
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {insights.slice(0, 5).map((insight: any) => (
+          <div
+            key={insight.id}
+            className="rounded-2xl border border-white/10 bg-black/25 p-4"
+          >
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <div className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs uppercase tracking-[0.16em] text-gray-200">
+                {getRelationshipLabel(insight.type)}
+              </div>
+
+              <div className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
+                {insight.badge}
+              </div>
+
+              <div className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-100">
+                Strength {insight.strength}%
+              </div>
+            </div>
+
+            <div className="text-base font-bold text-white">
+              {selectedNode.entity?.name} ↔ {insight.otherNode.entity?.name || "Unknown"}
+            </div>
+
+            <div className="mt-2 text-sm leading-6 text-gray-300">
+              {insight.why}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function getNodeText(node: any) {
   const entity = node.data.entity;
 
@@ -786,7 +951,16 @@ function CompetitiveOverlapPanel({
       const competitorId =
         sourceNodeId === selectedNodeId ? targetNodeId : sourceNodeId;
 
-      return nodeLookup[competitorId]?.data;
+      const competitor = nodeLookup[competitorId]?.data;
+      const strength = getRelationshipStrength(rel);
+
+      return competitor
+        ? {
+            ...competitor,
+            relationshipStrength: strength,
+            relationshipBadge: getRelationshipBadge(strength, rel.relationship_type),
+          }
+        : null;
     })
     .filter(Boolean)
     .filter(
@@ -833,6 +1007,15 @@ function CompetitiveOverlapPanel({
 
             <div className="text-lg font-bold text-white">
               {competitor.entity?.name}
+            </div>
+
+            <div className="mt-2 flex flex-wrap gap-2">
+              <div className="rounded-full border border-red-300/20 bg-red-500/10 px-3 py-1 text-xs text-red-100">
+                Strength {competitor.relationshipStrength || 88}%
+              </div>
+              <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-gray-200">
+                {competitor.relationshipBadge || "Competitive Signal"}
+              </div>
             </div>
 
             <div className="mt-2 text-sm text-gray-300 leading-6">
@@ -1084,6 +1267,12 @@ function SelectedEntityPanel({
         <div className="text-sm leading-7 text-gray-200">{aiSummary}</div>
       </div>
 
+      <RelationshipInsightPanel
+        selectedNode={selectedNode}
+        relationships={relationships}
+        nodeLookup={nodeLookup}
+      />
+
       <div className="mb-5 rounded-3xl border border-violet-300/20 bg-violet-500/8 p-5">
         <div className="mb-3 text-sm font-semibold text-violet-200">
           Strategic Opportunities
@@ -1165,6 +1354,8 @@ export default function RelationshipExplorer() {
   const [intelligenceAnswer, setIntelligenceAnswer] =
     useState<IntelligenceAnswer | null>(null);
   const [activeScenarioId, setActiveScenarioId] = useState<string | null>(null);
+  const [relationshipFilter, setRelationshipFilter] =
+    useState<RelationshipFilter>("all");
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
 
   const activeScenario = useMemo(() => {
@@ -1382,7 +1573,9 @@ export default function RelationshipExplorer() {
           sourceNodeId === focusedBrandNodeId &&
           ["owned_by", "has_product", "runs_campaign", "targets"].includes(
             rel.relationship_type
-          )
+          ) &&
+          (relationshipFilter === "all" ||
+            getRelationshipCategory(rel.relationship_type) === relationshipFilter)
         );
       })
       .map((rel: any) => `${rel.target_type}-${rel.target_id}`);
@@ -1475,6 +1668,7 @@ export default function RelationshipExplorer() {
     focusedBrandNodeId,
     activeScenario,
     intelligenceNodeIds,
+    relationshipFilter,
   ]);
 
   useEffect(() => {
@@ -1655,6 +1849,46 @@ export default function RelationshipExplorer() {
                 </div>
               </button>
             ))}
+          </div>
+
+
+          <div className="mb-6 rounded-3xl border border-white/10 bg-white/[0.055] p-4 backdrop-blur-xl">
+            <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="text-sm font-semibold text-cyan-200">
+                  Relationship Filters
+                </div>
+                <div className="text-xs text-gray-500">
+                  Filter the galaxy orbit by relationship type without changing the underlying data.
+                </div>
+              </div>
+
+              <div className="text-xs uppercase tracking-[0.2em] text-gray-500">
+                Active: {relationshipFilter}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: "all", label: "All Signals" },
+                { key: "competitors", label: "Competitors" },
+                { key: "products", label: "Products" },
+                { key: "campaigns", label: "Campaigns" },
+                { key: "audiences", label: "Audiences" },
+              ].map((filter) => (
+                <button
+                  key={filter.key}
+                  onClick={() => setRelationshipFilter(filter.key as RelationshipFilter)}
+                  className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition duration-300 ${
+                    relationshipFilter === filter.key
+                      ? "border-cyan-300/40 bg-cyan-500/15 text-cyan-100 shadow-[0_0_22px_rgba(34,211,238,0.1)]"
+                      : "border-white/10 bg-black/25 text-gray-400 hover:border-white/20 hover:text-white"
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-[1fr_1fr]">
