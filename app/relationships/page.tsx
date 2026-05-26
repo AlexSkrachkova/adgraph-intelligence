@@ -1029,6 +1029,242 @@ function CompetitiveOverlapPanel({
   );
 }
 
+
+function getOverlapDetails(selectedNode: any, insight: any, relationships: any[], nodeLookup: Record<string, any>) {
+  const selectedConnected = new Set(getConnectedNodeIds(selectedNode.nodeId, relationships, 2));
+  const otherConnected = new Set(getConnectedNodeIds(insight.otherNode.nodeId, relationships, 2));
+
+  const sharedIds = Array.from(selectedConnected).filter((id) => otherConnected.has(id));
+  const sharedNodes = sharedIds.map((id) => nodeLookup[id]?.data).filter(Boolean);
+
+  const sharedAudiences = sharedNodes.filter((node: any) => node.entityType === "audience");
+  const sharedCampaigns = sharedNodes.filter((node: any) => node.entityType === "campaign");
+  const sharedProducts = sharedNodes.filter((node: any) => node.entityType === "product");
+  const sharedBrands = sharedNodes.filter((node: any) => node.entityType === "brand");
+
+  const explanation = [
+    insight.why,
+    sharedAudiences.length > 0
+      ? `Shared audience overlap detected through ${sharedAudiences.length} audience signal${sharedAudiences.length === 1 ? "" : "s"}.`
+      : "No shared audience signal detected yet.",
+    sharedCampaigns.length > 0
+      ? `Campaign overlap detected through ${sharedCampaigns.length} campaign signal${sharedCampaigns.length === 1 ? "" : "s"}.`
+      : "No campaign overlap detected yet.",
+    sharedProducts.length > 0
+      ? `Product/category proximity detected through ${sharedProducts.length} product signal${sharedProducts.length === 1 ? "" : "s"}.`
+      : "No shared product signal detected yet.",
+  ];
+
+  const conflictLevel =
+    insight.type === "competes_with" && (sharedAudiences.length + sharedCampaigns.length + sharedProducts.length > 1)
+      ? "High"
+      : insight.type === "competes_with"
+      ? "Medium"
+      : sharedAudiences.length + sharedCampaigns.length + sharedProducts.length > 2
+      ? "Medium"
+      : "Low";
+
+  return {
+    sharedAudiences,
+    sharedCampaigns,
+    sharedProducts,
+    sharedBrands,
+    explanation,
+    conflictLevel,
+  };
+}
+
+function ExplainabilityLayer({
+  selectedNode,
+  relationships,
+  nodeLookup,
+}: any) {
+  const insights = buildRelationshipInsights(selectedNode, relationships, nodeLookup).slice(0, 4);
+
+  if (!selectedNode || insights.length === 0) return null;
+
+  return (
+    <div className="mb-5 rounded-3xl border border-indigo-300/20 bg-indigo-500/8 p-5">
+      <div className="mb-3 text-sm font-semibold text-indigo-200">
+        Explainability Layer
+      </div>
+
+      <div className="space-y-4">
+        {insights.map((insight: any) => {
+          const overlap = getOverlapDetails(selectedNode, insight, relationships, nodeLookup);
+
+          return (
+            <div
+              key={`explain-${insight.id}`}
+              className="rounded-2xl border border-white/10 bg-black/25 p-4"
+            >
+              <div className="mb-2 flex flex-wrap gap-2">
+                <div className="rounded-full border border-indigo-300/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-100">
+                  Why connected?
+                </div>
+                <div className="rounded-full border border-red-300/20 bg-red-500/10 px-3 py-1 text-xs text-red-100">
+                  Strategic conflict: {overlap.conflictLevel}
+                </div>
+              </div>
+
+              <div className="mb-3 text-base font-bold text-white">
+                {selectedNode.entity?.name} ↔ {insight.otherNode.entity?.name}
+              </div>
+
+              <div className="space-y-2 text-sm leading-6 text-gray-300">
+                {overlap.explanation.map((line: string) => (
+                  <div key={line}>✦ {line}</div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function RelationshipHeatmap({
+  selectedNode,
+  relationships,
+  nodeLookup,
+}: any) {
+  const insights = buildRelationshipInsights(selectedNode, relationships, nodeLookup).slice(0, 6);
+
+  if (!selectedNode || insights.length === 0) return null;
+
+  return (
+    <div className="mb-5 rounded-3xl border border-orange-300/20 bg-orange-500/8 p-5">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="text-sm font-semibold text-orange-200">
+          Relationship Heatmap
+        </div>
+        <div className="text-xs uppercase tracking-[0.2em] text-gray-500">
+          Strength index
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {insights.map((insight: any) => (
+          <div key={`heat-${insight.id}`}>
+            <div className="mb-1 flex items-center justify-between gap-3 text-xs">
+              <span className="truncate text-gray-300">
+                {selectedNode.entity?.name} ↔ {insight.otherNode.entity?.name}
+              </span>
+              <span className="font-bold text-white">{insight.strength}%</span>
+            </div>
+
+            <div className="h-2 overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-fuchsia-400 to-orange-300"
+                style={{ width: `${insight.strength}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CrossSectorIntelligence({
+  activeScenario,
+  nodes,
+  relationships,
+}: any) {
+  const brandNodes = nodes.filter(
+    (node: any) =>
+      node.data.entityType === "brand" &&
+      !hiddenBrandNames.includes(node.data.entity?.name)
+  );
+
+  const sectorSignals = demoScenarios
+    .map((scenario) => {
+      const presentBrands = brandNodes.filter((node: any) =>
+        scenario.brandNames.includes(node.data.entity?.name)
+      );
+
+      const signalCount = relationships.filter((rel: any) =>
+        presentBrands.some((brand: any) => {
+          const id = brand.data.nodeId;
+          return (
+            `${rel.source_type}-${rel.source_id}` === id ||
+            `${rel.target_type}-${rel.target_id}` === id
+          );
+        })
+      ).length;
+
+      return {
+        ...scenario,
+        presentBrands,
+        signalCount,
+      };
+    })
+    .filter((sector) => sector.presentBrands.length > 0)
+    .sort((a, b) => b.signalCount - a.signalCount)
+    .slice(0, 4);
+
+  return (
+    <div className="mb-6 rounded-3xl border border-white/10 bg-white/[0.055] p-5 backdrop-blur-xl">
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="text-sm font-semibold text-cyan-200">
+            Cross-Sector Intelligence
+          </div>
+          <div className="text-xs text-gray-500">
+            Compares sectors by available brand and relationship signal density.
+          </div>
+        </div>
+
+        <div className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-100">
+          {activeScenario ? `${activeScenario.title} active` : "All sectors"}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {sectorSignals.map((sector) => (
+          <div
+            key={sector.id}
+            className="rounded-2xl border border-white/10 bg-black/24 p-4"
+          >
+            <div className="mb-2 text-2xl">{sector.emoji}</div>
+            <div className="font-bold text-white">{sector.title}</div>
+            <div className="mt-1 text-xs text-gray-400">
+              {sector.presentBrands.length} brands · {sector.signalCount} signals
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full bg-cyan-300"
+                style={{ width: `${Math.min(100, sector.signalCount * 8)}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function GraphLegend() {
+  return (
+    <div className="absolute left-4 top-4 z-20 max-w-[300px] rounded-3xl border border-white/10 bg-black/60 p-4 text-xs text-gray-300 backdrop-blur-xl">
+      <div className="mb-3 font-bold text-white">Graph Legend</div>
+
+      <div className="space-y-2">
+        <div><span className="text-cyan-200">●</span> Brand planet = market-facing brand</div>
+        <div><span className="text-emerald-200">●</span> Product moon = product/product family</div>
+        <div><span className="text-violet-200">●</span> Campaign planet = advertising activation</div>
+        <div><span className="text-amber-200">●</span> Audience planet = target audience segment</div>
+        <div><span className="text-yellow-200">●</span> Company planet = owner/legal entity</div>
+      </div>
+
+      <div className="mt-3 border-t border-white/10 pt-3 text-gray-400">
+        Edge colors explain relationship type: ownership, product, campaign or audience link.
+      </div>
+    </div>
+  );
+}
+
 function SelectedEntityPanel({
   selectedNode,
   ecosystemProfile,
@@ -1037,6 +1273,7 @@ function SelectedEntityPanel({
   nodeLookup,
   activeScenario,
   intelligenceAnswer,
+  nodes,
 }: any) {
   if (!selectedNode && !intelligenceAnswer) {
     return (
@@ -1268,6 +1505,18 @@ function SelectedEntityPanel({
       </div>
 
       <RelationshipInsightPanel
+        selectedNode={selectedNode}
+        relationships={relationships}
+        nodeLookup={nodeLookup}
+      />
+
+      <ExplainabilityLayer
+        selectedNode={selectedNode}
+        relationships={relationships}
+        nodeLookup={nodeLookup}
+      />
+
+      <RelationshipHeatmap
         selectedNode={selectedNode}
         relationships={relationships}
         nodeLookup={nodeLookup}
@@ -1852,6 +2101,12 @@ export default function RelationshipExplorer() {
           </div>
 
 
+          <CrossSectorIntelligence
+            activeScenario={activeScenario}
+            nodes={nodes}
+            relationships={relationships}
+          />
+
           <div className="mb-6 rounded-3xl border border-white/10 bg-white/[0.055] p-4 backdrop-blur-xl">
             <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -1986,6 +2241,8 @@ export default function RelationshipExplorer() {
               <div className="pointer-events-none absolute inset-0 z-0 bg-slate-950/26" />
               <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.03)_0%,rgba(2,6,23,0.18)_58%,rgba(2,6,23,0.62)_100%)]" />
 
+              <GraphLegend />
+
               <ReactFlow
                 nodes={moleculeData.nodes}
                 edges={moleculeData.edges}
@@ -2027,6 +2284,7 @@ export default function RelationshipExplorer() {
               nodeLookup={nodeLookup}
               activeScenario={activeScenario}
               intelligenceAnswer={intelligenceAnswer}
+              nodes={nodes}
             />
           </div>
         </div>
