@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import NavBar from "@/components/NavBar";
 import { supabase } from "@/lib/supabase";
+
+type GroupMode = "campaign" | "product" | "brand";
 
 function getTitle(item: any) {
   const combined = [item.advertiser, item.brand, item.product]
@@ -26,6 +28,10 @@ function getIabClass(item: any) {
     item.iabTier1 ||
     null
   );
+}
+
+function dedupe(values: any[]) {
+  return Array.from(new Set(values.filter(Boolean)));
 }
 
 function InfoTooltip({ text }: { text: string }) {
@@ -82,7 +88,7 @@ function ExplanationCard({
   children,
 }: {
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div className="rounded-[2rem] border border-white/10 bg-black/24 p-5 backdrop-blur-xl">
@@ -134,6 +140,7 @@ export default function MonitoringPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [audiences, setAudiences] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [groupMode, setGroupMode] = useState<GroupMode>("campaign");
 
   useEffect(() => {
     async function loadMonitoring() {
@@ -296,6 +303,43 @@ export default function MonitoringPage() {
       .size;
   }, [monitoringFeed]);
 
+  const groupedSignals = useMemo(() => {
+    const groups: Record<string, any[]> = {};
+
+    monitoringFeed.forEach((item) => {
+      const key =
+        groupMode === "campaign"
+          ? item.title || "Unknown Campaign"
+          : groupMode === "product"
+          ? item.product || "Unknown Product"
+          : item.brand || "Unknown Brand";
+
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(item);
+    });
+
+    return Object.entries(groups)
+      .map(([key, signals]) => ({
+        key,
+        signals,
+        count: signals.length,
+        brands: dedupe(signals.map((signal) => signal.brand)),
+        products: dedupe(signals.map((signal) => signal.product)),
+        campaigns: dedupe(signals.map((signal) => signal.title)),
+        advertisers: dedupe(signals.map((signal) => signal.advertiser)),
+        iabClasses: dedupe(signals.map((signal) => signal.iabClass)),
+        sources: dedupe(signals.map((signal) => signal.source)),
+      }))
+      .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
+  }, [monitoringFeed, groupMode]);
+
+  const groupModeDescription =
+    groupMode === "campaign"
+      ? "Grouping by campaign shows which products, brands and signals appear inside each campaign object."
+      : groupMode === "product"
+      ? "Grouping by product shows all campaigns and brands where each product appears."
+      : "Grouping by brand shows all products, campaigns and signals connected to each brand.";
+
   return (
     <>
       <NavBar />
@@ -383,10 +427,11 @@ export default function MonitoringPage() {
 
             <ExplanationCard title="Current Feed Scope">
               <p>
-                The feed combines live rows from <span className="text-cyan-100">ad_spots</span> with
-                existing campaign, brand, product and audience records so the
-                dashboard remains useful even before a full Nielsen-style export
-                is imported.
+                The feed combines live rows from{" "}
+                <span className="text-cyan-100">ad_spots</span> with existing
+                campaign, brand, product and audience records so the dashboard
+                remains useful even before a full Nielsen-style export is
+                imported.
               </p>
               <p>
                 Feed-level unique advertisers: {uniqueAdvertisers}. Feed-level
@@ -474,6 +519,19 @@ export default function MonitoringPage() {
                     <div>✦ Brand Galaxy insight generation enabled</div>
                   </div>
                 </div>
+
+                <div className="mt-5 rounded-3xl border border-white/10 bg-black/24 p-5">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div className="text-sm font-semibold text-fuchsia-200">
+                      Active Grouping
+                    </div>
+                    <InfoTooltip text="Grouping does not change the raw data. It only changes how the monitoring feed is organized for review: by campaign, product or brand." />
+                  </div>
+
+                  <div className="text-sm leading-6 text-gray-300">
+                    {groupModeDescription}
+                  </div>
+                </div>
               </aside>
 
               <section className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-xl shadow-[0_0_60px_rgba(34,211,238,0.08)]">
@@ -489,139 +547,220 @@ export default function MonitoringPage() {
                 </h2>
 
                 <p className="mb-6 text-sm leading-6 text-gray-400">
-                  Each card represents one monitoring signal or graph entity
-                  prepared for advertising intelligence. Product, campaign and
-                  IAB fields are displayed explicitly so the object behind the
-                  signal is clear.
+                  Each card now represents one grouped intelligence object. Use
+                  the controls below to review the same monitoring data by
+                  campaign, by product, or by brand.
                 </p>
 
-                {monitoringFeed.length === 0 ? (
+                <div className="mb-6 flex flex-wrap gap-3">
+                  {[
+                    { key: "campaign", label: "Group by Campaign" },
+                    { key: "product", label: "Group by Product" },
+                    { key: "brand", label: "Group by Brand" },
+                  ].map((mode) => (
+                    <button
+                      key={mode.key}
+                      onClick={() => setGroupMode(mode.key as GroupMode)}
+                      className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition duration-300 ${
+                        groupMode === mode.key
+                          ? "border-cyan-300/40 bg-cyan-500/15 text-cyan-100 shadow-[0_0_22px_rgba(34,211,238,0.1)]"
+                          : "border-white/10 bg-black/25 text-gray-400 hover:border-white/20 hover:text-white"
+                      }`}
+                    >
+                      {mode.label}
+                    </button>
+                  ))}
+                </div>
+
+                {groupedSignals.length === 0 ? (
                   <div className="rounded-[2rem] border border-white/10 bg-black/30 p-8 text-gray-300">
                     No monitoring signals available yet. Import campaigns,
                     brands, products or audiences to populate this feed.
                   </div>
                 ) : (
-                  <div className="space-y-5">
-                    {monitoringFeed.map((item: any) => {
+                  <div className="space-y-6">
+                    {groupedSignals.map((group) => {
+                      const primarySignal = group.signals[0];
+
                       return (
                         <div
-                          key={item.id}
+                          key={group.key}
                           className="rounded-[2rem] border border-white/10 bg-black/30 p-6 shadow-[0_0_35px_rgba(255,255,255,0.04)] transition duration-300 hover:-translate-y-0.5 hover:border-cyan-300/30 hover:bg-black/40"
                         >
-                          <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-                            <div className="min-w-0 flex-1">
+                          <div className="mb-4 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                            <div className="min-w-0">
                               <div className="mb-3 inline-flex rounded-full border border-green-300/30 bg-green-500/10 px-3 py-1 text-xs text-green-200">
-                                {item.type}
+                                GROUPED BY {groupMode.toUpperCase()}
                               </div>
 
-                              <h3 className="mb-4 break-words text-2xl font-black text-white">
-                                {item.title}
+                              <h3 className="break-words text-2xl font-black text-white">
+                                {group.key}
                               </h3>
 
-                              <div className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-2 2xl:grid-cols-4">
-                                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                                  <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
-                                    Advertiser
-                                    <InfoTooltip text="The advertiser or account/entity associated with the ad signal. If the source row does not include advertiser, the platform uses brand/entity fallback." />
-                                  </div>
-                                  <div className="break-words font-bold">
-                                    {item.advertiser}
-                                  </div>
-                                </div>
-
-                                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                                  <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
-                                    Brand
-                                    <InfoTooltip text="The detected or linked brand for this monitoring signal. This is the commercial brand, not necessarily the legal owner/company." />
-                                  </div>
-                                  <div className="break-words font-bold">
-                                    {item.brand}
-                                  </div>
-                                </div>
-
-                                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                                  <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
-                                    Product
-                                    <InfoTooltip text="The product or product family connected to the signal. Long product names are wrapped so values like Zero Sugar variants do not get visually cut off." />
-                                  </div>
-                                  <div className="break-words font-bold">
-                                    {item.product}
-                                  </div>
-                                </div>
-
-                                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                                  <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
-                                    IAB Class
-                                    <InfoTooltip text="Classification based on IAB taxonomy when imported. If missing, this field explicitly says that mapping is pending instead of hiding the absence." />
-                                  </div>
-                                  <div className="break-words font-bold">
-                                    {item.iabClass}
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="space-y-2 text-sm text-gray-300">
-                                {item.network && (
-                                  <div>Network: {item.network}</div>
-                                )}
-
-                                {item.program && (
-                                  <div>Program: {item.program}</div>
-                                )}
-
-                                {item.spotCode && (
-                                  <div>Spot Code: {item.spotCode}</div>
-                                )}
-
-                                {item.description && (
-                                  <div className="leading-6">
-                                    {item.description}
-                                  </div>
-                                )}
-
-                                {item.transcript && (
-                                  <div className="leading-6 text-gray-400">
-                                    {item.transcript}
-                                  </div>
-                                )}
-
-                                {item.classificationSource && (
-                                  <div className="pt-2 text-xs uppercase tracking-[0.2em] text-cyan-300/80">
-                                    Classification: {item.classificationSource}
-                                  </div>
-                                )}
-
-                                {item.source && (
-                                  <div className="text-xs uppercase tracking-[0.2em] text-gray-500">
-                                    Source: {item.source}
-                                  </div>
-                                )}
-                              </div>
+                              <p className="mt-2 max-w-3xl text-sm leading-6 text-gray-400">
+                                This grouped object contains {group.count} signal
+                                {group.count === 1 ? "" : "s"} connected to{" "}
+                                {group.products.length} product
+                                {group.products.length === 1 ? "" : "s"},{" "}
+                                {group.brands.length} brand
+                                {group.brands.length === 1 ? "" : "s"} and{" "}
+                                {group.campaigns.length} campaign
+                                {group.campaigns.length === 1 ? "" : "s"}.
+                              </p>
                             </div>
 
                             <div className="flex flex-wrap gap-3">
-                              {item.duration && (
-                                <div className="rounded-2xl border border-cyan-300/30 bg-cyan-500/10 px-4 py-3 text-cyan-100">
-                                  {item.duration} sec
-                                </div>
-                              )}
+                              <div className="rounded-2xl border border-cyan-300/30 bg-cyan-500/10 px-4 py-3 text-cyan-100">
+                                {group.count} signal
+                                {group.count === 1 ? "" : "s"}
+                              </div>
 
                               <div className="rounded-2xl border border-fuchsia-300/30 bg-fuchsia-500/10 px-4 py-3 text-fuchsia-100">
-                                AI
+                                {group.products.length} product
+                                {group.products.length === 1 ? "" : "s"}
                               </div>
 
                               <div className="rounded-2xl border border-green-300/30 bg-green-500/10 px-4 py-3 text-green-100">
-                                Graph
+                                {group.brands.length} brand
+                                {group.brands.length === 1 ? "" : "s"}
                               </div>
                             </div>
                           </div>
 
+                          <div className="mb-5 grid grid-cols-1 gap-3 xl:grid-cols-3">
+                            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                              <div className="mb-2 flex items-center justify-between gap-2 text-xs uppercase tracking-[0.2em] text-cyan-300">
+                                Related Products
+                                <InfoTooltip text="Products found inside this group. When grouped by product, this usually shows the canonical product object for the group." />
+                              </div>
+
+                              <div className="space-y-2 text-sm text-gray-300">
+                                {group.products.slice(0, 6).map((product) => (
+                                  <div key={product}>{product}</div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                              <div className="mb-2 flex items-center justify-between gap-2 text-xs uppercase tracking-[0.2em] text-fuchsia-300">
+                                Related Campaigns
+                                <InfoTooltip text="Campaigns found inside this group. When grouped by campaign, this shows the campaign object plus any duplicate or related campaign labels." />
+                              </div>
+
+                              <div className="space-y-2 text-sm text-gray-300">
+                                {group.campaigns.slice(0, 6).map((campaign) => (
+                                  <div key={campaign}>{campaign}</div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                              <div className="mb-2 flex items-center justify-between gap-2 text-xs uppercase tracking-[0.2em] text-green-300">
+                                Related Brands
+                                <InfoTooltip text="Brands found inside this group. This helps distinguish commercial brands from legal companies or owners." />
+                              </div>
+
+                              <div className="space-y-2 text-sm text-gray-300">
+                                {group.brands.slice(0, 6).map((brand) => (
+                                  <div key={brand}>{brand}</div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-2 2xl:grid-cols-4">
+                            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                              <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
+                                Primary Advertiser
+                                <InfoTooltip text="The first advertiser detected inside this grouped object. Additional advertisers appear in the grouped hierarchy if present." />
+                              </div>
+                              <div className="break-words font-bold">
+                                {primarySignal.advertiser}
+                              </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                              <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
+                                Primary Brand
+                                <InfoTooltip text="The first brand detected inside this grouped object. Brand grouping is based on normalized display labels from the current monitoring feed." />
+                              </div>
+                              <div className="break-words font-bold">
+                                {primarySignal.brand}
+                              </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                              <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
+                                Primary Product
+                                <InfoTooltip text="The first product detected inside this grouped object. Product-level normalization is the next phase, especially for variants like Zero Sugar / Coke Zero." />
+                              </div>
+                              <div className="break-words font-bold">
+                                {primarySignal.product}
+                              </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                              <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
+                                IAB Class
+                                <InfoTooltip text="Classification based on IAB taxonomy when imported. If missing, this field explicitly says that mapping is pending instead of hiding the absence." />
+                              </div>
+                              <div className="break-words font-bold">
+                                {group.iabClasses[0] ||
+                                  "Unclassified / pending IAB mapping"}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            {group.signals.slice(0, 4).map((signal) => (
+                              <div
+                                key={signal.id}
+                                className="rounded-2xl border border-white/10 bg-white/[0.035] p-4"
+                              >
+                                <div className="mb-2 flex flex-wrap items-center gap-2">
+                                  <div className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-100">
+                                    {signal.type}
+                                  </div>
+
+                                  {signal.duration && (
+                                    <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-gray-300">
+                                      {signal.duration} sec
+                                    </div>
+                                  )}
+
+                                  {signal.spotCode && (
+                                    <div className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
+                                      Spot: {signal.spotCode}
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="font-semibold text-white">
+                                  {signal.title}
+                                </div>
+
+                                <div className="mt-2 text-sm leading-6 text-gray-400">
+                                  {signal.description}
+                                </div>
+
+                                <div className="mt-3 text-xs uppercase tracking-[0.2em] text-gray-500">
+                                  Source: {signal.source} · Classification:{" "}
+                                  {signal.classificationSource}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
                           <div className="mt-5 rounded-2xl border border-fuchsia-300/20 bg-fuchsia-500/10 p-4 text-sm leading-6 text-fuchsia-100">
-                            AI pipeline: monitoring signal → entity extraction →
-                            graph linking → IAB classification → Brand Galaxy
-                            insight. This card is shown as one signal object; in
-                            the next phase we will group signals by campaign,
-                            product and brand.
+                            Grouping view: this card summarizes multiple
+                            monitoring signals around one{" "}
+                            {groupMode === "campaign"
+                              ? "campaign"
+                              : groupMode === "product"
+                              ? "product"
+                              : "brand"}{" "}
+                            object. Switch the grouping mode above to inspect
+                            the same dataset from another perspective.
                           </div>
                         </div>
                       );
