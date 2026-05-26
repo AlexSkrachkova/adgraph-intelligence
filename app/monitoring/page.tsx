@@ -4846,12 +4846,86 @@ function getCampaignObjectName(item: any) {
   );
 }
 
+function isPlaceholderBrand(value: string) {
+  const normalized = normalizeMatchText(value);
+
+  return (
+    !normalized ||
+    normalized.includes("campaign intelligence") ||
+    normalized.includes("campaign brand") ||
+    normalized.includes("product intelligence") ||
+    normalized.includes("audience intelligence") ||
+    normalized.includes("detected brand") ||
+    normalized.includes("brand intelligence")
+  );
+}
+
+function getDisplayBrandName(item: any) {
+  const directBrand =
+    item.brand ||
+    item.brand_name ||
+    item.brandName ||
+    item.advertiser ||
+    "";
+
+  if (!isPlaceholderBrand(directBrand)) {
+    return directBrand;
+  }
+
+  const title = item.title || item.name || "";
+  const normalizedTitle = normalizeMatchText(title);
+
+  if (normalizedTitle.includes("toyota")) return "Toyota";
+  if (normalizedTitle.includes("ford")) return "Ford";
+  if (normalizedTitle.includes("jeep")) return "Jeep";
+  if (normalizedTitle.includes("nike")) return "Nike";
+  if (normalizedTitle.includes("adidas")) return "Adidas";
+  if (normalizedTitle.includes("puma")) return "Puma";
+  if (normalizedTitle.includes("coca cola") || normalizedTitle.includes("coke")) return "Coca-Cola";
+  if (normalizedTitle.includes("pepsi")) return "Pepsi";
+  if (normalizedTitle.includes("mcdonald")) return "McDonald's";
+  if (normalizedTitle.includes("burger king")) return "Burger King";
+  if (normalizedTitle.includes("kfc")) return "KFC";
+  if (normalizedTitle.includes("apple")) return "Apple";
+  if (normalizedTitle.includes("samsung")) return "Samsung";
+  if (normalizedTitle.includes("playstation")) return "PlayStation";
+  if (normalizedTitle.includes("xbox")) return "Xbox";
+  if (normalizedTitle.includes("nintendo")) return "Nintendo";
+  if (normalizedTitle.includes("netflix")) return "Netflix";
+  if (normalizedTitle.includes("youtube")) return "YouTube";
+  if (normalizedTitle.includes("spotify")) return "Spotify";
+
+  return "Unassigned Brand";
+}
+
+function getDataQualityFlags(signal: any) {
+  const flags: string[] = [];
+
+  if (signal.brand === "Unassigned Brand") {
+    flags.push("Brand needs review");
+  }
+
+  if (!signal.iabClass || String(signal.iabClass).includes("Unclassified")) {
+    flags.push("IAB mapping missing");
+  }
+
+  if (!signal.product || signal.product === "Advertising Signal") {
+    flags.push("Product needs normalization");
+  }
+
+  if (!signal.campaignObject || signal.campaignObject === "Unassigned Campaign") {
+    flags.push("Campaign needs assignment");
+  }
+
+  return flags;
+}
+
 function normalizeMonitoringSpot(item: any) {
   const title = getTitle(item);
   const spotCode = getSpotCode(item);
   const importedIabClass = getIabClass(item);
   const advertiser = item.advertiser || item.brand || "Monitoring Intelligence";
-  const brand = item.brand || item.advertiser || "Detected Brand";
+  const brand = getDisplayBrandName(item);
   const product = item.product || item.product_name || "Advertising Signal";
   const description =
     item.description ||
@@ -4946,7 +5020,7 @@ export default function MonitoringPage() {
         type: "CAMPAIGN SIGNAL",
         title: item.name || "Campaign Signal",
         advertiser: item.brand || item.advertiser || "Campaign Intelligence",
-        brand: item.brand || item.name || "Campaign Brand",
+        brand: getDisplayBrandName(item),
         product: item.product || "Strategic Campaign",
         network: "Cross-Platform",
         program: "Campaign Monitoring",
@@ -4999,7 +5073,7 @@ export default function MonitoringPage() {
         type: "PRODUCT SIGNAL",
         title: item.name || "Product Signal",
         advertiser: item.brand || "Product Intelligence",
-        brand: item.brand || "Product Intelligence",
+        brand: getDisplayBrandName(item),
         product: item.name || "Detected Product",
         network: "Commerce Intelligence",
         program: item.category || item.product_type || "Product Monitoring",
@@ -5028,7 +5102,7 @@ export default function MonitoringPage() {
         type: "AUDIENCE SIGNAL",
         title: item.name || "Audience Signal",
         advertiser: "Audience Intelligence",
-        brand: item.name || "Audience Segment",
+        brand: getDisplayBrandName(item),
         product: "Targeting Segment",
         network: "AI Audience Layer",
         program: "Audience Monitoring",
@@ -5099,6 +5173,9 @@ export default function MonitoringPage() {
         iabConfidence: dedupe(signals.map((signal) => signal.iabConfidence)),
         iabMatchedKeywords: dedupe(
           signals.flatMap((signal) => signal.iabMatchedKeywords || [])
+        ),
+        dataQualityFlags: dedupe(
+          signals.flatMap((signal) => getDataQualityFlags(signal))
         ),
         sources: dedupe(signals.map((signal) => signal.source)),
       }))
