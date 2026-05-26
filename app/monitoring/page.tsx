@@ -16,7 +16,45 @@ function getSpotCode(item: any) {
   return item.spot_code || item.spotCode || item.code || null;
 }
 
-function MetricCard({ value, label, tone }: any) {
+function getIabClass(item: any) {
+  return (
+    item.iab_class ||
+    item.iabClass ||
+    item.iab_category ||
+    item.iabCategory ||
+    item.iab_tier_1 ||
+    item.iabTier1 ||
+    null
+  );
+}
+
+function InfoTooltip({ text }: { text: string }) {
+  return (
+    <span className="group relative inline-flex">
+      <span className="flex h-5 w-5 cursor-help items-center justify-center rounded-full border border-cyan-300/30 bg-cyan-500/10 text-[11px] font-black text-cyan-100">
+        i
+      </span>
+
+      <span className="pointer-events-none absolute right-0 top-7 z-50 hidden w-72 rounded-2xl border border-cyan-300/20 bg-slate-950/95 p-4 text-left text-xs leading-5 text-gray-200 shadow-[0_0_35px_rgba(34,211,238,0.16)] backdrop-blur-xl group-hover:block">
+        {text}
+      </span>
+    </span>
+  );
+}
+
+function MetricCard({
+  value,
+  label,
+  tone,
+  tooltip,
+  source,
+}: {
+  value: number;
+  label: string;
+  tone?: "cyan" | "pink" | "indigo" | "green";
+  tooltip: string;
+  source: string;
+}) {
   const color =
     tone === "pink"
       ? "text-fuchsia-200"
@@ -28,8 +66,32 @@ function MetricCard({ value, label, tone }: any) {
 
   return (
     <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-xl transition duration-300 hover:-translate-y-0.5 hover:border-white/20">
-      <div className={`text-4xl font-black ${color}`}>{value}</div>
-      <div className="mt-2 text-sm text-gray-400">{label}</div>
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className={`text-4xl font-black ${color}`}>{value}</div>
+        <InfoTooltip text={tooltip} />
+      </div>
+
+      <div className="text-sm font-semibold text-gray-200">{label}</div>
+      <div className="mt-2 text-xs leading-5 text-gray-500">{source}</div>
+    </div>
+  );
+}
+
+function ExplanationCard({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-[2rem] border border-white/10 bg-black/24 p-5 backdrop-blur-xl">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h3 className="text-sm font-bold text-cyan-100">{title}</h3>
+        <InfoTooltip text="This explanatory panel is part of the clarity layer. It explains what the numbers and labels mean before any deeper AI inference is applied." />
+      </div>
+
+      <div className="space-y-2 text-sm leading-6 text-gray-300">{children}</div>
     </div>
   );
 }
@@ -37,6 +99,7 @@ function MetricCard({ value, label, tone }: any) {
 function normalizeMonitoringSpot(item: any) {
   const title = getTitle(item);
   const spotCode = getSpotCode(item);
+  const iabClass = getIabClass(item);
 
   return {
     id: `spot-${item.id || spotCode || title}`,
@@ -49,6 +112,10 @@ function normalizeMonitoringSpot(item: any) {
     program: item.program || item.show_name || "Monitoring Feed",
     duration: item.duration || item.duration_seconds || 30,
     spotCode,
+    iabClass: iabClass || "Unclassified / pending IAB mapping",
+    classificationSource: iabClass
+      ? "IAB classification imported from monitoring dataset"
+      : "No IAB class found in source row",
     description:
       item.description ||
       item.objective ||
@@ -56,7 +123,7 @@ function normalizeMonitoringSpot(item: any) {
     transcript:
       item.transcript ||
       "Signal classified through monitoring intelligence and linked to graph-ready advertising context.",
-    source: "Live monitoring table",
+    source: "ad_spots table",
   };
 }
 
@@ -109,13 +176,21 @@ export default function MonitoringPage() {
         network: "Cross-Platform",
         program: "Campaign Monitoring",
         duration: 30,
+        spotCode: null,
+        iabClass:
+          item.iab_class ||
+          item.iab_tier_1 ||
+          "Unclassified / pending IAB mapping",
+        classificationSource: item.iab_class
+          ? "IAB class imported with campaign record"
+          : "No IAB class found in campaign row",
         description:
           item.objective ||
           item.description ||
           "Campaign activity detected and connected to Brand Galaxy strategic intelligence.",
         transcript:
           "Campaign signal classified and linked to strategic advertising intelligence.",
-        source: "Campaign table",
+        source: "campaigns table",
       })),
 
       ...brands.slice(0, 6).map((item) => ({
@@ -128,12 +203,20 @@ export default function MonitoringPage() {
         network: "Brand Galaxy",
         program: item.industry || "Brand Monitoring",
         duration: 15,
+        spotCode: null,
+        iabClass:
+          item.iab_class ||
+          item.iab_tier_1 ||
+          "Unclassified / pending IAB mapping",
+        classificationSource: item.iab_class
+          ? "IAB class imported with brand record"
+          : "No IAB class found in brand row",
         description:
           item.description ||
           "Brand entity detected across ecosystem intelligence relationships.",
         transcript:
           "Brand connected to campaigns, products, competitors and audience targeting layers.",
-        source: "Brand table",
+        source: "brands table",
       })),
 
       ...products.slice(0, 6).map((item) => ({
@@ -146,13 +229,23 @@ export default function MonitoringPage() {
         network: "Commerce Intelligence",
         program: item.category || item.product_type || "Product Monitoring",
         duration: 20,
+        spotCode: null,
+        iabClass:
+          item.iab_class ||
+          item.iab_tier_1 ||
+          item.category ||
+          "Unclassified / pending IAB mapping",
+        classificationSource:
+          item.iab_class || item.iab_tier_1
+            ? "IAB class imported with product record"
+            : "Product category used as fallback until IAB class is imported",
         description:
           item.description ||
           item.category ||
           "Product signal detected in strategic ecosystem analysis.",
         transcript:
           "Product mapped into campaign, audience and relationship intelligence graph.",
-        source: "Product table",
+        source: "products table",
       })),
 
       ...audiences.slice(0, 6).map((item) => ({
@@ -165,12 +258,19 @@ export default function MonitoringPage() {
         network: "AI Audience Layer",
         program: "Audience Monitoring",
         duration: 10,
+        spotCode: null,
+        iabClass:
+          item.iab_class ||
+          item.iab_tier_1 ||
+          "Audience segment / non-IAB entity",
+        classificationSource:
+          "Audience records may not map directly to IAB content taxonomy.",
         description:
           item.description ||
           "Audience targeting segment detected in monitoring ecosystem.",
         transcript:
           "Audience signal classified for strategic targeting and ecosystem analysis.",
-        source: "Audience table",
+        source: "audiences table",
       })),
     ];
   }, [campaigns, brands, products, audiences]);
@@ -185,6 +285,16 @@ export default function MonitoringPage() {
   }, [spots, fallbackSignals]);
 
   const featuredSignal = monitoringFeed[0];
+
+  const uniqueAdvertisers = useMemo(() => {
+    return new Set(monitoringFeed.map((item) => item.advertiser).filter(Boolean))
+      .size;
+  }, [monitoringFeed]);
+
+  const uniqueFeedProducts = useMemo(() => {
+    return new Set(monitoringFeed.map((item) => item.product).filter(Boolean))
+      .size;
+  }, [monitoringFeed]);
 
   return (
     <>
@@ -210,19 +320,79 @@ export default function MonitoringPage() {
             </p>
           </div>
 
-          <div className="mb-8 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-            <MetricCard value={spots.length} label="TV Airings" tone="cyan" />
-            <MetricCard value={brands.length} label="Detected Brands" tone="pink" />
+          <div className="mb-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <MetricCard
+              value={spots.length}
+              label="Imported TV Airings"
+              tone="cyan"
+              source="Source: ad_spots table"
+              tooltip="Total imported advertising spots in the current monitoring dataset. If this number is 5, it means 5 individual airing rows currently exist in the ad_spots table."
+            />
+
+            <MetricCard
+              value={brands.length}
+              label="Brand Records"
+              tone="pink"
+              source="Source: brands table"
+              tooltip="Total unique brand records stored in the Brand Galaxy brands table. This is not the same as company ownership. One company can own many brands, and one imported dataset may not include every brand."
+            />
+
             <MetricCard
               value={products.length}
-              label="Detected Products"
+              label="Product Records"
               tone="indigo"
+              source="Source: products table"
+              tooltip="Total product records stored in the products table. Product names may need normalization when variants like Zero Sugar, Coke Zero or Coca-Cola Zero Sugar describe the same product family."
             />
+
             <MetricCard
               value={campaigns.length}
-              label="Campaign Signals"
+              label="Campaign Records"
               tone="green"
+              source="Source: campaigns table"
+              tooltip="Total campaign records currently stored in the campaigns table. Multiple ads can belong to the same campaign, and one product can appear in multiple campaigns."
             />
+          </div>
+
+          <div className="mb-8 grid grid-cols-1 gap-5 xl:grid-cols-3">
+            <ExplanationCard title="Dataset Context">
+              <p>
+                The metrics above come from separate database tables. TV airings
+                are raw monitoring rows, while brands, products and campaigns
+                are normalized intelligence entities.
+              </p>
+              <p>
+                This means the numbers are not expected to match one-to-one.
+                Example: 5 imported airings can still connect to 30 existing
+                brand records if the brand table already contains broader demo
+                or imported data.
+              </p>
+            </ExplanationCard>
+
+            <ExplanationCard title="Classification Method">
+              <p>
+                IAB labels refer to advertising/content classification based on
+                the IAB taxonomy when such data exists in the import.
+              </p>
+              <p>
+                If an item is marked as unclassified, it means the current source
+                row did not include an IAB class and the platform is showing a
+                fallback explanation instead of pretending a class exists.
+              </p>
+            </ExplanationCard>
+
+            <ExplanationCard title="Current Feed Scope">
+              <p>
+                The feed combines live rows from <span className="text-cyan-100">ad_spots</span> with
+                existing campaign, brand, product and audience records so the
+                dashboard remains useful even before a full Nielsen-style export
+                is imported.
+              </p>
+              <p>
+                Feed-level unique advertisers: {uniqueAdvertisers}. Feed-level
+                unique products: {uniqueFeedProducts}.
+              </p>
+            </ExplanationCard>
           </div>
 
           {loading ? (
@@ -232,8 +402,11 @@ export default function MonitoringPage() {
           ) : (
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_1fr]">
               <aside className="rounded-[2rem] border border-cyan-300/20 bg-cyan-500/10 p-6 backdrop-blur-xl shadow-[0_0_60px_rgba(34,211,238,0.08)]">
-                <div className="mb-3 text-xs uppercase tracking-[0.3em] text-cyan-200">
-                  Intelligence Snapshot
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="text-xs uppercase tracking-[0.3em] text-cyan-200">
+                    Intelligence Snapshot
+                  </div>
+                  <InfoTooltip text="This panel highlights the first available signal in the monitoring feed. It is a snapshot, not a total count." />
                 </div>
 
                 <h2 className="mb-6 text-3xl font-black">
@@ -260,7 +433,7 @@ export default function MonitoringPage() {
 
                       <div>
                         Product:
-                        <span className="ml-2 font-semibold text-white">
+                        <span className="ml-2 break-words font-semibold text-white">
                           {featuredSignal.product}
                         </span>
                       </div>
@@ -269,6 +442,13 @@ export default function MonitoringPage() {
                         Network:
                         <span className="ml-2 font-semibold text-white">
                           {featuredSignal.network}
+                        </span>
+                      </div>
+
+                      <div>
+                        IAB:
+                        <span className="ml-2 font-semibold text-white">
+                          {featuredSignal.iabClass}
                         </span>
                       </div>
                     </div>
@@ -280,8 +460,11 @@ export default function MonitoringPage() {
                 )}
 
                 <div className="mt-5 rounded-3xl border border-white/10 bg-black/24 p-5">
-                  <div className="mb-3 text-sm font-semibold text-cyan-200">
-                    Pipeline Status
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div className="text-sm font-semibold text-cyan-200">
+                      Pipeline Status
+                    </div>
+                    <InfoTooltip text="This describes the intended intelligence pipeline: raw monitoring row, entity extraction, graph linking, classification, then Brand Galaxy insight generation." />
                   </div>
 
                   <div className="space-y-3 text-sm text-gray-300">
@@ -294,13 +477,23 @@ export default function MonitoringPage() {
               </aside>
 
               <section className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-xl shadow-[0_0_60px_rgba(34,211,238,0.08)]">
-                <div className="mb-3 text-xs uppercase tracking-[0.3em] text-fuchsia-200">
-                  Signal Feed
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="text-xs uppercase tracking-[0.3em] text-fuchsia-200">
+                    Signal Feed
+                  </div>
+                  <InfoTooltip text="The Monitoring Intelligence Feed shows the current working dataset: imported ad spots first, then fallback graph entities so the dashboard remains informative while a full monitoring export is not yet loaded." />
                 </div>
 
-                <h2 className="mb-6 text-3xl font-black">
+                <h2 className="mb-2 text-3xl font-black">
                   Monitoring Intelligence Feed
                 </h2>
+
+                <p className="mb-6 text-sm leading-6 text-gray-400">
+                  Each card represents one monitoring signal or graph entity
+                  prepared for advertising intelligence. Product, campaign and
+                  IAB fields are displayed explicitly so the object behind the
+                  signal is clear.
+                </p>
 
                 {monitoringFeed.length === 0 ? (
                   <div className="rounded-[2rem] border border-white/10 bg-black/30 p-8 text-gray-300">
@@ -321,32 +514,49 @@ export default function MonitoringPage() {
                                 {item.type}
                               </div>
 
-                              <h3 className="mb-4 text-2xl font-black text-white">
+                              <h3 className="mb-4 break-words text-2xl font-black text-white">
                                 {item.title}
                               </h3>
 
-                              <div className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-3">
+                              <div className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-2 2xl:grid-cols-4">
                                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                                  <div className="text-sm text-gray-400">
+                                  <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
                                     Advertiser
+                                    <InfoTooltip text="The advertiser or account/entity associated with the ad signal. If the source row does not include advertiser, the platform uses brand/entity fallback." />
                                   </div>
-                                  <div className="font-bold">
+                                  <div className="break-words font-bold">
                                     {item.advertiser}
                                   </div>
                                 </div>
 
                                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                                  <div className="text-sm text-gray-400">
+                                  <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
                                     Brand
+                                    <InfoTooltip text="The detected or linked brand for this monitoring signal. This is the commercial brand, not necessarily the legal owner/company." />
                                   </div>
-                                  <div className="font-bold">{item.brand}</div>
+                                  <div className="break-words font-bold">
+                                    {item.brand}
+                                  </div>
                                 </div>
 
                                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                                  <div className="text-sm text-gray-400">
+                                  <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
                                     Product
+                                    <InfoTooltip text="The product or product family connected to the signal. Long product names are wrapped so values like Zero Sugar variants do not get visually cut off." />
                                   </div>
-                                  <div className="font-bold">{item.product}</div>
+                                  <div className="break-words font-bold">
+                                    {item.product}
+                                  </div>
+                                </div>
+
+                                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                                  <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
+                                    IAB Class
+                                    <InfoTooltip text="Classification based on IAB taxonomy when imported. If missing, this field explicitly says that mapping is pending instead of hiding the absence." />
+                                  </div>
+                                  <div className="break-words font-bold">
+                                    {item.iabClass}
+                                  </div>
                                 </div>
                               </div>
 
@@ -375,8 +585,14 @@ export default function MonitoringPage() {
                                   </div>
                                 )}
 
+                                {item.classificationSource && (
+                                  <div className="pt-2 text-xs uppercase tracking-[0.2em] text-cyan-300/80">
+                                    Classification: {item.classificationSource}
+                                  </div>
+                                )}
+
                                 {item.source && (
-                                  <div className="pt-2 text-xs uppercase tracking-[0.2em] text-gray-500">
+                                  <div className="text-xs uppercase tracking-[0.2em] text-gray-500">
                                     Source: {item.source}
                                   </div>
                                 )}
@@ -400,10 +616,12 @@ export default function MonitoringPage() {
                             </div>
                           </div>
 
-                          <div className="mt-5 rounded-2xl border border-fuchsia-300/20 bg-fuchsia-500/10 p-4 text-sm text-fuchsia-100">
+                          <div className="mt-5 rounded-2xl border border-fuchsia-300/20 bg-fuchsia-500/10 p-4 text-sm leading-6 text-fuchsia-100">
                             AI pipeline: monitoring signal → entity extraction →
                             graph linking → IAB classification → Brand Galaxy
-                            insight
+                            insight. This card is shown as one signal object; in
+                            the next phase we will group signals by campaign,
+                            product and brand.
                           </div>
                         </div>
                       );
