@@ -16,8 +16,8 @@ export const metadata: Metadata = {
   title: "Advertising Intelligence Galaxy",
   description: "AI advertising intelligence platform",
   icons: {
-    icon: "/icon.png",
-  },
+  icon: "/favicon.png",
+},
 };
 
 export default function RootLayout({
