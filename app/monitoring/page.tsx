@@ -2,9 +2,15 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import NavBar from "@/components/NavBar";
-import { supabase } from "@/lib/supabase";
 
 type GroupMode = "campaign" | "product" | "brand";
+
+type ArgusStats = {
+  total_ads: number;
+  by_category?: { value: string; count: number }[];
+  by_brand?: { value: string; count: number }[];
+  risk_labels?: string[];
+};
 
 type IabTaxonomyRow = {
   id: string;
@@ -4922,217 +4928,167 @@ function getDataQualityFlags(signal: any) {
 }
 
 function normalizeMonitoringSpot(item: any) {
-  const title = getTitle(item);
-  const spotCode = getSpotCode(item);
-  const importedIabClass = getIabClass(item);
-  const advertiser = item.advertiser || item.brand || "Monitoring Intelligence";
-  const brand = getDisplayBrandName(item);
-  const product = item.product || item.product_name || "Advertising Signal";
+  const title =
+    item.promotion_name ||
+    item.title ||
+    item.name ||
+    item.brand_name ||
+    "ARGUS Monitoring Signal";
+
+  const spotCode = item.id || getSpotCode(item);
+  const importedIabClass =
+    item.iab_full_path ||
+    [item.iab_tier_1, item.iab_tier_2, item.iab_tier_3]
+      .filter(Boolean)
+      .join(" → ") ||
+    getIabClass(item);
+
+  const advertiser =
+    item.advertiser_name ||
+    item.advertiser ||
+    item.brand_name ||
+    "ARGUS Advertising Intelligence";
+
+  const brand =
+    item.brand_name ||
+    getDisplayBrandName(item);
+
+  const product =
+    item.products_text ||
+    item.product ||
+    item.product_name ||
+    "Advertising Signal";
+
   const description =
+    [
+      item.primary_category ? `Primary category: ${item.primary_category}` : null,
+      item.subcategory ? `Subcategory: ${item.subcategory}` : null,
+      item.promotion_name ? `Promotion: ${item.promotion_name}` : null,
+      item.risk_labels?.length
+        ? `Observation tags: ${item.risk_labels.join(", ")}`
+        : null,
+    ]
+      .filter(Boolean)
+      .join(" · ") ||
     item.description ||
     item.objective ||
-    "Monitoring signal detected and prepared for Brand Galaxy intelligence analysis.";
+    "ARGUS classified advertising signal prepared for Brand Galaxy monitoring intelligence.";
+
   const inferredIab = inferIabClassification([
     title,
     advertiser,
     brand,
     product,
     description,
-    item.transcript,
-    item.category,
-    item.product_type,
+    item.primary_category,
+    item.subcategory,
+    item.iab_full_path,
+    item.iab_selected_category,
   ]);
 
+  const durationSeconds =
+    typeof item.duration_ms === "number"
+      ? Math.round(item.duration_ms / 1000)
+      : item.duration || item.duration_seconds || 30;
+
   return {
-    id: `spot-${item.id || spotCode || title}`,
-    type: item.type || "AD SIGNAL",
+    id: `argus-${item.id || spotCode || title}`,
+    type: item.risk_labels?.length ? "ARGUS RISK SIGNAL" : "ARGUS AD SIGNAL",
     title,
     advertiser,
     brand,
     product,
     canonicalProduct: getCanonicalProductName(product),
-    campaignObject: getCampaignObjectName(item),
-    network: item.network || item.channel || "Broadcast Intelligence",
-    program: item.program || item.show_name || "Monitoring Feed",
-    duration: item.duration || item.duration_seconds || 30,
+    campaignObject:
+      item.promotion_name ||
+      item.campaign_name ||
+      item.campaignObject ||
+      title ||
+      "ARGUS Campaign Signal",
+    network: item.primary_category || item.category || "ARGUS API",
+    program:
+      item.subcategory ||
+      item.iab_selected_category ||
+      item.iab_tier_1 ||
+      "ARGUS Monitoring Feed",
+    duration: durationSeconds,
     spotCode,
     iabClass:
       importedIabClass ||
       inferredIab?.path ||
       "Unclassified / pending IAB mapping",
-    iabId: inferredIab?.id || null,
-    iabConfidence: importedIabClass ? "Imported" : inferredIab?.confidence || "None",
+    iabId: item.iab_unique_id || inferredIab?.id || null,
+    iabConfidence:
+      item.iab_confidence ||
+      (importedIabClass ? "Imported" : inferredIab?.confidence || "None"),
     iabMatchedKeywords: importedIabClass ? [] : inferredIab?.matchedKeywords || [],
     classificationSource: importedIabClass
-      ? "IAB classification imported from monitoring dataset"
+      ? "IAB classification imported from ARGUS API"
       : inferredIab
       ? inferredIab.source
-      : "No IAB class found in source row and no taxonomy keyword match was strong enough",
+      : "No ARGUS IAB class found and no taxonomy keyword match was strong enough",
     description,
     transcript:
       item.transcript ||
-      "Signal classified through monitoring intelligence and linked to graph-ready advertising context.",
-    source: "ad_spots table",
+      item.full_text ||
+      "ARGUS signal includes classification metadata. Open the full ARGUS ad endpoint for transcript, OCR, frames and evidence.",
+    source: "ARGUS Public API",
+    confidence: item.confidence,
+    sensitiveCategory: item.sensitive_category,
+    riskLabels: item.risk_labels || [],
+    ingestedAt: item.ingested_at,
   };
 }
 
 export default function MonitoringPage() {
   const [spots, setSpots] = useState<any[]>([]);
-  const [campaigns, setCampaigns] = useState<any[]>([]);
-  const [brands, setBrands] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
-  const [audiences, setAudiences] = useState<any[]>([]);
+  const [argusStats, setArgusStats] = useState<ArgusStats | null>(null);
+  const [argusError, setArgusError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [groupMode, setGroupMode] = useState<GroupMode>("campaign");
 
   useEffect(() => {
     async function loadMonitoring() {
       setLoading(true);
+      setArgusError(null);
 
-      const [
-        spotsResult,
-        campaignsResult,
-        brandsResult,
-        productsResult,
-        audiencesResult,
-      ] = await Promise.all([
-        supabase.from("ad_spots").select("*"),
-        supabase.from("campaigns").select("*"),
-        supabase.from("brands").select("*"),
-        supabase.from("products").select("*"),
-        supabase.from("audiences").select("*"),
-      ]);
+      try {
+        const [adsResponse, statsResponse] = await Promise.all([
+          fetch("/api/argus/ads?limit=50", { cache: "no-store" }),
+          fetch("/api/argus/stats?limit=50", { cache: "no-store" }),
+        ]);
 
-      setSpots(spotsResult.data || []);
-      setCampaigns(campaignsResult.data || []);
-      setBrands(brandsResult.data || []);
-      setProducts(productsResult.data || []);
-      setAudiences(audiencesResult.data || []);
-      setLoading(false);
+        if (!adsResponse.ok) {
+          throw new Error(`ARGUS ads request failed: ${adsResponse.status}`);
+        }
+
+        const adsData = await adsResponse.json();
+        const statsData = statsResponse.ok ? await statsResponse.json() : null;
+
+        setSpots(adsData.items || []);
+        setArgusStats(statsData);
+      } catch (error: any) {
+        console.error(error);
+        setArgusError(error?.message || "Failed to load ARGUS monitoring data");
+        setSpots([]);
+        setArgusStats(null);
+      } finally {
+        setLoading(false);
+      }
     }
 
     loadMonitoring();
   }, []);
 
+
   const fallbackSignals = useMemo(() => {
-    return [
-      ...campaigns.slice(0, 6).map((item) => ({
-        id: `campaign-${item.id}`,
-        type: "CAMPAIGN SIGNAL",
-        title: item.name || "Campaign Signal",
-        advertiser: item.brand || item.advertiser || "Campaign Intelligence",
-        brand: getDisplayBrandName(item),
-        product: item.product || "Strategic Campaign",
-        network: "Cross-Platform",
-        program: "Campaign Monitoring",
-        duration: 30,
-        spotCode: null,
-        iabClass:
-          item.iab_class ||
-          item.iab_tier_1 ||
-          "Unclassified / pending IAB mapping",
-        classificationSource: item.iab_class
-          ? "IAB class imported with campaign record"
-          : "No IAB class found in campaign row",
-        description:
-          item.objective ||
-          item.description ||
-          "Campaign activity detected and connected to Brand Galaxy strategic intelligence.",
-        transcript:
-          "Campaign signal classified and linked to strategic advertising intelligence.",
-        source: "campaigns table",
-      })),
-
-      ...brands.slice(0, 6).map((item) => ({
-        id: `brand-${item.id}`,
-        type: "BRAND SIGNAL",
-        title: item.name || "Brand Signal",
-        advertiser: item.name || "Brand Intelligence",
-        brand: item.name || "Detected Brand",
-        product: "Brand Ecosystem",
-        network: "Brand Galaxy",
-        program: item.industry || "Brand Monitoring",
-        duration: 15,
-        spotCode: null,
-        iabClass:
-          item.iab_class ||
-          item.iab_tier_1 ||
-          "Unclassified / pending IAB mapping",
-        classificationSource: item.iab_class
-          ? "IAB class imported with brand record"
-          : "No IAB class found in brand row",
-        description:
-          item.description ||
-          "Brand entity detected across ecosystem intelligence relationships.",
-        transcript:
-          "Brand connected to campaigns, products, competitors and audience targeting layers.",
-        source: "brands table",
-      })),
-
-      ...products.slice(0, 6).map((item) => ({
-        id: `product-${item.id}`,
-        type: "PRODUCT SIGNAL",
-        title: item.name || "Product Signal",
-        advertiser: item.brand || "Product Intelligence",
-        brand: getDisplayBrandName(item),
-        product: item.name || "Detected Product",
-        network: "Commerce Intelligence",
-        program: item.category || item.product_type || "Product Monitoring",
-        duration: 20,
-        spotCode: null,
-        iabClass:
-          item.iab_class ||
-          item.iab_tier_1 ||
-          item.category ||
-          "Unclassified / pending IAB mapping",
-        classificationSource:
-          item.iab_class || item.iab_tier_1
-            ? "IAB class imported with product record"
-            : "Product category used as fallback until IAB class is imported",
-        description:
-          item.description ||
-          item.category ||
-          "Product signal detected in strategic ecosystem analysis.",
-        transcript:
-          "Product mapped into campaign, audience and relationship intelligence graph.",
-        source: "products table",
-      })),
-
-      ...audiences.slice(0, 6).map((item) => ({
-        id: `audience-${item.id}`,
-        type: "AUDIENCE SIGNAL",
-        title: item.name || "Audience Signal",
-        advertiser: "Audience Intelligence",
-        brand: getDisplayBrandName(item),
-        product: "Targeting Segment",
-        network: "AI Audience Layer",
-        program: "Audience Monitoring",
-        duration: 10,
-        spotCode: null,
-        iabClass:
-          item.iab_class ||
-          item.iab_tier_1 ||
-          "Audience segment / non-IAB entity",
-        classificationSource:
-          "Audience records may not map directly to IAB content taxonomy.",
-        description:
-          item.description ||
-          "Audience targeting segment detected in monitoring ecosystem.",
-        transcript:
-          "Audience signal classified for strategic targeting and ecosystem analysis.",
-        source: "audiences table",
-      })),
-    ].map(enrichFallbackSignal);
-  }, [campaigns, brands, products, audiences]);
+    return [];
+  }, []);
 
   const monitoringFeed = useMemo(() => {
-    const enrichedSpots = spots.map(normalizeMonitoringSpot);
-    const fallbackOnlyNew = fallbackSignals.filter(
-      (fallback) => !enrichedSpots.some((spot) => spot.title === fallback.title)
-    );
+    return spots.map(normalizeMonitoringSpot);
+  }, [spots]);
 
-    return [...enrichedSpots, ...fallbackOnlyNew].slice(0, 16);
-  }, [spots, fallbackSignals]);
 
   const featuredSignal = monitoringFeed[0];
 
@@ -5146,15 +5102,39 @@ export default function MonitoringPage() {
       .size;
   }, [monitoringFeed]);
 
+  const uniqueBrands = useMemo(() => {
+    return new Set(monitoringFeed.map((item) => item.brand).filter(Boolean)).size;
+  }, [monitoringFeed]);
+
+  const uniqueCampaigns = useMemo(() => {
+    return new Set(
+      monitoringFeed.map((item) => item.campaignObject).filter(Boolean)
+    ).size;
+  }, [monitoringFeed]);
+
+  const classifiedSignals = useMemo(() => {
+    return monitoringFeed.filter(
+      (item) =>
+        item.iabClass &&
+        !String(item.iabClass).includes("Unclassified") &&
+        !String(item.iabClass).includes("pending")
+    ).length;
+  }, [monitoringFeed]);
+
+  const riskSignalCount = useMemo(() => {
+    return monitoringFeed.filter((item) => item.riskLabels?.length > 0).length;
+  }, [monitoringFeed]);
+
+
   const groupedSignals = useMemo(() => {
     const groups: Record<string, any[]> = {};
 
     monitoringFeed.forEach((item) => {
       const key =
         groupMode === "campaign"
-          ? item.title || "Unknown Campaign"
+          ? item.campaignObject || item.title || "Unknown Campaign"
           : groupMode === "product"
-          ? item.product || "Unknown Product"
+          ? item.canonicalProduct || item.product || "Unknown Product"
           : item.brand || "Unknown Brand";
 
       if (!groups[key]) groups[key] = [];
@@ -5190,10 +5170,10 @@ export default function MonitoringPage() {
 
   const groupModeDescription =
     groupMode === "campaign"
-      ? "Grouping by campaign shows which products, brands and signals appear inside each campaign object."
+      ? "Grouping by campaign/promotion shows which products, brands, IAB classes and ARGUS ad signals appear inside each campaign object."
       : groupMode === "product"
-      ? "Grouping by product shows all campaigns and brands where each product appears."
-      : "Grouping by brand shows all products, campaigns and signals connected to each brand.";
+      ? "Grouping by product shows all ARGUS campaigns and brands where each detected product appears."
+      : "Grouping by brand shows all ARGUS products, campaigns, IAB classes and signals connected to each brand.";
 
   return (
     <>
@@ -5221,84 +5201,88 @@ export default function MonitoringPage() {
 
           <div className="mb-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
             <MetricCard
-              value={spots.length}
-              label="Imported TV Airings"
+              value={argusStats?.total_ads || spots.length}
+              label="ARGUS Ads"
               tone="cyan"
-              source="Source: ad_spots table"
-              tooltip="Total imported advertising spots in the current monitoring dataset. If this number is 5, it means 5 individual airing rows currently exist in the ad_spots table."
+              source="Source: ARGUS Public API"
+              tooltip="Total classified ads returned by the ARGUS public API stats endpoint. The feed below loads live ARGUS ad records through the secure backend route."
             />
 
             <MetricCard
-              value={brands.length}
-              label="Brand Records"
+              value={uniqueBrands}
+              label="Detected Brands"
               tone="pink"
-              source="Source: brands table"
-              tooltip="Total unique brand records stored in the Brand Galaxy brands table. This is not the same as company ownership. One company can own many brands, and one imported dataset may not include every brand."
+              source="Source: ARGUS brand_name"
+              tooltip="Unique brands detected in the currently loaded ARGUS ad feed. This is based on live classified ad records, not the old demo brands table."
             />
 
             <MetricCard
-              value={products.length}
-              label="Product Records"
+              value={uniqueFeedProducts}
+              label="Detected Products"
               tone="indigo"
-              source="Source: products table"
-              tooltip="Total product records stored in the products table. Product names may need normalization when variants like Zero Sugar, Coke Zero or Coca-Cola Zero Sugar describe the same product family."
+              source="Source: ARGUS products_text"
+              tooltip="Unique product strings detected from ARGUS products_text. Product normalization groups similar labels into canonical product objects where possible."
             />
 
             <MetricCard
-              value={campaigns.length}
-              label="Campaign Records"
+              value={uniqueCampaigns}
+              label="Campaign Signals"
               tone="green"
-              source="Source: campaigns table"
-              tooltip="Total campaign records currently stored in the campaigns table. Multiple ads can belong to the same campaign, and one product can appear in multiple campaigns."
+              source="Source: ARGUS promotion_name"
+              tooltip="Unique ARGUS promotion/campaign names detected in the current feed. Multiple ads can belong to the same campaign or promotion."
             />
           </div>
 
           <div className="mb-8 grid grid-cols-1 gap-5 xl:grid-cols-3">
             <ExplanationCard title="Dataset Context">
               <p>
-                The metrics above come from separate database tables. TV airings
-                are raw monitoring rows, while brands, products and campaigns
-                are normalized intelligence entities.
+                The metrics above now come from the live ARGUS public API.
+                Ads are classified records, while brands, products, IAB labels
+                and campaigns are extracted intelligence fields from those ads.
               </p>
               <p>
-                This means the numbers are not expected to match one-to-one.
-                Example: 5 imported airings can still connect to 30 existing
-                brand records if the brand table already contains broader demo
-                or imported data.
+                The numbers are not expected to match one-to-one: one ad can
+                contain one brand, several products, one promotion, multiple IAB
+                content categories and observation/risk labels.
               </p>
             </ExplanationCard>
 
             <ExplanationCard title="Classification Method">
               <p>
-                IAB labels use the uploaded taxonomy table as the enrichment source.
-                Imported IAB values are shown first; missing values are inferred
-                from brand, product, campaign and description keywords.
+                ARGUS provides IAB product and content taxonomy fields directly.
+                Imported ARGUS IAB values are shown first; local taxonomy inference
+                is only used as a fallback when an ARGUS field is missing.
               </p>
               <p>
-                If an item is still marked as unclassified, it means neither the source
-                row nor the uploaded taxonomy keyword matcher produced a strong
-                enough match.
+                If an item is still marked as unclassified, it means the ARGUS
+                record did not include a usable IAB value and the local fallback
+                matcher did not produce a strong enough match.
               </p>
             </ExplanationCard>
 
             <ExplanationCard title="Current Feed Scope">
               <p>
-                The feed combines live rows from{" "}
-                <span className="text-cyan-100">ad_spots</span> with existing
-                campaign, brand, product and audience records so the dashboard
-                remains useful even before a full Nielsen-style export is
-                imported.
+                The feed loads live classified ads from{" "}
+                <span className="text-cyan-100">ARGUS Public API</span> through
+                your secure Next.js API route, so the API key stays server-side.
               </p>
               <p>
                 Feed-level unique advertisers: {uniqueAdvertisers}. Feed-level
-                unique products: {uniqueFeedProducts}.
+                unique products: {uniqueFeedProducts}. Classified signals:{" "}
+                {classifiedSignals}. Risk/observation signals: {riskSignalCount}.
               </p>
             </ExplanationCard>
           </div>
 
+          {argusError && (
+            <div className="mb-6 rounded-[2rem] border border-red-300/20 bg-red-500/10 p-5 text-sm text-red-100">
+              ARGUS API error: {argusError}
+            </div>
+          )}
+
           {loading ? (
             <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-10 text-gray-300 backdrop-blur-xl">
-              Loading monitoring center...
+              Loading live ARGUS monitoring intelligence...
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_1fr]">
@@ -5352,6 +5336,13 @@ export default function MonitoringPage() {
                           {featuredSignal.iabClass}
                         </span>
                       </div>
+
+                      <div>
+                        Confidence:
+                        <span className="ml-2 font-semibold text-white">
+                          {featuredSignal.confidence ?? featuredSignal.iabConfidence ?? "N/A"}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -5395,7 +5386,7 @@ export default function MonitoringPage() {
                   <div className="text-xs uppercase tracking-[0.3em] text-fuchsia-200">
                     Signal Feed
                   </div>
-                  <InfoTooltip text="The Monitoring Intelligence Feed shows the current working dataset: imported ad spots first, then fallback graph entities so the dashboard remains informative while a full monitoring export is not yet loaded." />
+                  <InfoTooltip text="The Monitoring Intelligence Feed shows live classified ad records from the ARGUS public API, grouped by campaign, product or brand." />
                 </div>
 
                 <h2 className="mb-2 text-3xl font-black">
@@ -5403,9 +5394,9 @@ export default function MonitoringPage() {
                 </h2>
 
                 <p className="mb-6 text-sm leading-6 text-gray-400">
-                  Each card now represents one grouped intelligence object. Use
-                  the controls below to review the same monitoring data by
-                  campaign, by product, or by brand.
+                  Each card now represents one grouped ARGUS intelligence object. Use
+                  the controls below to review live ad data by campaign,
+                  product, or brand.
                 </p>
 
                 <div className="mb-6 flex flex-wrap gap-3">
@@ -5430,8 +5421,7 @@ export default function MonitoringPage() {
 
                 {groupedSignals.length === 0 ? (
                   <div className="rounded-[2rem] border border-white/10 bg-black/30 p-8 text-gray-300">
-                    No monitoring signals available yet. Import campaigns,
-                    brands, products or audiences to populate this feed.
+                    No ARGUS monitoring signals available yet. Check the API route or try again after the ARGUS service has data.
                   </div>
                 ) : (
                   <div className="space-y-6">
@@ -5589,7 +5579,13 @@ export default function MonitoringPage() {
 
                                   {signal.spotCode && (
                                     <div className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
-                                      Spot: {signal.spotCode}
+                                      Ad: {signal.spotCode}
+                                    </div>
+                                  )}
+
+                                  {signal.riskLabels?.length > 0 && (
+                                    <div className="rounded-full border border-red-300/20 bg-red-500/10 px-3 py-1 text-xs text-red-100">
+                                      {signal.riskLabels.length} observation tag{signal.riskLabels.length === 1 ? "" : "s"}
                                     </div>
                                   )}
                                 </div>
