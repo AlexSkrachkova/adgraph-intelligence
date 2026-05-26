@@ -710,6 +710,11 @@ function PlanetNode({ data }: any) {
         >
           {getCleanName(name)}
         </div>
+        {data.liveArgus && (
+  <div className="mt-1 text-[7px] uppercase tracking-[0.2em] text-emerald-200">
+    Live ARGUS
+  </div>
+)}
       </div>
     </div>
   );
