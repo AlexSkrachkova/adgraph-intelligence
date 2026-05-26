@@ -4846,6 +4846,7 @@ function getCampaignObjectName(item: any) {
   );
 }
 
+
 function isPlaceholderBrand(value: string) {
   const normalized = normalizeMatchText(value);
 
@@ -5166,8 +5167,13 @@ export default function MonitoringPage() {
         signals,
         count: signals.length,
         brands: dedupe(signals.map((signal) => signal.brand)),
-        products: dedupe(signals.map((signal) => signal.product)),
-        campaigns: dedupe(signals.map((signal) => signal.title)),
+        products: dedupe(
+          signals.map((signal) => signal.canonicalProduct || signal.product)
+        ),
+        rawProducts: dedupe(signals.map((signal) => signal.product)),
+        campaigns: dedupe(
+          signals.map((signal) => signal.campaignObject || signal.title)
+        ),
         advertisers: dedupe(signals.map((signal) => signal.advertiser)),
         iabClasses: dedupe(signals.map((signal) => signal.iabClass)),
         iabConfidence: dedupe(signals.map((signal) => signal.iabConfidence)),
