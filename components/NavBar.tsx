@@ -7,41 +7,20 @@ export default function NavBar() {
   const pathname = usePathname();
 
   const navItems = [
-    {
-      label: "Strategy Hub",
-      href: "/analytics/war-room",
-    },
-    {
-      label: "Galaxy Map",
-      href: "/relationships",
-    },
-    {
-      label: "Strategy Intelligence",
-      href: "/strategy-intelligence",
-    },
-    {
-      label: "Monitoring",
-      href: "/monitoring",
-    },
-    {
-      label: "Galaxy Search",
-      href: "/entity-search",
-    },
-    {
-      label: "CSV Import",
-      href: "/csv-import",
-    },
+    { label: "Strategy Hub", href: "/analytics/war-room" },
+    { label: "Galaxy Map", href: "/relationships" },
+    { label: "Monitoring", href: "/monitoring" },
+    { label: "Galaxy Search", href: "/entity-search" },
+    { label: "CSV Import", href: "/csv-import" },
   ];
 
   return (
     <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#020617]/80 backdrop-blur-2xl">
       <div className="mx-auto flex max-w-[1800px] items-center justify-between px-8 py-4">
         <Link href="/" className="group flex items-center gap-4">
-          <img
-            src="/icon.png"
-            alt="Brand Galaxy Logo"
-            className="h-12 w-12 rounded-2xl object-cover shadow-[0_0_35px_rgba(139,92,246,0.35)]"
-          />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-fuchsia-300/30 bg-fuchsia-500/10 text-3xl shadow-[0_0_35px_rgba(217,70,239,0.25)]">
+            🪐
+          </div>
 
           <div>
             <div className="text-2xl font-black tracking-tight text-white transition group-hover:text-fuchsia-200">
@@ -54,11 +33,10 @@ export default function NavBar() {
           </div>
         </Link>
 
-        <div className="flex flex-wrap items-center justify-end gap-3">
+        <div className="flex items-center gap-3">
           {navItems.map((item) => {
             const active =
-              pathname === item.href ||
-              pathname.startsWith(item.href + "/");
+              pathname === item.href || pathname.startsWith(item.href + "/");
 
             return (
               <Link
