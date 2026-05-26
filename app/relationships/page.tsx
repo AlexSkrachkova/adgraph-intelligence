@@ -94,6 +94,288 @@ function normalizeBrandName(value: string) {
     .trim();
 }
 
+
+function normalizeEntityKey(value: string) {
+  return (value || "")
+    .toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "")
+    .trim();
+}
+
+function splitArgusProducts(value: string) {
+  return (value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function getLiveNodeId(type: string, name: string) {
+  return `${type}-argus-${normalizeEntityKey(name)}`;
+}
+
+function findExistingNodeByName(graphNodes: any[], type: string, name: string) {
+  const key = normalizeEntityKey(name);
+  if (!key) return null;
+
+  return (
+    graphNodes.find(
+      (node) =>
+        node.data.entityType === type &&
+        normalizeEntityKey(node.data.entity?.name || "") === key
+    ) || null
+  );
+}
+
+function createLiveNode(type: string, name: string, extra: any = {}) {
+  const id = getLiveNodeId(type, name);
+
+  return {
+    id,
+    type: "default",
+    data: {
+      label: `${type}: ${name}`,
+      entityType: type,
+      entity: {
+        id: `argus-${normalizeEntityKey(name)}`,
+        name,
+        source: "ARGUS Public API",
+        is_live_argus: true,
+        ...extra,
+      },
+      nodeId: id,
+      liveArgus: true,
+    },
+    position: { x: 0, y: 0 },
+  };
+}
+
+function createLiveRelationship(
+  sourceType: string,
+  sourceId: string,
+  targetType: string,
+  targetId: string,
+  relationshipType: string,
+  extra: any = {}
+) {
+  return {
+    id: `argus-${relationshipType}-${sourceId}-${targetId}`,
+    source_type: sourceType,
+    source_id: sourceId.replace(`${sourceType}-`, ""),
+    target_type: targetType,
+    target_id: targetId.replace(`${targetType}-`, ""),
+    relationship_type: relationshipType,
+    weight: extra.weight || 0.82,
+    source: "ARGUS Public API",
+    is_live_argus: true,
+    ...extra,
+  };
+}
+
+function mergeArgusIntoGraph(baseNodes: any[], baseRelationships: any[], argusAds: any[]) {
+  const mergedNodes = [...baseNodes];
+  const mergedRelationships = [...baseRelationships];
+
+  function upsertNode(type: string, name: string, extra: any = {}) {
+    if (!name) return null;
+
+    const existing = findExistingNodeByName(mergedNodes, type, name);
+
+    if (existing) {
+      existing.data.entity = {
+        ...existing.data.entity,
+        ...extra,
+        live_argus_seen: true,
+        source: existing.data.entity?.source || "Supabase + ARGUS",
+      };
+      return existing;
+    }
+
+    const created = createLiveNode(type, name, extra);
+    mergedNodes.push(created);
+    return created;
+  }
+
+  function addRelationshipOnce(rel: any) {
+    const sourceNodeId = `${rel.source_type}-${rel.source_id}`;
+    const targetNodeId = `${rel.target_type}-${rel.target_id}`;
+
+    const exists = mergedRelationships.some((existing) => {
+      const existingSource = `${existing.source_type}-${existing.source_id}`;
+      const existingTarget = `${existing.target_type}-${existing.target_id}`;
+      return (
+        existing.relationship_type === rel.relationship_type &&
+        existingSource === sourceNodeId &&
+        existingTarget === targetNodeId
+      );
+    });
+
+    if (!exists) mergedRelationships.push(rel);
+  }
+
+  argusAds.forEach((ad) => {
+    const brandName = ad.brand_name || ad.brand || "";
+    if (!brandName) return;
+
+    const advertiserName =
+      ad.advertiser_name || ad.advertiser || ad.parent_company || "";
+
+    const campaignName =
+      ad.promotion_name ||
+      ad.campaign_name ||
+      ad.title ||
+      `${brandName} ARGUS Campaign`;
+
+    const products = splitArgusProducts(ad.products_text || ad.product || "");
+    const iabName =
+      ad.iab_full_path ||
+      ad.iab_selected_category ||
+      ad.iab_tier_1 ||
+      ad.primary_category ||
+      "";
+
+    const brandNode = upsertNode("brand", brandName, {
+      description:
+        ad.primary_category || ad.iab_full_path
+          ? `Live ARGUS brand signal classified as ${ad.iab_full_path || ad.primary_category}.`
+          : "Live ARGUS brand signal.",
+      category: ad.primary_category,
+      iab_tier_1: ad.iab_tier_1,
+      iab_tier_2: ad.iab_tier_2,
+      iab_tier_3: ad.iab_tier_3,
+      iab_full_path: ad.iab_full_path,
+      confidence: ad.confidence,
+      latest_argus_ad_id: ad.id,
+      search_keywords: [
+        ad.brand_name,
+        ad.primary_category,
+        ad.subcategory,
+        ad.iab_full_path,
+        ad.products_text,
+        ad.promotion_name,
+      ].filter(Boolean),
+    });
+
+    if (!brandNode) return;
+
+    if (advertiserName) {
+      const companyNode = upsertNode("company", advertiserName, {
+        description: `ARGUS advertiser/company detected for ${brandName}.`,
+        latest_argus_ad_id: ad.id,
+      });
+
+      if (companyNode) {
+        addRelationshipOnce(
+          createLiveRelationship(
+            "brand",
+            brandNode.data.nodeId,
+            "company",
+            companyNode.data.nodeId,
+            "owned_by",
+            { weight: 0.9 }
+          )
+        );
+      }
+    }
+
+    if (campaignName) {
+      const campaignNode = upsertNode("campaign", campaignName, {
+        description: `Live ARGUS campaign/promotion for ${brandName}.`,
+        objective: ad.primary_category || ad.subcategory || "ARGUS campaign signal",
+        iab_tier_1: ad.iab_tier_1,
+        iab_full_path: ad.iab_full_path,
+        confidence: ad.confidence,
+        latest_argus_ad_id: ad.id,
+      });
+
+      if (campaignNode) {
+        addRelationshipOnce(
+          createLiveRelationship(
+            "brand",
+            brandNode.data.nodeId,
+            "campaign",
+            campaignNode.data.nodeId,
+            "runs_campaign",
+            { weight: 0.84 }
+          )
+        );
+      }
+    }
+
+    products.forEach((productName) => {
+      const productNode = upsertNode("product", productName, {
+        description: `Live ARGUS product detected inside ${brandName} ad ${ad.id}.`,
+        category: ad.primary_category,
+        product_type: ad.subcategory || ad.iab_selected_category,
+        iab_tier_1: ad.iab_tier_1,
+        iab_full_path: ad.iab_full_path,
+        confidence: ad.confidence,
+        latest_argus_ad_id: ad.id,
+      });
+
+      if (productNode) {
+        addRelationshipOnce(
+          createLiveRelationship(
+            "brand",
+            brandNode.data.nodeId,
+            "product",
+            productNode.data.nodeId,
+            "has_product",
+            { weight: 0.86 }
+          )
+        );
+
+        if (campaignName) {
+          const campaignNode = findExistingNodeByName(mergedNodes, "campaign", campaignName);
+
+          if (campaignNode) {
+            addRelationshipOnce(
+              createLiveRelationship(
+                "campaign",
+                campaignNode.data.nodeId,
+                "product",
+                productNode.data.nodeId,
+                "promotes",
+                { weight: 0.78 }
+              )
+            );
+          }
+        }
+      }
+    });
+
+    if (iabName) {
+      const audienceName = `${iabName} Context`;
+      const audienceNode = upsertNode("audience", audienceName, {
+        description: `ARGUS IAB/context signal generated from ${ad.iab_full_path || ad.primary_category}.`,
+        category: ad.primary_category,
+        iab_tier_1: ad.iab_tier_1,
+        iab_full_path: ad.iab_full_path,
+        latest_argus_ad_id: ad.id,
+      });
+
+      if (audienceNode) {
+        addRelationshipOnce(
+          createLiveRelationship(
+            "brand",
+            brandNode.data.nodeId,
+            "audience",
+            audienceNode.data.nodeId,
+            "targets",
+            { weight: 0.7 }
+          )
+        );
+      }
+    }
+  });
+
+  return {
+    nodes: mergedNodes,
+    relationships: mergedRelationships,
+  };
+}
+
 function nodeMatchesScenario(node: any, scenario: any) {
   if (!scenario) return true;
   if (node.data.entityType !== "brand") return false;
@@ -413,7 +695,7 @@ function PlanetNode({ data }: any) {
             isBrand ? "text-[8px]" : "text-[7px]"
           }`}
         >
-          {entityType}
+          {data.liveArgus ? "ARGUS LIVE" : entityType}
         </div>
 
         <div
@@ -462,7 +744,7 @@ function getScatterPosition(index: number, total: number, scenarioMode: boolean)
 function getRelationshipColor(type: string) {
   if (type === "owned_by") return "#38bdf8";
   if (type === "has_product") return "#a3e635";
-  if (type === "promotes") return "#a855f7";
+  if (type === "promotes" || type === "runs_campaign") return "#a855f7";
   if (type === "targets") return "#f59e0b";
   return "#94a3b8";
 }
@@ -1256,6 +1538,7 @@ function GraphLegend() {
         <div><span className="text-violet-200">●</span> Campaign planet = advertising activation</div>
         <div><span className="text-amber-200">●</span> Audience planet = target audience segment</div>
         <div><span className="text-yellow-200">●</span> Company planet = owner/legal entity</div>
+        <div><span className="text-green-200">●</span> Live ARGUS = temporary API-powered node</div>
       </div>
 
       <div className="mt-3 border-t border-white/10 pt-3 text-gray-400">
@@ -1594,6 +1877,8 @@ export default function RelationshipExplorer() {
   const [nodes, setNodes] = useState<any[]>([]);
   const [relationships, setRelationships] = useState<any[]>([]);
   const [nodeLookup, setNodeLookup] = useState<Record<string, any>>({});
+  const [argusAds, setArgusAds] = useState<any[]>([]);
+  const [argusGraphStatus, setArgusGraphStatus] = useState("Loading ARGUS live layer...");
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [focusedBrandNodeId, setFocusedBrandNodeId] = useState<string | null>(
     null
@@ -1630,6 +1915,26 @@ export default function RelationshipExplorer() {
       const { data: products } = await supabase.from("products").select("*");
       const { data: campaigns } = await supabase.from("campaigns").select("*");
       const { data: audiences } = await supabase.from("audiences").select("*");
+
+      let argusItems: any[] = [];
+
+      try {
+        const argusResponse = await fetch("/api/argus/ads?limit=50", {
+          cache: "no-store",
+        });
+
+        if (argusResponse.ok) {
+          const argusData = await argusResponse.json();
+          argusItems = argusData.items || [];
+          setArgusAds(argusItems);
+          setArgusGraphStatus(`ARGUS live layer active · ${argusItems.length} ads loaded`);
+        } else {
+          setArgusGraphStatus(`ARGUS live layer unavailable · ${argusResponse.status}`);
+        }
+      } catch (error) {
+        console.error(error);
+        setArgusGraphStatus("ARGUS live layer unavailable");
+      }
 
       const usedNodeIds = new Set<string>();
       const lookup: Record<string, any> = {};
@@ -1683,9 +1988,21 @@ export default function RelationshipExplorer() {
         addNode("audience", item, `Audience: ${item.name}`)
       );
 
-      setNodes(graphNodes);
-      setRelationships(relationshipsData || []);
-      setNodeLookup(lookup);
+      const mergedGraph = mergeArgusIntoGraph(
+        graphNodes,
+        relationshipsData || [],
+        argusItems
+      );
+
+      const mergedLookup: Record<string, any> = {};
+
+      mergedGraph.nodes.forEach((node: any) => {
+        mergedLookup[node.data.nodeId] = node;
+      });
+
+      setNodes(mergedGraph.nodes);
+      setRelationships(mergedGraph.relationships);
+      setNodeLookup(mergedLookup);
     }
 
     loadGraph();
@@ -1716,10 +2033,12 @@ export default function RelationshipExplorer() {
         sourceNodeId === focusedBrandNodeId &&
         ["owned_by", "has_product", "runs_campaign", "targets"].includes(
           rel.relationship_type
-        )
+        ) &&
+        (relationshipFilter === "all" ||
+          getRelationshipCategory(rel.relationship_type) === relationshipFilter)
       );
     }).length;
-  }, [relationships, focusedBrandNodeId]);
+  }, [relationships, focusedBrandNodeId, relationshipFilter]);
 
   const moleculeData = useMemo(() => {
     const allBrandNodes = nodes.filter(
@@ -2100,6 +2419,55 @@ export default function RelationshipExplorer() {
             ))}
           </div>
 
+
+          <div className="mb-6 rounded-3xl border border-cyan-300/20 bg-cyan-500/10 p-5 backdrop-blur-xl shadow-[0_0_40px_rgba(34,211,238,0.08)]">
+            <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="text-sm font-semibold text-cyan-200">
+                  ARGUS Live Graph Layer
+                </div>
+                <div className="text-xs text-gray-500">
+                  Live ARGUS ads are merged into the galaxy without duplicating existing brands.
+                </div>
+              </div>
+
+              <div className="rounded-full border border-green-300/20 bg-green-500/10 px-3 py-1 text-xs text-green-100">
+                {argusGraphStatus}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+              <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
+                <div className="text-3xl font-black text-cyan-100">
+                  {argusAds.length}
+                </div>
+                <div className="mt-1 text-xs text-gray-400">Live ARGUS ads</div>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
+                <div className="text-3xl font-black text-fuchsia-100">
+                  {nodes.filter((node) => node.data.liveArgus).length}
+                </div>
+                <div className="mt-1 text-xs text-gray-400">Live graph nodes</div>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
+                <div className="text-3xl font-black text-emerald-100">
+                  {relationships.filter((rel: any) => rel.is_live_argus).length}
+                </div>
+                <div className="mt-1 text-xs text-gray-400">Live graph links</div>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
+                <div className="text-sm leading-6 text-gray-300">
+                  Existing brands are reused. Example: ARGUS product
+                  <span className="font-semibold text-white"> Wrangler</span>{" "}
+                  attaches to existing
+                  <span className="font-semibold text-white"> Jeep</span>.
+                </div>
+              </div>
+            </div>
+          </div>
 
           <CrossSectorIntelligence
             activeScenario={activeScenario}
