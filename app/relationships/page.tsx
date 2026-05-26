@@ -695,7 +695,7 @@ function PlanetNode({ data }: any) {
             isBrand ? "text-[8px]" : "text-[7px]"
           }`}
         >
-          {data.liveArgus ? "ARGUS LIVE" : entityType}
+          {entityType}
         </div>
 
         <div
