@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "Advertising Intelligence Galaxy",
   description: "AI advertising intelligence platform",
   icons: {
-    icon: "/favicon.ico",
+    icon: "🪐",
   },
 };
 
