@@ -5125,6 +5125,44 @@ export default function MonitoringPage() {
     return monitoringFeed.filter((item) => item.riskLabels?.length > 0).length;
   }, [monitoringFeed]);
 
+  const topBrands = useMemo(() => {
+    const counts: Record<string, number> = {};
+
+    monitoringFeed.forEach((item) => {
+      if (!item.brand) return;
+      counts[item.brand] = (counts[item.brand] || 0) + 1;
+    });
+
+    return Object.entries(counts)
+      .map(([value, count]) => ({ value, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+  }, [monitoringFeed]);
+
+  const topCategories = useMemo(() => {
+    const counts: Record<string, number> = {};
+
+    monitoringFeed.forEach((item) => {
+      const category = item.network || item.program || "Uncategorized";
+      counts[category] = (counts[category] || 0) + 1;
+    });
+
+    return Object.entries(counts)
+      .map(([value, count]) => ({ value, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+  }, [monitoringFeed]);
+
+  const latestArgusAds = useMemo(() => {
+    return [...monitoringFeed]
+      .sort((a, b) => {
+        const aTime = a.ingestedAt ? new Date(a.ingestedAt).getTime() : 0;
+        const bTime = b.ingestedAt ? new Date(b.ingestedAt).getTime() : 0;
+        return bTime - aTime;
+      })
+      .slice(0, 5);
+  }, [monitoringFeed]);
+
 
   const groupedSignals = useMemo(() => {
     const groups: Record<string, any[]> = {};
@@ -5272,6 +5310,137 @@ export default function MonitoringPage() {
                 {classifiedSignals}. Risk/observation signals: {riskSignalCount}.
               </p>
             </ExplanationCard>
+          </div>
+
+          <div className="mb-8 overflow-hidden rounded-[2rem] border border-cyan-300/25 bg-cyan-500/10 shadow-[0_0_70px_rgba(34,211,238,0.12)] backdrop-blur-xl">
+            <div className="border-b border-white/10 bg-black/25 p-6">
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-green-300/30 bg-green-500/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.25em] text-green-200">
+                <span className="h-2 w-2 rounded-full bg-green-300 shadow-[0_0_14px_rgba(134,239,172,0.8)]" />
+                ARGUS LIVE API CONNECTED
+              </div>
+
+              <h2 className="text-4xl font-black tracking-tight text-white">
+                Live Advertising Intelligence Feed
+              </h2>
+
+              <p className="mt-3 max-w-4xl text-sm leading-6 text-gray-300">
+                This dashboard is now reading classified ads directly from the
+                ARGUS Public API through <span className="text-cyan-100">/api/argus/ads</span>.
+                Brand, product, campaign, IAB, confidence and observation fields
+                below are coming from the live API response.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-0 xl:grid-cols-[1.1fr_0.9fr_0.9fr]">
+              <div className="border-b border-white/10 p-6 xl:border-b-0 xl:border-r">
+                <div className="mb-4 text-xs uppercase tracking-[0.25em] text-cyan-200">
+                  Latest ARGUS Ads
+                </div>
+
+                <div className="space-y-3">
+                  {latestArgusAds.length > 0 ? (
+                    latestArgusAds.map((ad) => (
+                      <div
+                        key={ad.id}
+                        className="rounded-2xl border border-white/10 bg-black/25 p-4"
+                      >
+                        <div className="mb-2 flex flex-wrap items-center gap-2">
+                          <span className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-100">
+                            {ad.spotCode}
+                          </span>
+                          <span className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
+                            {ad.brand}
+                          </span>
+                          <span className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-gray-300">
+                            {ad.duration}s
+                          </span>
+                        </div>
+
+                        <div className="font-bold text-white">{ad.title}</div>
+                        <div className="mt-1 text-xs text-gray-400">
+                          {ad.product}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-gray-400">
+                      Waiting for ARGUS ads...
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="border-b border-white/10 p-6 xl:border-b-0 xl:border-r">
+                <div className="mb-4 text-xs uppercase tracking-[0.25em] text-fuchsia-200">
+                  Top Live Brands
+                </div>
+
+                <div className="space-y-3">
+                  {(topBrands.length > 0 ? topBrands : argusStats?.by_brand || [])
+                    .slice(0, 6)
+                    .map((brand) => (
+                      <div
+                        key={brand.value}
+                        className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3"
+                      >
+                        <span className="truncate text-sm font-semibold text-white">
+                          {brand.value}
+                        </span>
+                        <span className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
+                          {brand.count}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              <div className="p-6">
+                <div className="mb-4 text-xs uppercase tracking-[0.25em] text-amber-200">
+                  Top Categories / Risk
+                </div>
+
+                <div className="mb-4 grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
+                    <div className="text-3xl font-black text-cyan-100">
+                      {classifiedSignals}
+                    </div>
+                    <div className="mt-1 text-xs text-gray-400">
+                      Classified in feed
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
+                    <div className="text-3xl font-black text-red-100">
+                      {riskSignalCount}
+                    </div>
+                    <div className="mt-1 text-xs text-gray-400">
+                      Observation signals
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {(topCategories.length > 0
+                    ? topCategories
+                    : argusStats?.by_category || []
+                  )
+                    .slice(0, 5)
+                    .map((category) => (
+                      <div
+                        key={category.value}
+                        className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3"
+                      >
+                        <span className="truncate text-sm font-semibold text-white">
+                          {category.value}
+                        </span>
+                        <span className="rounded-full border border-amber-300/20 bg-amber-500/10 px-3 py-1 text-xs text-amber-100">
+                          {category.count}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </div>
           </div>
 
           {argusError && (
