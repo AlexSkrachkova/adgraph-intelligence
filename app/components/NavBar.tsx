@@ -35,11 +35,12 @@ export default function NavBar() {
         <Link href="/" className="group flex items-center gap-4">
           <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-fuchsia-300/30 bg-fuchsia-500/10 shadow-[0_0_35px_rgba(217,70,239,0.25)]">
             <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.25),transparent_30%)]" />
+
             <span className="relative text-2xl">🪐</span>
           </div>
 
           <div>
-            <div className="text-2xl font-black tracking-tight text-white group-hover:text-fuchsia-200 transition">
+            <div className="text-2xl font-black tracking-tight text-white transition group-hover:text-fuchsia-200">
               Brand Galaxy
             </div>
 
@@ -52,7 +53,8 @@ export default function NavBar() {
         <div className="flex items-center gap-3">
           {navItems.map((item) => {
             const active =
-              pathname === item.href || pathname.startsWith(item.href + "/");
+              pathname === item.href ||
+              pathname.startsWith(item.href + "/");
 
             return (
               <Link
