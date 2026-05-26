@@ -15,9 +15,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Advertising Intelligence Galaxy",
   description: "AI advertising intelligence platform",
-  icons: {
-    icon: "🪐",
-  },
 };
 
 export default function RootLayout({
