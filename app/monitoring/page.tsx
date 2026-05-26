@@ -34,6 +34,62 @@ function dedupe(values: any[]) {
   return Array.from(new Set(values.filter(Boolean)));
 }
 
+function normalizeText(value: string) {
+  return (value || "")
+    .toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getCanonicalProductName(value: string) {
+  const normalized = normalizeText(value);
+
+  if (!normalized) return "Unspecified Product";
+
+  if (
+    normalized.includes("zero sugar") ||
+    normalized.includes("coke zero") ||
+    normalized.includes("coca cola zero")
+  ) {
+    return "Coca-Cola Zero Sugar";
+  }
+
+  if (normalized.includes("coca cola") || normalized === "coke") {
+    return "Coca-Cola";
+  }
+
+  if (normalized.includes("big mac")) {
+    return "Big Mac";
+  }
+
+  if (normalized.includes("whopper")) {
+    return "Whopper";
+  }
+
+  if (normalized.includes("kfc")) {
+    return "KFC Bucket";
+  }
+
+  if (normalized.includes("air max")) {
+    return "Nike Air Max";
+  }
+
+  if (normalized.includes("ultraboost")) {
+    return "Adidas Ultraboost";
+  }
+
+  return value || "Unspecified Product";
+}
+
+function getCampaignObjectName(item: any) {
+  if (item.source === "campaigns table") return item.title;
+  if (item.campaign || item.campaign_name) return item.campaign || item.campaign_name;
+  return item.title || "Unassigned Campaign";
+}
+
 function InfoTooltip({ text }: { text: string }) {
   return (
     <span className="group relative inline-flex">
@@ -114,6 +170,10 @@ function normalizeMonitoringSpot(item: any) {
     advertiser: item.advertiser || item.brand || "Monitoring Intelligence",
     brand: item.brand || item.advertiser || "Detected Brand",
     product: item.product || item.product_name || "Advertising Signal",
+    canonicalProduct: getCanonicalProductName(
+      item.product || item.product_name || "Advertising Signal"
+    ),
+    campaignObject: getCampaignObjectName(item),
     network: item.network || item.channel || "Broadcast Intelligence",
     program: item.program || item.show_name || "Monitoring Feed",
     duration: item.duration || item.duration_seconds || 30,
@@ -180,6 +240,10 @@ export default function MonitoringPage() {
         advertiser: item.brand || item.advertiser || "Campaign Intelligence",
         brand: item.brand || item.name || "Campaign Brand",
         product: item.product || "Strategic Campaign",
+        canonicalProduct: getCanonicalProductName(
+          item.product || item.name || "Strategic Campaign"
+        ),
+        campaignObject: item.name || "Campaign Signal",
         network: "Cross-Platform",
         program: "Campaign Monitoring",
         duration: 30,
@@ -207,6 +271,8 @@ export default function MonitoringPage() {
         advertiser: item.name || "Brand Intelligence",
         brand: item.name || "Detected Brand",
         product: "Brand Ecosystem",
+        canonicalProduct: "Brand Ecosystem",
+        campaignObject: item.name || "Brand Signal",
         network: "Brand Galaxy",
         program: item.industry || "Brand Monitoring",
         duration: 15,
@@ -233,6 +299,8 @@ export default function MonitoringPage() {
         advertiser: item.brand || "Product Intelligence",
         brand: item.brand || "Product Intelligence",
         product: item.name || "Detected Product",
+        canonicalProduct: getCanonicalProductName(item.name || "Detected Product"),
+        campaignObject: item.campaign || item.campaign_name || item.name || "Product Signal",
         network: "Commerce Intelligence",
         program: item.category || item.product_type || "Product Monitoring",
         duration: 20,
@@ -262,6 +330,8 @@ export default function MonitoringPage() {
         advertiser: "Audience Intelligence",
         brand: item.name || "Audience Segment",
         product: "Targeting Segment",
+        canonicalProduct: "Targeting Segment",
+        campaignObject: item.name || "Audience Signal",
         network: "AI Audience Layer",
         program: "Audience Monitoring",
         duration: 10,
@@ -309,9 +379,9 @@ export default function MonitoringPage() {
     monitoringFeed.forEach((item) => {
       const key =
         groupMode === "campaign"
-          ? item.title || "Unknown Campaign"
+          ? item.campaignObject || item.title || "Unknown Campaign"
           : groupMode === "product"
-          ? item.product || "Unknown Product"
+          ? item.canonicalProduct || item.product || "Unknown Product"
           : item.brand || "Unknown Brand";
 
       if (!groups[key]) groups[key] = [];
@@ -324,8 +394,9 @@ export default function MonitoringPage() {
         signals,
         count: signals.length,
         brands: dedupe(signals.map((signal) => signal.brand)),
-        products: dedupe(signals.map((signal) => signal.product)),
-        campaigns: dedupe(signals.map((signal) => signal.title)),
+        products: dedupe(signals.map((signal) => signal.canonicalProduct || signal.product)),
+        rawProducts: dedupe(signals.map((signal) => signal.product)),
+        campaigns: dedupe(signals.map((signal) => signal.campaignObject || signal.title)),
         advertisers: dedupe(signals.map((signal) => signal.advertiser)),
         iabClasses: dedupe(signals.map((signal) => signal.iabClass)),
         sources: dedupe(signals.map((signal) => signal.source)),
@@ -335,10 +406,10 @@ export default function MonitoringPage() {
 
   const groupModeDescription =
     groupMode === "campaign"
-      ? "Grouping by campaign shows which products, brands and signals appear inside each campaign object."
+      ? "Grouping by campaign shows which products, brands, IAB classes and signals appear inside each campaign object."
       : groupMode === "product"
-      ? "Grouping by product shows all campaigns and brands where each product appears."
-      : "Grouping by brand shows all products, campaigns and signals connected to each brand.";
+      ? "Grouping by product uses canonical product naming, so variants like Zero Sugar / Coke Zero are reviewed as one product family."
+      : "Grouping by brand shows all products, campaigns, IAB classes and signals connected to each brand.";
 
   return (
     <>
@@ -549,7 +620,9 @@ export default function MonitoringPage() {
                 <p className="mb-6 text-sm leading-6 text-gray-400">
                   Each card now represents one grouped intelligence object. Use
                   the controls below to review the same monitoring data by
-                  campaign, by product, or by brand.
+                  campaign, by canonical product, or by brand. IAB classes are
+                  shown inside every grouped object so the classification is
+                  visibly linked to the campaign/product/brand context.
                 </p>
 
                 <div className="mb-6 flex flex-wrap gap-3">
@@ -627,6 +700,79 @@ export default function MonitoringPage() {
                             </div>
                           </div>
 
+                          <div className="mb-5 rounded-3xl border border-cyan-300/20 bg-cyan-500/8 p-5">
+                            <div className="mb-3 flex items-center justify-between gap-3">
+                              <div className="text-sm font-bold text-cyan-100">
+                                Intelligence Relationship Summary
+                              </div>
+                              <InfoTooltip text="This box links the grouped object to its core advertising intelligence structure: campaign, canonical product, brand, source signals and IAB classification." />
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-2 2xl:grid-cols-4">
+                              <div className="rounded-2xl border border-white/10 bg-black/24 p-4">
+                                <div className="mb-1 text-xs uppercase tracking-[0.2em] text-fuchsia-300">
+                                  Campaign Object
+                                </div>
+                                <div className="break-words font-semibold text-white">
+                                  {group.campaigns[0] || "Unassigned Campaign"}
+                                </div>
+                              </div>
+
+                              <div className="rounded-2xl border border-white/10 bg-black/24 p-4">
+                                <div className="mb-1 text-xs uppercase tracking-[0.2em] text-cyan-300">
+                                  Canonical Product
+                                </div>
+                                <div className="break-words font-semibold text-white">
+                                  {group.products[0] || "Unspecified Product"}
+                                </div>
+                              </div>
+
+                              <div className="rounded-2xl border border-white/10 bg-black/24 p-4">
+                                <div className="mb-1 text-xs uppercase tracking-[0.2em] text-green-300">
+                                  Brand Context
+                                </div>
+                                <div className="break-words font-semibold text-white">
+                                  {group.brands[0] || "Unassigned Brand"}
+                                </div>
+                              </div>
+
+                              <div className="rounded-2xl border border-white/10 bg-black/24 p-4">
+                                <div className="mb-1 text-xs uppercase tracking-[0.2em] text-amber-300">
+                                  IAB Link
+                                </div>
+                                <div className="break-words font-semibold text-white">
+                                  {group.iabClasses[0] ||
+                                    "Unclassified / pending IAB mapping"}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="mt-4 text-sm leading-6 text-gray-300">
+                              This object connects{" "}
+                              <span className="font-semibold text-cyan-100">
+                                {group.count} signal{group.count === 1 ? "" : "s"}
+                              </span>{" "}
+                              to{" "}
+                              <span className="font-semibold text-fuchsia-100">
+                                {group.campaigns.length} campaign
+                                {group.campaigns.length === 1 ? "" : "s"}
+                              </span>
+                              ,{" "}
+                              <span className="font-semibold text-cyan-100">
+                                {group.products.length} canonical product
+                                {group.products.length === 1 ? "" : "s"}
+                              </span>{" "}
+                              and{" "}
+                              <span className="font-semibold text-green-100">
+                                {group.brands.length} brand
+                                {group.brands.length === 1 ? "" : "s"}
+                              </span>
+                              . Duplicate-looking products or campaigns are
+                              grouped here when they refer to the same object
+                              perspective.
+                            </div>
+                          </div>
+
                           <div className="mb-5 grid grid-cols-1 gap-3 xl:grid-cols-3">
                             <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
                               <div className="mb-2 flex items-center justify-between gap-2 text-xs uppercase tracking-[0.2em] text-cyan-300">
@@ -638,6 +784,13 @@ export default function MonitoringPage() {
                                 {group.products.slice(0, 6).map((product) => (
                                   <div key={product}>{product}</div>
                                 ))}
+
+                                {group.rawProducts?.length > group.products.length && (
+                                  <div className="pt-2 text-xs leading-5 text-gray-500">
+                                    Raw product variants detected:{" "}
+                                    {group.rawProducts.join(", ")}
+                                  </div>
+                                )}
                               </div>
                             </div>
 
@@ -695,7 +848,8 @@ export default function MonitoringPage() {
                                 <InfoTooltip text="The first product detected inside this grouped object. Product-level normalization is the next phase, especially for variants like Zero Sugar / Coke Zero." />
                               </div>
                               <div className="break-words font-bold">
-                                {primarySignal.product}
+                                {primarySignal.canonicalProduct ||
+                                  primarySignal.product}
                               </div>
                             </div>
 
@@ -759,8 +913,12 @@ export default function MonitoringPage() {
                               : groupMode === "product"
                               ? "product"
                               : "brand"}{" "}
-                            object. Switch the grouping mode above to inspect
-                            the same dataset from another perspective.
+                            object. IAB, product, campaign and brand are now
+                            displayed together so the classification and the
+                            extracted entity structure are connected in one
+                            readable intelligence object. Switch the grouping
+                            mode above to inspect the same dataset from another
+                            perspective.
                           </div>
                         </div>
                       );
