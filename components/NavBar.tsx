@@ -37,14 +37,14 @@ export default function NavBar() {
     <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#020617]/80 backdrop-blur-2xl">
       <div className="mx-auto flex max-w-[1800px] items-center justify-between px-8 py-4">
         <Link href="/" className="group flex items-center gap-4">
-          <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-fuchsia-300/30 bg-fuchsia-500/10 shadow-[0_0_35px_rgba(217,70,239,0.25)]">
-            <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.25),transparent_30%)]" />
-
-            <span className="relative text-2xl">🌌</span>
-          </div>
+          <img
+            src="/icon.png"
+            alt="Brand Galaxy Logo"
+            className="h-12 w-12 rounded-2xl object-cover shadow-[0_0_35px_rgba(139,92,246,0.35)]"
+          />
 
           <div>
-            <div className="text-2xl font-black tracking-tight text-white group-hover:text-fuchsia-200 transition">
+            <div className="text-2xl font-black tracking-tight text-white transition group-hover:text-fuchsia-200">
               Brand Galaxy
             </div>
 
@@ -54,7 +54,7 @@ export default function NavBar() {
           </div>
         </Link>
 
-        <div className="flex items-center gap-3 flex-wrap justify-end">
+        <div className="flex flex-wrap items-center justify-end gap-3">
           {navItems.map((item) => {
             const active =
               pathname === item.href ||
