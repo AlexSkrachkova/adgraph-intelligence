@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import NavBar from "@/components/NavBar";
 
 type GroupMode = "campaign" | "product" | "brand";
+type RankingMode = "now" | "overall";
 
 type ArgusStats = {
   total_ads: number;
@@ -5131,6 +5132,13 @@ export default function MonitoringPage() {
   const [argusError, setArgusError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [groupMode, setGroupMode] = useState<GroupMode>("campaign");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [brandFilter, setBrandFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [iabFilter, setIabFilter] = useState("all");
+  const [alphaFilter, setAlphaFilter] = useState("all");
+  const [rankingMode, setRankingMode] = useState<RankingMode>("now");
+  const [selectedSignal, setSelectedSignal] = useState<any | null>(null);
 
   useEffect(() => {
     async function loadMonitoring() {
@@ -5248,11 +5256,129 @@ export default function MonitoringPage() {
       .slice(0, 5);
   }, [monitoringFeed]);
 
+  const brandOptions = useMemo(() => {
+    return dedupe(monitoringFeed.map((item) => item.brand)).sort();
+  }, [monitoringFeed]);
+
+  const categoryOptions = useMemo(() => {
+    return dedupe(
+      monitoringFeed.map((item) => item.network || item.program || "Uncategorized")
+    ).sort();
+  }, [monitoringFeed]);
+
+  const iabOptions = useMemo(() => {
+    return dedupe(monitoringFeed.map((item) => item.iabClass)).sort();
+  }, [monitoringFeed]);
+
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+  const filteredMonitoringFeed = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    return monitoringFeed.filter((item) => {
+      const haystack = [
+        item.title,
+        item.brand,
+        item.advertiser,
+        item.product,
+        item.canonicalProduct,
+        item.campaignObject,
+        item.network,
+        item.program,
+        item.iabClass,
+        item.description,
+        item.source,
+        ...(item.riskLabels || []),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      const searchMatch = !query || haystack.includes(query);
+      const brandMatch = brandFilter === "all" || item.brand === brandFilter;
+      const categoryValue = item.network || item.program || "Uncategorized";
+      const categoryMatch =
+        categoryFilter === "all" || categoryValue === categoryFilter;
+      const iabMatch = iabFilter === "all" || item.iabClass === iabFilter;
+      const alphaTarget =
+        groupMode === "product"
+          ? item.canonicalProduct || item.product
+          : groupMode === "campaign"
+          ? item.campaignObject || item.title
+          : item.brand;
+      const alphaMatch =
+        alphaFilter === "all" ||
+        String(alphaTarget || "")
+          .toUpperCase()
+          .startsWith(alphaFilter);
+
+      return searchMatch && brandMatch && categoryMatch && iabMatch && alphaMatch;
+    });
+  }, [
+    monitoringFeed,
+    searchQuery,
+    brandFilter,
+    categoryFilter,
+    iabFilter,
+    alphaFilter,
+    groupMode,
+  ]);
+
+  const rankedBrands = useMemo(() => {
+    const source = rankingMode === "now" ? filteredMonitoringFeed : monitoringFeed;
+    const counts: Record<string, number> = {};
+
+    source.forEach((item) => {
+      if (!item.brand) return;
+      counts[item.brand] = (counts[item.brand] || 0) + 1;
+    });
+
+    return Object.entries(counts)
+      .map(([value, count]) => ({ value, count }))
+      .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value))
+      .slice(0, 8);
+  }, [filteredMonitoringFeed, monitoringFeed, rankingMode]);
+
+  const rankedProducts = useMemo(() => {
+    const source = rankingMode === "now" ? filteredMonitoringFeed : monitoringFeed;
+    const counts: Record<string, number> = {};
+
+    source.forEach((item) => {
+      const product = item.canonicalProduct || item.product;
+      if (!product) return;
+      counts[product] = (counts[product] || 0) + 1;
+    });
+
+    return Object.entries(counts)
+      .map(([value, count]) => ({ value, count }))
+      .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value))
+      .slice(0, 8);
+  }, [filteredMonitoringFeed, monitoringFeed, rankingMode]);
+
+  const setQualitySummary = useMemo(() => {
+    const duplicatedBrands = rankedBrands.filter((item) => item.count > 1).length;
+    const missingIab = monitoringFeed.filter(
+      (item) => !item.iabClass || String(item.iabClass).includes("Unclassified")
+    ).length;
+    const missingProducts = monitoringFeed.filter(
+      (item) => !item.product || item.product === "Advertising Signal"
+    ).length;
+
+    return {
+      duplicatedBrands,
+      missingIab,
+      missingProducts,
+      filteredCount: filteredMonitoringFeed.length,
+      totalCount: monitoringFeed.length,
+    };
+  }, [monitoringFeed, filteredMonitoringFeed, rankedBrands]);
+
+
 
   const groupedSignals = useMemo(() => {
     const groups: Record<string, any[]> = {};
 
-    monitoringFeed.forEach((item) => {
+    filteredMonitoringFeed.forEach((item) => {
       const key =
         groupMode === "campaign"
           ? item.campaignObject || item.title || "Unknown Campaign"
@@ -5289,7 +5415,7 @@ export default function MonitoringPage() {
         sources: dedupe(signals.map((signal) => signal.source)),
       }))
       .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
-  }, [monitoringFeed, groupMode]);
+  }, [filteredMonitoringFeed, groupMode]);
 
   const groupModeDescription =
     groupMode === "campaign"
@@ -5653,6 +5779,108 @@ export default function MonitoringPage() {
                   product, or brand.
                 </p>
 
+
+                <div className="mb-6 rounded-[2rem] border border-white/10 bg-black/25 p-5">
+                  <div className="mb-4 flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
+                    <div>
+                      <div className="text-sm font-semibold text-cyan-200">
+                        Search / Filter / A-Z Control
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Analyst controls for set checking, dedup review and brand-first navigation.
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setSearchQuery("");
+                        setBrandFilter("all");
+                        setCategoryFilter("all");
+                        setIabFilter("all");
+                        setAlphaFilter("all");
+                      }}
+                      className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition hover:border-cyan-300/30 hover:text-white"
+                    >
+                      Reset filters
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 xl:grid-cols-[1.6fr_1fr_1fr_1fr]">
+                    <input
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      placeholder="Search brand, product, campaign, IAB, category..."
+                      className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-sm text-white outline-none transition placeholder:text-gray-600 focus:border-cyan-300/40"
+                    />
+
+                    <select
+                      value={brandFilter}
+                      onChange={(event) => setBrandFilter(event.target.value)}
+                      className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-300/40"
+                    >
+                      <option value="all">All brands</option>
+                      {brandOptions.map((brand) => (
+                        <option key={brand} value={brand}>
+                          {brand}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={categoryFilter}
+                      onChange={(event) => setCategoryFilter(event.target.value)}
+                      className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-300/40"
+                    >
+                      <option value="all">All categories</option>
+                      {categoryOptions.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={iabFilter}
+                      onChange={(event) => setIabFilter(event.target.value)}
+                      className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-300/40"
+                    >
+                      <option value="all">All IAB classes</option>
+                      {iabOptions.map((iab) => (
+                        <option key={iab} value={iab}>
+                          {iab}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setAlphaFilter("all")}
+                      className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+                        alphaFilter === "all"
+                          ? "border-cyan-300/40 bg-cyan-500/15 text-cyan-100"
+                          : "border-white/10 bg-black/25 text-gray-500 hover:text-white"
+                      }`}
+                    >
+                      ALL
+                    </button>
+
+                    {alphabet.map((letter) => (
+                      <button
+                        key={letter}
+                        onClick={() => setAlphaFilter(letter)}
+                        className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+                          alphaFilter === letter
+                            ? "border-cyan-300/40 bg-cyan-500/15 text-cyan-100"
+                            : "border-white/10 bg-black/25 text-gray-500 hover:text-white"
+                        }`}
+                      >
+                        {letter}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="mb-6 flex flex-wrap gap-3">
                   {[
                     { key: "campaign", label: "Group by Campaign" },
@@ -5673,6 +5901,120 @@ export default function MonitoringPage() {
                   ))}
                 </div>
 
+                <div className="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
+                  <div className="rounded-[2rem] border border-cyan-300/20 bg-cyan-500/10 p-5">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-semibold text-cyan-200">
+                          Top Now / Overall Top
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Now = current filters. Overall = full loaded set.
+                        </div>
+                      </div>
+
+                      <div className="flex rounded-2xl border border-white/10 bg-black/25 p-1">
+                        {[
+                          { key: "now", label: "Now" },
+                          { key: "overall", label: "Overall" },
+                        ].map((mode) => (
+                          <button
+                            key={mode.key}
+                            onClick={() => setRankingMode(mode.key as RankingMode)}
+                            className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
+                              rankingMode === mode.key
+                                ? "bg-cyan-500/20 text-cyan-100"
+                                : "text-gray-500 hover:text-white"
+                            }`}
+                          >
+                            {mode.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {rankedBrands.map((brand, index) => (
+                        <button
+                          key={brand.value}
+                          onClick={() => setBrandFilter(brand.value)}
+                          className="flex w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3 text-left transition hover:border-cyan-300/30"
+                        >
+                          <span className="truncate text-sm font-semibold text-white">
+                            #{index + 1} {brand.value}
+                          </span>
+                          <span className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-100">
+                            {brand.count}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[2rem] border border-fuchsia-300/20 bg-fuchsia-500/10 p-5">
+                    <div className="mb-3 text-sm font-semibold text-fuchsia-200">
+                      Top Products
+                    </div>
+
+                    <div className="space-y-2">
+                      {rankedProducts.map((product, index) => (
+                        <button
+                          key={product.value}
+                          onClick={() => {
+                            setSearchQuery(product.value);
+                            setGroupMode("product");
+                          }}
+                          className="flex w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3 text-left transition hover:border-fuchsia-300/30"
+                        >
+                          <span className="truncate text-sm font-semibold text-white">
+                            #{index + 1} {product.value}
+                          </span>
+                          <span className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
+                            {product.count}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[2rem] border border-amber-300/20 bg-amber-500/10 p-5">
+                    <div className="mb-3 text-sm font-semibold text-amber-200">
+                      Set Quality Check
+                    </div>
+
+                    <div className="space-y-3 text-sm text-gray-300">
+                      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 p-3">
+                        <span>Visible after filters</span>
+                        <span className="font-bold text-white">
+                          {setQualitySummary.filteredCount}/{setQualitySummary.totalCount}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 p-3">
+                        <span>Repeated brand signals</span>
+                        <span className="font-bold text-white">
+                          {setQualitySummary.duplicatedBrands}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 p-3">
+                        <span>Missing IAB</span>
+                        <span className="font-bold text-white">
+                          {setQualitySummary.missingIab}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 p-3">
+                        <span>Missing products</span>
+                        <span className="font-bold text-white">
+                          {setQualitySummary.missingProducts}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+
                 {groupedSignals.length === 0 ? (
                   <div className="rounded-[2rem] border border-white/10 bg-black/30 p-8 text-gray-300">
                     No ARGUS monitoring signals available yet. Check the API route or try again after the ARGUS service has data.
@@ -5685,7 +6027,13 @@ export default function MonitoringPage() {
                       return (
                         <div
                           key={group.key}
-                          className="rounded-[2rem] border border-white/10 bg-black/30 p-6 shadow-[0_0_35px_rgba(255,255,255,0.04)] transition duration-300 hover:-translate-y-0.5 hover:border-cyan-300/30 hover:bg-black/40"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setSelectedSignal(primarySignal)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") setSelectedSignal(primarySignal);
+                          }}
+                          className="w-full cursor-pointer rounded-[2rem] border border-white/10 bg-black/30 p-6 text-left shadow-[0_0_35px_rgba(255,255,255,0.04)] transition duration-300 hover:-translate-y-0.5 hover:border-cyan-300/30 hover:bg-black/40"
                         >
                           <div className="mb-4 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                             <div className="min-w-0">
@@ -5816,9 +6164,14 @@ export default function MonitoringPage() {
 
                           <div className="space-y-3">
                             {group.signals.slice(0, 4).map((signal) => (
-                              <div
+                              <button
                                 key={signal.id}
-                                className="rounded-2xl border border-white/10 bg-white/[0.035] p-4"
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  setSelectedSignal(signal);
+                                }}
+                                className="w-full rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-left transition hover:border-cyan-300/30"
                               >
                                 <div className="mb-2 flex flex-wrap items-center gap-2">
                                   <div className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-100">
@@ -5856,7 +6209,7 @@ export default function MonitoringPage() {
                                   Source: {signal.source} · Classification:{" "}
                                   {signal.classificationSource}
                                 </div>
-                              </div>
+                              </button>
                             ))}
                           </div>
 
@@ -5880,6 +6233,128 @@ export default function MonitoringPage() {
             </div>
           )}
         </div>
+
+        {selectedSignal && (
+          <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 px-4 backdrop-blur-xl">
+            <div className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-cyan-300/25 bg-[#020617] p-6 shadow-[0_0_90px_rgba(34,211,238,0.16)]">
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <div className="mb-2 inline-flex rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-cyan-200">
+                    Clickable Signal Detail
+                  </div>
+
+                  <h3 className="text-3xl font-black text-white">
+                    {selectedSignal.title}
+                  </h3>
+
+                  <div className="mt-2 text-sm text-gray-400">
+                    {selectedSignal.source} · {selectedSignal.spotCode || selectedSignal.id}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setSelectedSignal(null)}
+                  className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition hover:border-white/20 hover:text-white"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
+                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-cyan-300">
+                    Brand
+                  </div>
+                  <div className="text-2xl font-black text-white">
+                    {selectedSignal.brand}
+                  </div>
+                  <div className="mt-2 text-sm text-gray-400">
+                    Advertiser / Company: {selectedSignal.advertiser}
+                  </div>
+                </div>
+
+                <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
+                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-fuchsia-300">
+                    Product
+                  </div>
+                  <div className="text-2xl font-black text-white">
+                    {selectedSignal.canonicalProduct || selectedSignal.product}
+                  </div>
+                  <div className="mt-2 text-sm text-gray-400">
+                    Raw product text: {selectedSignal.product}
+                  </div>
+                </div>
+
+                <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
+                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-green-300">
+                    Campaign
+                  </div>
+                  <div className="text-2xl font-black text-white">
+                    {selectedSignal.campaignObject || selectedSignal.title}
+                  </div>
+                  <div className="mt-2 text-sm text-gray-400">
+                    Duration: {selectedSignal.duration || "N/A"} sec
+                  </div>
+                </div>
+
+                <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
+                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-amber-300">
+                    IAB / Category
+                  </div>
+                  <div className="text-lg font-bold text-white">
+                    {selectedSignal.iabClass || "Unclassified / pending IAB mapping"}
+                  </div>
+                  <div className="mt-2 text-sm text-gray-400">
+                    Confidence: {selectedSignal.iabConfidence || selectedSignal.confidence || "N/A"}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-3xl border border-white/10 bg-black/25 p-5">
+                <div className="mb-2 text-sm font-semibold text-cyan-200">
+                  Human-readable explanation
+                </div>
+                <p className="text-sm leading-7 text-gray-300">
+                  This signal is grouped around the brand{" "}
+                  <span className="font-semibold text-white">{selectedSignal.brand}</span>,
+                  connected to product{" "}
+                  <span className="font-semibold text-white">
+                    {selectedSignal.canonicalProduct || selectedSignal.product}
+                  </span>
+                  , campaign{" "}
+                  <span className="font-semibold text-white">
+                    {selectedSignal.campaignObject || selectedSignal.title}
+                  </span>
+                  , and IAB/category{" "}
+                  <span className="font-semibold text-white">
+                    {selectedSignal.iabClass || "Unclassified"}
+                  </span>
+                  . It can be used by the relationship graph as a brand-first
+                  intelligence signal.
+                </p>
+              </div>
+
+              {selectedSignal.riskLabels?.length > 0 && (
+                <div className="mt-4 rounded-3xl border border-red-300/20 bg-red-500/10 p-5">
+                  <div className="mb-2 text-sm font-semibold text-red-200">
+                    Risk / Observation Labels
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedSignal.riskLabels.map((label: string) => (
+                      <span
+                        key={label}
+                        className="rounded-full border border-red-300/20 bg-black/25 px-3 py-1 text-xs text-red-100"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
       </main>
     </>
   );
