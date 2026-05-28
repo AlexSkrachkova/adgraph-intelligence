@@ -897,20 +897,26 @@ const nodeTypes = {
   moleculeSatellite: PlanetNode,
 };
 
-function getScatterPosition(index: number, total: number, scenarioMode: boolean) {
-  const columns = scenarioMode ? 4 : 7;
-  const spacingX = scenarioMode ? 360 : 340;
-  const spacingY = scenarioMode ? 250 : 235;
+function getScatterPosition(
+  index: number,
+  total: number,
+  scenarioMode: boolean
+) {
+  const rows = scenarioMode ? 4 : 5;
 
-  const row = Math.floor(index / columns);
-  const col = index % columns;
-  const rows = Math.ceil(total / columns);
+  const spacingX = scenarioMode ? 320 : 300;
+  const spacingY = scenarioMode ? 280 : 260;
 
-  const baseX = 980 - ((columns - 1) * spacingX) / 2;
-  const baseY = 520 - ((rows - 1) * spacingY) / 2;
+  const row = index % rows;
+  const col = Math.floor(index / rows);
 
-  const waveX = Math.sin(index * 1.73) * 78;
-  const waveY = Math.cos(index * 1.31) * 54;
+  const totalColumns = Math.ceil(total / rows);
+
+  const baseX = 900 - ((totalColumns - 1) * spacingX) / 2;
+  const baseY = 540 - ((rows - 1) * spacingY) / 2;
+
+  const waveX = Math.sin(index * 1.5) * 45;
+  const waveY = Math.cos(index * 1.2) * 35;
 
   return {
     x: baseX + col * spacingX + waveX,
