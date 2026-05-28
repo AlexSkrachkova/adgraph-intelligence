@@ -46,16 +46,12 @@ export async function GET(request: Request) {
   });
 
   if (!response.ok) {
-    return NextResponse.json(
-      {
-        error: "ARGUS API request failed",
-        status: response.status,
-      },
-      {
-        status: response.status,
-      }
-    );
-  }
+  return NextResponse.json({
+    items: [],
+    total: 0,
+    upstreamError: `ARGUS API request failed: ${response.status}`,
+  });
+}
 
   const data = await response.json();
 
