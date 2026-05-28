@@ -1,11 +1,14 @@
 "use client";
 
+// Monitoring UX revision: F1 Page History only.
+
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import NavBar from "@/components/NavBar";
 
+// F1_ONLY_PAGE_HISTORY_BUILD_2026_05_28
+
 type GroupMode = "campaign" | "product" | "brand";
 type RankingMode = "now" | "overall";
-type BrandProfileMode = "f1" | "f2";
 
 type ArgusStats = {
   total_ads: number;
@@ -5341,7 +5344,7 @@ function buildBrandIntelligenceProfile(
     ownership: registry?.ownership || companies[0] || "Ownership data pending",
     history:
       registry?.history ||
-      "This profile was generated from live monitoring, ARGUS and imported advertising signals. Add verified ownership/history data later for a richer F2 card.",
+      "This profile was generated from live monitoring, ARGUS and imported advertising signals. Add verified ownership/history data later for a richer F1 card.",
   };
 }
 
@@ -5386,7 +5389,6 @@ export default function MonitoringPage() {
   const [alphaFilter, setAlphaFilter] = useState("all");
   const [rankingMode, setRankingMode] = useState<RankingMode>("now");
   const [selectedBrandName, setSelectedBrandName] = useState<string | null>(null);
-  const [brandProfileMode, setBrandProfileMode] = useState<BrandProfileMode>("f1");
   const [selectedSignal, setSelectedSignal] = useState<any | null>(null);
   const [infoPanel, setInfoPanel] = useState<InfoPanel | null>(null);
 
@@ -5544,9 +5546,8 @@ export default function MonitoringPage() {
     ),
   });
 
-  const openBrandProfile = (brandName: string, mode: BrandProfileMode = "f2") => {
+  const openBrandProfile = (brandName: string) => {
     setSelectedBrandName(brandName);
-    setBrandProfileMode(mode);
   };
 
   const openInfo = (panel: InfoPanel) => setInfoPanel(panel);
@@ -5560,7 +5561,7 @@ export default function MonitoringPage() {
 
         <div className="relative z-10">
           <div className="mb-10">
-            <button onClick={() => openInfo({ title: "Signal Command View", eyebrow: "Clickable Monitoring Header", tone: "cyan", body: <p>This command view is the control surface for live ad intelligence. It lets you inspect the data pipeline, open the page story, launch brand cards and drill into every signal group.</p> })} className="mb-4 inline-flex rounded-full border border-cyan-300/30 bg-cyan-500/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-cyan-200 transition hover:border-cyan-200 hover:bg-cyan-500/20">
+            <button onClick={() => openInfo({ title: "Signal Command View", eyebrow: "Clickable Monitoring Header", tone: "cyan", body: <p>This command view is the control surface for live ad intelligence. It lets you inspect the data pipeline, open the page story, open page-history context and drill into every signal group.</p> })} className="mb-4 inline-flex rounded-full border border-cyan-300/30 bg-cyan-500/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-cyan-200 transition hover:border-cyan-200 hover:bg-cyan-500/20">
               Signal Command View
             </button>
             <h1 className="mb-4 text-5xl font-black tracking-tight sm:text-7xl">Monitoring Center</h1>
@@ -5629,13 +5630,13 @@ export default function MonitoringPage() {
             </div>
 
             <div className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-              <button onClick={() => openInfo({ title: "Top Live Brands", eyebrow: "Brand Intelligence Entry", tone: "pink", body: <p>These are the strongest brands in the currently loaded monitoring feed. Each row opens the F2 Brand Card with profile, products, campaigns, audiences, IAB footprint, sources and risk labels.</p> })} className="mb-4 text-left">
+              <button onClick={() => openInfo({ title: "Top Live Brands", eyebrow: "Page History Entry", tone: "pink", body: <p>These are the strongest brands in the currently loaded monitoring feed. Each row opens the F1 Page History panel with compact context for how that brand appears in the current feed.</p> })} className="mb-4 text-left">
                 <div className="text-xs uppercase tracking-[0.25em] text-fuchsia-300">Top Live Brands</div>
                 <h2 className="mt-1 text-2xl font-black text-white">Brand Intelligence</h2>
               </button>
               <div className="space-y-3">
                 {topBrands.length ? topBrands.map((brand) => (
-                  <button key={brand.value} onClick={() => openBrandProfile(brand.value, "f2")} className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-black/25 p-4 text-left transition hover:border-fuchsia-300/40 hover:bg-fuchsia-500/10">
+                  <button key={brand.value} onClick={() => openBrandProfile(brand.value)} className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-black/25 p-4 text-left transition hover:border-fuchsia-300/40 hover:bg-fuchsia-500/10">
                     <span className="font-bold text-white">{brand.value}</span><span className="text-sm text-fuchsia-200">{brand.count} signals →</span>
                   </button>
                 )) : <EmptyState label="No brand signals loaded yet." />}
@@ -5686,30 +5687,43 @@ export default function MonitoringPage() {
 
         {selectedBrandProfile && (
           <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 px-4 backdrop-blur-xl">
-            <div className="max-h-[88vh] w-full max-w-6xl overflow-y-auto rounded-[2rem] border border-fuchsia-300/25 bg-[#020617] p-6 shadow-[0_0_90px_rgba(217,70,239,0.16)]">
+            <div className="max-h-[88vh] w-full max-w-6xl overflow-y-auto rounded-[2rem] border border-cyan-300/25 bg-[#020617] p-6 shadow-[0_0_90px_rgba(34,211,238,0.16)]">
               <div className="mb-5 flex items-start justify-between gap-4">
-                <div className="flex items-start gap-4"><div className="flex h-16 w-16 items-center justify-center rounded-3xl border border-white/10 bg-white/[0.06] text-4xl">{selectedBrandProfile.logoEmoji}</div><div><div className="mb-2 inline-flex rounded-full border border-fuchsia-300/25 bg-fuchsia-500/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-fuchsia-200">{brandProfileMode === "f1" ? "F1 / Page History" : "F2 / Brand Card"}</div><h3 className="text-4xl font-black text-white">{brandProfileMode === "f1" ? "Monitoring Page Story" : selectedBrandProfile.name}</h3><p className="mt-2 text-sm text-gray-400">{brandProfileMode === "f1" ? "History, context and current feed state for this page." : selectedBrandProfile.slogan}</p></div></div>
+                <div className="flex items-start gap-4">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-3xl border border-cyan-300/20 bg-cyan-500/10 text-4xl">📜</div>
+                  <div>
+                    <div className="mb-2 inline-flex rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-cyan-200">F1 / Page History</div>
+                    <h3 className="text-4xl font-black text-white">Monitoring Page Story</h3>
+                    <p className="mt-2 text-sm text-gray-400">History, context and current feed state for this page.</p>
+                  </div>
+                </div>
                 <button onClick={() => setSelectedBrandName(null)} className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition hover:border-white/20 hover:text-white">Close</button>
               </div>
-              <div className="mb-5 flex flex-wrap gap-2">{([{ key: "f1", label: "F1 Page History" }, { key: "f2", label: "F2 Brand Card" }] as { key: BrandProfileMode; label: string }[]).map((mode) => <button key={mode.key} onClick={() => setBrandProfileMode(mode.key)} className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] transition ${brandProfileMode === mode.key ? "border-fuchsia-300/40 bg-fuchsia-500/15 text-fuchsia-100" : "border-white/10 bg-white/[0.04] text-gray-400 hover:text-white"}`}>{mode.label}</button>)}</div>
 
-              {brandProfileMode === "f1" ? (
-                <div className="space-y-5 text-sm leading-7 text-gray-300">
-                  {pageHistoryPanel(selectedBrandProfile).body}
-                  <div className="rounded-3xl border border-cyan-300/20 bg-cyan-500/10 p-5"><div className="mb-2 text-sm font-bold text-cyan-100">What Monitoring does</div><p>It provides a page-level operational history: source state, signal normalization, brand/product/campaign extraction, IAB classification and risk/source context.</p></div>
+              <div className="space-y-5 text-sm leading-7 text-gray-300">
+                {pageHistoryPanel(selectedBrandProfile).body}
+                <div className="rounded-3xl border border-cyan-300/20 bg-cyan-500/10 p-5">
+                  <div className="mb-2 text-sm font-bold text-cyan-100">Selected brand context</div>
+                  <p>
+                    This is not a brand profile. It only adds current page context for <span className="font-bold text-white">{selectedBrandProfile.name}</span>: {selectedBrandProfile.signalCount} visible monitoring signals, {selectedBrandProfile.products.length} product(s), {selectedBrandProfile.campaigns.length} campaign(s), {selectedBrandProfile.sources.length} source(s), and {selectedBrandProfile.riskLabels.length} risk label(s) in the loaded feed.
+                  </p>
                 </div>
-              ) : (
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-cyan-300">Website / Company</div>{selectedBrandProfile.website ? <a href={selectedBrandProfile.website} target="_blank" rel="noreferrer" className="text-cyan-200 hover:text-cyan-100">{selectedBrandProfile.website}</a> : <EmptyState label="Website pending." />}<div className="mt-3 text-lg font-bold text-white">{selectedBrandProfile.company}</div><div className="mt-1 text-sm text-gray-400">{selectedBrandProfile.ownership}</div></div>
-                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-fuchsia-300">Aliases</div><div className="flex flex-wrap gap-2">{selectedBrandProfile.aliases.length ? selectedBrandProfile.aliases.map((alias) => <Pill key={alias}>{alias}</Pill>) : <EmptyState label="No aliases yet." />}</div></div>
-                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-red-300">Risk Labels</div><div className="flex flex-wrap gap-2">{selectedBrandProfile.riskLabels.length ? selectedBrandProfile.riskLabels.map((label) => <Pill key={label}>{label}</Pill>) : <EmptyState label="No risk labels in current feed." />}</div></div>
-                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-indigo-300">Products</div><div className="flex flex-wrap gap-2">{selectedBrandProfile.products.length ? selectedBrandProfile.products.map((item) => <Pill key={item}>{item}</Pill>) : <EmptyState label="No products yet." />}</div></div>
-                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-green-300">Campaigns</div><div className="space-y-2">{selectedBrandProfile.campaigns.length ? selectedBrandProfile.campaigns.map((item) => <div key={item} className="text-sm text-gray-300">{item}</div>) : <EmptyState label="No campaigns yet." />}</div></div>
-                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-amber-300">Audiences / IAB</div><div className="space-y-2">{dedupe([...selectedBrandProfile.audiences, ...selectedBrandProfile.iabFootprint]).slice(0, 12).map((item) => <div key={item} className="text-sm text-gray-300">{item}</div>)}</div></div>
-                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5 lg:col-span-3"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-cyan-300">Sources</div><div className="mb-4 flex flex-wrap gap-2">{selectedBrandProfile.sources.length ? selectedBrandProfile.sources.map((item) => <Pill key={item}>{item}</Pill>) : <EmptyState label="No source metadata yet." />}</div><div className="grid grid-cols-2 gap-3 md:grid-cols-4"><div className="rounded-2xl bg-white/[0.04] p-4"><div className="text-2xl font-black text-white">{selectedBrandProfile.signalCount}</div><div className="text-xs text-gray-400">signals</div></div><div className="rounded-2xl bg-white/[0.04] p-4"><div className="text-2xl font-black text-white">{selectedBrandProfile.classifiedCount}</div><div className="text-xs text-gray-400">classified</div></div><div className="rounded-2xl bg-white/[0.04] p-4"><div className="text-2xl font-black text-white">{selectedBrandProfile.products.length}</div><div className="text-xs text-gray-400">products</div></div><div className="rounded-2xl bg-white/[0.04] p-4"><div className="text-2xl font-black text-white">{selectedBrandProfile.campaigns.length}</div><div className="text-xs text-gray-400">campaigns</div></div></div></div>
-                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5 lg:col-span-3"><div className="mb-3 text-xs uppercase tracking-[0.2em] text-green-300">Latest signals</div><div className="grid grid-cols-1 gap-3 md:grid-cols-2">{selectedBrandProfile.signals.slice(0, 6).map((signal) => <button key={signal.id} onClick={() => setSelectedSignal(signal)} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left transition hover:border-green-300/30 hover:bg-green-500/10"><div className="text-sm font-bold text-white">{signal.title}</div><div className="mt-1 text-xs text-gray-400">{signal.campaignObject || signal.product}</div><div className="mt-2 text-xs text-green-200">{signal.iabClass || "Unclassified"}</div></button>)}</div></div>
+                  <button onClick={() => openInfo({ title: "Brand context inside Page History", eyebrow: selectedBrandProfile.name, tone: "pink", body: <p>This compact context shows how the selected brand appears inside the Monitoring feed. F1 remains a page-history panel, not a brand profile.</p> })} className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:border-fuchsia-300/30 hover:bg-fuchsia-500/10">
+                    <div className="mb-2 text-xs uppercase tracking-[0.2em] text-fuchsia-300">Brand in feed</div>
+                    <div className="text-2xl font-black text-white">{selectedBrandProfile.name}</div>
+                    <div className="mt-1 text-sm text-gray-400">{selectedBrandProfile.company || selectedBrandProfile.ownership}</div>
+                  </button>
+                  <button onClick={() => openInfo({ title: "Products in current feed", eyebrow: selectedBrandProfile.name, tone: "indigo", body: <p>Products are extracted from the current ARGUS/Monitoring records and normalized so the page can group signals by product without turning F1 into a brand card.</p> })} className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:border-indigo-300/30 hover:bg-indigo-500/10">
+                    <div className="mb-2 text-xs uppercase tracking-[0.2em] text-indigo-300">Products</div>
+                    <div className="flex flex-wrap gap-2">{selectedBrandProfile.products.length ? selectedBrandProfile.products.slice(0, 10).map((item) => <Pill key={item}>{item}</Pill>) : <EmptyState label="No products yet." />}</div>
+                  </button>
+                  <button onClick={() => openInfo({ title: "Campaigns in current feed", eyebrow: selectedBrandProfile.name, tone: "green", body: <p>Campaigns are detected from campaign text, titles and feed metadata, then used by the group-by Campaign control below.</p> })} className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:border-green-300/30 hover:bg-green-500/10">
+                    <div className="mb-2 text-xs uppercase tracking-[0.2em] text-green-300">Campaigns</div>
+                    <div className="space-y-2">{selectedBrandProfile.campaigns.length ? selectedBrandProfile.campaigns.slice(0, 6).map((item) => <div key={item} className="text-sm text-gray-300">{item}</div>) : <EmptyState label="No campaigns yet." />}</div>
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         )}
@@ -5719,7 +5733,7 @@ export default function MonitoringPage() {
             <div className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-cyan-300/25 bg-[#020617] p-6 shadow-[0_0_90px_rgba(34,211,238,0.16)]">
               <div className="mb-5 flex items-start justify-between gap-4"><div><div className="mb-2 inline-flex rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-cyan-200">Clickable Signal Detail</div><h3 className="text-3xl font-black text-white">{selectedSignal.title}</h3><div className="mt-2 text-sm text-gray-400">{selectedSignal.source} · {selectedSignal.spotCode || selectedSignal.id}</div></div><button onClick={() => setSelectedSignal(null)} className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition hover:border-white/20 hover:text-white">Close</button></div>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <button onClick={() => openBrandProfile(selectedSignal.brand, "f2")} className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:border-fuchsia-300/40 hover:bg-fuchsia-500/10"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-fuchsia-300">Brand</div><div className="text-2xl font-black text-white">{selectedSignal.brand}</div><div className="mt-2 text-sm text-gray-400">Advertiser / Company: {selectedSignal.advertiser}</div><div className="mt-3 text-xs uppercase tracking-[0.2em] text-fuchsia-200">Open F2 Brand Card →</div></button>
+                <button onClick={() => openBrandProfile(selectedSignal.brand)} className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:border-fuchsia-300/40 hover:bg-fuchsia-500/10"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-fuchsia-300">Brand</div><div className="text-2xl font-black text-white">{selectedSignal.brand}</div><div className="mt-2 text-sm text-gray-400">Advertiser / Company: {selectedSignal.advertiser}</div><div className="mt-3 text-xs uppercase tracking-[0.2em] text-fuchsia-200">Open F1 Page History →</div></button>
                 <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-indigo-300">Product</div><div className="text-2xl font-black text-white">{selectedSignal.canonicalProduct || selectedSignal.product}</div><div className="mt-2 text-sm text-gray-400">Raw product text: {selectedSignal.product}</div></div>
                 <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-green-300">Campaign</div><div className="text-2xl font-black text-white">{selectedSignal.campaignObject || selectedSignal.title}</div><div className="mt-2 text-sm text-gray-400">Duration: {selectedSignal.duration || "N/A"} sec</div></div>
                 <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-amber-300">IAB / Category</div><div className="text-lg font-bold text-white">{selectedSignal.iabClass || "Unclassified / pending IAB mapping"}</div><div className="mt-2 text-sm text-gray-400">Confidence: {selectedSignal.iabConfidence || selectedSignal.confidence || "N/A"}</div></div>
