@@ -18,6 +18,18 @@ type CsvRow = {
   country?: string;
   industry?: string;
   keywords?: string;
+
+  // Nielsen / H-Tech export fields
+  day?: string;
+  hour?: string;
+  username?: string;
+  action?: string;
+  sub_action?: string;
+  clip_id?: string;
+  ibot?: string;
+  raw_data_json?: string;
+  clip_type_id?: string;
+  name?: string;
 };
 
 type EnrichedRow = {
@@ -128,6 +140,18 @@ const headerAliases: Record<string, string> = {
   region: "country",
   tags: "keywords",
   search_keywords: "keywords",
+
+  // Nielsen / H-Tech export aliases
+  "raw_data_json": "raw_data_json",
+  "raw_data": "raw_data_json",
+  "raw_data_json_": "raw_data_json",
+  "sub_action": "sub_action",
+  "clip_id": "clip_id",
+  "clip_ID": "clip_id",
+  "clip_type_id": "clip_type_id",
+  "ibot": "ibot",
+  "iBot": "ibot",
+  "name": "name",
 };
 
 const brandAsProductRules: Record<string, string> = {
@@ -146,6 +170,7 @@ function cleanValue(value?: string) {
 
 function normalizeHeader(header: string) {
   const normalized = header
+    .replace(/^\uFEFF/, "")
     .trim()
     .toLowerCase()
     .replace(/\s+/g, "_")
@@ -162,7 +187,7 @@ function uniqueValues(values: string[]) {
   );
 }
 
-function parseCsvLine(line: string) {
+function parseCsvLine(line: string, delimiter = ",") {
   const result: string[] = [];
   let current = "";
   let insideQuotes = false;
@@ -182,7 +207,7 @@ function parseCsvLine(line: string) {
       continue;
     }
 
-    if (char === "," && !insideQuotes) {
+    if (char === delimiter && !insideQuotes) {
       result.push(current.trim());
       current = "";
       continue;
@@ -195,15 +220,23 @@ function parseCsvLine(line: string) {
   return result;
 }
 
+function detectDelimiter(headerLine: string) {
+  const semicolons = (headerLine.match(/;/g) || []).length;
+  const commas = (headerLine.match(/,/g) || []).length;
+
+  return semicolons > commas ? ";" : ",";
+}
+
 function parseCsv(text: string): CsvRow[] {
   const cleanText = text.trim();
   if (!cleanText) return [];
 
   const lines = cleanText.split(/\r?\n/).filter((line) => line.trim());
-  const headers = parseCsvLine(lines[0]).map(normalizeHeader);
+  const delimiter = detectDelimiter(lines[0]);
+  const headers = parseCsvLine(lines[0], delimiter).map(normalizeHeader);
 
   return lines.slice(1).map((line) => {
-    const values = parseCsvLine(line);
+    const values = parseCsvLine(line, delimiter);
     const row: any = {};
 
     headers.forEach((header, index) => {
@@ -229,8 +262,237 @@ function normalizeRow(row: CsvRow): CsvRow {
     country: cleanValue(row.country),
     industry: cleanValue(row.industry),
     keywords: cleanValue(row.keywords),
+
+    day: cleanValue(row.day),
+    hour: cleanValue(row.hour),
+    username: cleanValue(row.username),
+    action: cleanValue(row.action),
+    sub_action: cleanValue(row.sub_action),
+    clip_id: cleanValue(row.clip_id),
+    ibot: cleanValue(row.ibot),
+    raw_data_json: cleanValue(row.raw_data_json),
+    clip_type_id: cleanValue(row.clip_type_id),
+    name: cleanValue(row.name),
   };
 }
+
+
+function isNielsenExport(rows: CsvRow[]) {
+  return rows.some(
+    (row) =>
+      row.raw_data_json ||
+      row.clip_type_id ||
+      row.clip_id ||
+      row.sub_action
+  );
+}
+
+function safeParseNielsenRawData(value?: string) {
+  if (!value) return null;
+
+  try {
+    return JSON.parse(value);
+  } catch {
+    try {
+      return JSON.parse(value.replace(/""/g, '"'));
+    } catch {
+      return null;
+    }
+  }
+}
+
+function getNielsenClipType(row: CsvRow) {
+  const raw = safeParseNielsenRawData(row.raw_data_json);
+  const rawClipType = raw?.clip_type_id;
+
+  const fromSubAction = row.sub_action?.match(/type=\d+_(\d+)/)?.[1];
+
+  return String(
+    row.clip_type_id ||
+      rawClipType ||
+      fromSubAction ||
+      ""
+  ).trim();
+}
+
+function getNielsenName(row: CsvRow) {
+  const raw = safeParseNielsenRawData(row.raw_data_json);
+
+  return cleanValue(
+    row.name ||
+      raw?.name ||
+      ""
+  );
+}
+
+function shouldSkipNielsenRow(row: CsvRow) {
+  const clipType = getNielsenClipType(row);
+  const name = getNielsenName(row).toLowerCase();
+
+  // 2 = PROMO, 34 = PRG in the Nielsen/H-Tech export.
+  if (clipType === "2" || clipType === "34") return true;
+  if (name === "promo" || name === "prg") return true;
+  if (name.includes("promo") && name.length <= 18) return true;
+
+  return false;
+}
+
+function inferNielsenCategory(name: string) {
+  const value = name.toLowerCase();
+
+  if (
+    value.includes("insurance") ||
+    value.includes("liberty mutual") ||
+    value.includes("progressive") ||
+    value.includes("geico") ||
+    value.includes("car shield") ||
+    value.includes("carshield")
+  ) {
+    return {
+      category: "Insurance",
+      productType: "Direct Response",
+      audience: "Insurance Shoppers",
+      iab: "Finance",
+      iab2: "Insurance",
+    };
+  }
+
+  if (
+    value.includes("hearing") ||
+    value.includes("medical") ||
+    value.includes("health") ||
+    value.includes("audien")
+  ) {
+    return {
+      category: "Health",
+      productType: "Direct Response",
+      audience: "Health Product Audience",
+      iab: "Health & Fitness",
+      iab2: "Medical Health",
+    };
+  }
+
+  if (
+    value.includes("paramount") ||
+    value.includes("netflix") ||
+    value.includes("hulu") ||
+    value.includes("disney") ||
+    value.includes("stream")
+  ) {
+    return {
+      category: "Streaming",
+      productType: "Subscription",
+      audience: "Streaming Entertainment Audience",
+      iab: "Arts & Entertainment",
+      iab2: "Streaming Media",
+    };
+  }
+
+  if (
+    value.includes("bank") ||
+    value.includes("credit") ||
+    value.includes("loan") ||
+    value.includes("mortgage")
+  ) {
+    return {
+      category: "Finance",
+      productType: "Financial Services",
+      audience: "Financial Services Audience",
+      iab: "Finance",
+      iab2: "Banking",
+    };
+  }
+
+  if (
+    value.includes("auto") ||
+    value.includes("car") ||
+    value.includes("vehicle")
+  ) {
+    return {
+      category: "Automotive",
+      productType: "Automotive Services",
+      audience: "Auto Intenders",
+      iab: "Automotive",
+      iab2: "Auto Services",
+    };
+  }
+
+  return {
+    category: "Advertising",
+    productType: "Commercial Signal",
+    audience: "General Advertising Audience",
+    iab: "Business and Industrial",
+    iab2: "Advertising and Marketing",
+  };
+}
+
+function cleanNielsenBrandName(name: string) {
+  const cleaned = cleanValue(name)
+    .replace(/\s+-\s+.*$/g, "")
+    .replace(/\s+\|\s+.*$/g, "")
+    .replace(/\s+–\s+.*$/g, "")
+    .replace(/\.com\b/gi, "")
+    .replace(/^CBS\s+-\s+/i, "")
+    .replace(/^NBC\s+-\s+/i, "")
+    .replace(/^ABC\s+-\s+/i, "")
+    .replace(/^FOX\s+-\s+/i, "")
+    .trim();
+
+  if (!cleaned) return "Unknown Advertiser";
+
+  if (cleaned.toLowerCase().includes("car shield")) return "Car Shield";
+  if (cleaned.toLowerCase().includes("audien hearing")) return "Audien Hearing";
+  if (cleaned.toLowerCase().includes("paramount plus")) return "Paramount Plus";
+  if (cleaned.toLowerCase().includes("liberty mutual")) return "Liberty Mutual";
+  if (cleaned.toLowerCase().includes("progressive")) return "Progressive";
+
+  return cleaned;
+}
+
+function convertNielsenRowToStandard(row: CsvRow): CsvRow | null {
+  if (!isNielsenExport([row])) return row;
+  if (shouldSkipNielsenRow(row)) return null;
+
+  const nielsenName = getNielsenName(row);
+  if (!nielsenName) return null;
+
+  const brand = cleanNielsenBrandName(nielsenName);
+  const inferred = inferNielsenCategory(nielsenName);
+  const clipType = getNielsenClipType(row);
+
+  return {
+    company: brand,
+    brand,
+    product: inferred.productType,
+    campaign: nielsenName,
+    audience: inferred.audience,
+    category: inferred.category,
+    description: `Nielsen/H-Tech ad signal. Clip ${row.clip_id || "unknown"} · clip_type_id ${clipType || "unknown"} · action ${row.action || "unknown"}.`,
+    product_type: inferred.productType,
+    objective:
+      inferred.productType === "Direct Response"
+        ? "Direct response advertising signal"
+        : "Imported Nielsen advertising signal",
+    status: "active",
+    country: "US",
+    industry: inferred.category,
+    keywords: [
+      brand,
+      nielsenName,
+      inferred.category,
+      inferred.productType,
+      inferred.audience,
+      inferred.iab,
+      inferred.iab2,
+      "Nielsen",
+      "H-Tech",
+      clipType ? `clip_type_${clipType}` : "",
+    ]
+      .filter(Boolean)
+      .join(";"),
+  };
+}
+
 
 function inferIab(category?: string) {
   const value = (category || "").toLowerCase();
@@ -292,6 +554,30 @@ function inferIab(category?: string) {
       iabTier1: "Sports",
       iabTier2: "Sporting Goods",
       iabTier3: "Athletic Apparel",
+    };
+  }
+
+  if (value.includes("insurance") || value.includes("finance")) {
+    return {
+      iabTier1: "Finance",
+      iabTier2: value.includes("insurance") ? "Insurance" : "Financial Services",
+      iabTier3: null,
+    };
+  }
+
+  if (value.includes("health") || value.includes("medical")) {
+    return {
+      iabTier1: "Health & Fitness",
+      iabTier2: "Medical Health",
+      iabTier3: null,
+    };
+  }
+
+  if (value.includes("advertising")) {
+    return {
+      iabTier1: "Business and Industrial",
+      iabTier2: "Advertising and Marketing",
+      iabTier3: null,
     };
   }
 
@@ -372,7 +658,11 @@ function validateEnrichedRow(row: Partial<EnrichedRow>) {
 }
 
 function enrichRows(rows: CsvRow[]): EnrichedRow[] {
-  return rows.map((row, index) => {
+  const sourceRows = rows
+    .map(convertNielsenRowToStandard)
+    .filter(Boolean) as CsvRow[];
+
+  return sourceRows.map((row, index) => {
     const normalized = normalizeRow(row);
     const notes: string[] = [];
 
@@ -579,7 +869,14 @@ export default function CsvImportPage() {
     setCsvText(text);
     setPreviewRows(rows);
     setReport(null);
-    setStatus(`${file.name} loaded. ${rows.length} rows enriched for preview.`);
+    const parsedRows = parseCsv(text);
+    const nielsenDetected = isNielsenExport(parsedRows);
+
+    setStatus(
+      nielsenDetected
+        ? `${file.name} loaded in Nielsen Mode. PRG/PROMO rows removed. ${rows.length} ad/direct-response rows enriched for preview.`
+        : `${file.name} loaded. ${rows.length} rows enriched for preview.`
+    );
   }
 
   function loadDemoCsv() {
@@ -881,7 +1178,9 @@ The Coca-Cola Company,Coca-Cola,Coca-Cola Zero,Coca-Cola Lifestyle Campaign,Soft
 
             <p className="text-gray-300 text-lg max-w-3xl">
               Validate CSV data, preview enriched entities and save only safe
-              direct graph relationships into Supabase.
+              direct graph relationships into Supabase. Nielsen/H-Tech exports
+              are detected automatically: PRG and PROMO rows are removed before
+              enrichment.
             </p>
           </div>
 
@@ -900,7 +1199,7 @@ The Coca-Cola Company,Coca-Cola,Coca-Cola Zero,Coca-Cola Lifestyle Campaign,Soft
                   </div>
 
                   <div className="text-sm text-gray-400">
-                    Nielsen export, monitoring export, campaign data file
+                    Nielsen/H-Tech export, monitoring export, campaign data file
                   </div>
 
                   <input
@@ -968,6 +1267,17 @@ Samsung,Samsung Galaxy,Galaxy S25,Samsung Galaxy Campaign,Android Power Users,Mo
             </section>
 
             <aside className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-xl">
+              <div className="mb-5 rounded-3xl border border-cyan-300/30 bg-cyan-500/10 p-4">
+                <div className="text-sm font-semibold text-cyan-100">
+                  Nielsen Mode
+                </div>
+                <div className="mt-2 text-xs leading-5 text-gray-300">
+                  If the upload contains clip_type_id / raw data JSON, the importer
+                  automatically removes PRG and PROMO rows and keeps commercial,
+                  ad and direct-response signals only.
+                </div>
+              </div>
+
               <div className="text-sm text-fuchsia-200 font-semibold mb-4">
                 Expected CSV Columns
               </div>
