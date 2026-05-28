@@ -94,21 +94,119 @@ function normalizeBrandName(value: string) {
     .trim();
 }
 
-
 function normalizeEntityKey(value: string) {
   return (value || "")
     .toLowerCase()
+    .replace(/[®™©]/g, "")
     .replace(/[’']/g, "")
     .replace(/&/g, "and")
+    .replace(/\b(the|brand|company|inc|llc|ltd|corp|corporation|group)\b/gi, " ")
     .replace(/[^a-z0-9]+/g, "")
     .trim();
 }
 
-function splitArgusProducts(value: string) {
-  return (value || "")
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
+const BRAND_ALIAS_MAP: Record<string, string> = {
+  jeep: "Jeep",
+  jeepbrand: "Jeep",
+  jeepcherokee: "Jeep",
+  stellantisjeep: "Jeep",
+  coca: "Coca-Cola",
+  cocacola: "Coca-Cola",
+  coke: "Coca-Cola",
+  pepsi: "Pepsi",
+  pepsico: "Pepsi",
+  mcdonalds: "McDonald's",
+  mcdonald: "McDonald's",
+  burgerking: "Burger King",
+  bk: "Burger King",
+  kfc: "KFC",
+  kentuckyfriedchicken: "KFC",
+  apple: "Apple",
+  appleinc: "Apple",
+  samsung: "Samsung",
+  samsungmobile: "Samsung",
+  playstation: "PlayStation",
+  sonyplaystation: "PlayStation",
+  xbox: "Xbox",
+  microsoftxbox: "Xbox",
+  nintendo: "Nintendo",
+  netflix: "Netflix",
+  youtube: "YouTube",
+  spotify: "Spotify",
+  toyota: "Toyota",
+  ford: "Ford",
+  bmw: "BMW",
+  mercedesbenz: "Mercedes-Benz",
+  mercedes: "Mercedes-Benz",
+  audi: "Audi",
+  gmc: "GMC",
+  thor: "Thor",
+  lancome: "Lancome",
+};
+
+function canonicalBrandName(value: string) {
+  const raw = (value || "").trim();
+  const key = normalizeEntityKey(raw);
+
+  if (!key) return "";
+  if (BRAND_ALIAS_MAP[key]) return BRAND_ALIAS_MAP[key];
+
+  const fuzzyMatch = Object.entries(BRAND_ALIAS_MAP).find(([alias]) =>
+    key === alias || key.startsWith(alias) || key.includes(alias)
+  );
+
+  if (fuzzyMatch) return fuzzyMatch[1];
+
+  return raw
+    .replace(/[®™©]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function canonicalProductName(value: string, brandName = "") {
+  const raw = (value || "").replace(/[®™©]/g, "").replace(/\s+/g, " ").trim();
+  if (!raw) return "";
+
+  const brand = canonicalBrandName(brandName);
+  const brandKey = normalizeEntityKey(brand);
+  let cleaned = raw;
+
+  if (brandKey) {
+    const escapedBrand = brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    cleaned = cleaned
+      .replace(new RegExp(`^${escapedBrand}\\s+`, "i"), "")
+      .replace(new RegExp(`\\s+by\\s+${escapedBrand}$`, "i"), "")
+      .replace(new RegExp(`^${escapedBrand}[-: ]+`, "i"), "")
+      .trim();
+  }
+
+  const normalized = normalizeEntityKey(cleaned);
+
+  if (normalized.includes("wrangler")) return "Wrangler";
+  if (normalized.includes("grandcherokee")) return "Grand Cherokee";
+  if (normalized.includes("gladiator")) return "Gladiator";
+  if (normalized.includes("cherokee")) return "Cherokee";
+  if (normalized.includes("cocacolazero") || normalized.includes("cokezero") || normalized.includes("zerosugar")) {
+    return "Coca-Cola Zero Sugar";
+  }
+  if (normalized === "coke" || normalized === "cocacola") return "Coca-Cola";
+  if (normalized.includes("bigmac")) return "Big Mac";
+  if (normalized.includes("whopper")) return "Whopper";
+  if (normalized.includes("airmax")) return "Nike Air Max";
+  if (normalized.includes("ultraboost")) return "Adidas Ultraboost";
+
+  return cleaned || raw;
+}
+
+function splitArgusProducts(value: string, brandName = "") {
+  return Array.from(
+    new Set(
+      (value || "")
+        .split(/[,;|]/)
+        .map((item) => canonicalProductName(item, brandName))
+        .filter(Boolean)
+    )
+  );
 }
 
 function getLiveNodeId(type: string, name: string) {
@@ -116,15 +214,25 @@ function getLiveNodeId(type: string, name: string) {
 }
 
 function findExistingNodeByName(graphNodes: any[], type: string, name: string) {
-  const key = normalizeEntityKey(name);
+  const key = normalizeEntityKey(type === "brand" ? canonicalBrandName(name) : name);
   if (!key) return null;
 
   return (
-    graphNodes.find(
-      (node) =>
-        node.data.entityType === type &&
-        normalizeEntityKey(node.data.entity?.name || "") === key
-    ) || null
+    graphNodes.find((node) => {
+      if (node.data.entityType !== type) return false;
+
+      const nodeName = node.data.entity?.name || "";
+      const nodeKey = normalizeEntityKey(
+        type === "brand" ? canonicalBrandName(nodeName) : nodeName
+      );
+
+      const aliases = node.data.entity?.aliases || [];
+      const aliasKeys = aliases.map((alias: string) =>
+        normalizeEntityKey(type === "brand" ? canonicalBrandName(alias) : alias)
+      );
+
+      return nodeKey === key || aliasKeys.includes(key);
+    }) || null
   );
 }
 
@@ -140,6 +248,7 @@ function createLiveNode(type: string, name: string, extra: any = {}) {
       entity: {
         id: `argus-${normalizeEntityKey(name)}`,
         name,
+        aliases: extra.aliases || [],
         source: "ARGUS Public API",
         is_live_argus: true,
         ...extra,
@@ -180,19 +289,35 @@ function mergeArgusIntoGraph(baseNodes: any[], baseRelationships: any[], argusAd
   function upsertNode(type: string, name: string, extra: any = {}) {
     if (!name) return null;
 
-    const existing = findExistingNodeByName(mergedNodes, type, name);
+    const canonicalName = type === "brand" ? canonicalBrandName(name) : name;
+    const existing = findExistingNodeByName(mergedNodes, type, canonicalName);
 
     if (existing) {
+      const aliases = Array.from(
+        new Set([
+          ...(existing.data.entity?.aliases || []),
+          ...(extra.aliases || []),
+          name,
+          canonicalName,
+        ].filter(Boolean))
+      );
+
       existing.data.entity = {
         ...existing.data.entity,
         ...extra,
+        name: existing.data.entity?.name || canonicalName,
+        aliases,
         live_argus_seen: true,
         source: existing.data.entity?.source || "Supabase + ARGUS",
       };
+      existing.data.liveArgus = existing.data.liveArgus || extra.liveArgusOnly || false;
       return existing;
     }
 
-    const created = createLiveNode(type, name, extra);
+    const created = createLiveNode(type, canonicalName, {
+      ...extra,
+      aliases: Array.from(new Set([...(extra.aliases || []), name, canonicalName].filter(Boolean))),
+    });
     mergedNodes.push(created);
     return created;
   }
@@ -215,11 +340,13 @@ function mergeArgusIntoGraph(baseNodes: any[], baseRelationships: any[], argusAd
   }
 
   argusAds.forEach((ad) => {
-    const brandName = ad.brand_name || ad.brand || "";
+    const rawBrandName = ad.brand_name || ad.brand || "";
+    const brandName = canonicalBrandName(rawBrandName);
     if (!brandName) return;
 
-    const advertiserName =
-      ad.advertiser_name || ad.advertiser || ad.parent_company || "";
+    const advertiserName = canonicalBrandName(
+      ad.advertiser_name || ad.advertiser || ad.parent_company || ""
+    );
 
     const campaignName =
       ad.promotion_name ||
@@ -227,7 +354,7 @@ function mergeArgusIntoGraph(baseNodes: any[], baseRelationships: any[], argusAd
       ad.title ||
       `${brandName} ARGUS Campaign`;
 
-    const products = splitArgusProducts(ad.products_text || ad.product || "");
+    const products = splitArgusProducts(ad.products_text || ad.product || "", brandName);
     const iabName =
       ad.iab_full_path ||
       ad.iab_selected_category ||
@@ -236,6 +363,7 @@ function mergeArgusIntoGraph(baseNodes: any[], baseRelationships: any[], argusAd
       "";
 
     const brandNode = upsertNode("brand", brandName, {
+      aliases: [rawBrandName, brandName],
       description:
         ad.primary_category || ad.iab_full_path
           ? `Live ARGUS brand signal classified as ${ad.iab_full_path || ad.primary_category}.`
@@ -248,7 +376,8 @@ function mergeArgusIntoGraph(baseNodes: any[], baseRelationships: any[], argusAd
       confidence: ad.confidence,
       latest_argus_ad_id: ad.id,
       search_keywords: [
-        ad.brand_name,
+        rawBrandName,
+        brandName,
         ad.primary_category,
         ad.subcategory,
         ad.iab_full_path,
@@ -259,7 +388,7 @@ function mergeArgusIntoGraph(baseNodes: any[], baseRelationships: any[], argusAd
 
     if (!brandNode) return;
 
-    if (advertiserName) {
+    if (advertiserName && normalizeEntityKey(advertiserName) !== normalizeEntityKey(brandName)) {
       const companyNode = upsertNode("company", advertiserName, {
         description: `ARGUS advertiser/company detected for ${brandName}.`,
         latest_argus_ad_id: ad.id,
@@ -281,6 +410,7 @@ function mergeArgusIntoGraph(baseNodes: any[], baseRelationships: any[], argusAd
 
     if (campaignName) {
       const campaignNode = upsertNode("campaign", campaignName, {
+        aliases: [ad.promotion_name, ad.campaign_name, ad.title].filter(Boolean),
         description: `Live ARGUS campaign/promotion for ${brandName}.`,
         objective: ad.primary_category || ad.subcategory || "ARGUS campaign signal",
         iab_tier_1: ad.iab_tier_1,
@@ -305,6 +435,7 @@ function mergeArgusIntoGraph(baseNodes: any[], baseRelationships: any[], argusAd
 
     products.forEach((productName) => {
       const productNode = upsertNode("product", productName, {
+        aliases: [productName, `${brandName} ${productName}`],
         description: `Live ARGUS product detected inside ${brandName} ad ${ad.id}.`,
         category: ad.primary_category,
         product_type: ad.subcategory || ad.iab_selected_category,

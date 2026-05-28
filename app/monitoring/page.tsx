@@ -4586,6 +4586,69 @@ function compactKey(value: string) {
   return normalizeMatchText(value).replace(/\s+/g, "");
 }
 
+
+const BRAND_ALIAS_MAP: Record<string, string> = {
+  jeep: "Jeep",
+  jeepbrand: "Jeep",
+  jeepcherokee: "Jeep",
+  stellantisjeep: "Jeep",
+  coca: "Coca-Cola",
+  cocacola: "Coca-Cola",
+  coke: "Coca-Cola",
+  pepsi: "Pepsi",
+  pepsico: "Pepsi",
+  mcdonalds: "McDonald's",
+  mcdonald: "McDonald's",
+  burgerking: "Burger King",
+  bk: "Burger King",
+  kfc: "KFC",
+  kentuckyfriedchicken: "KFC",
+  apple: "Apple",
+  samsung: "Samsung",
+  playstation: "PlayStation",
+  xbox: "Xbox",
+  nintendo: "Nintendo",
+  netflix: "Netflix",
+  youtube: "YouTube",
+  spotify: "Spotify",
+  toyota: "Toyota",
+  ford: "Ford",
+  bmw: "BMW",
+  mercedesbenz: "Mercedes-Benz",
+  mercedes: "Mercedes-Benz",
+  audi: "Audi",
+  gmc: "GMC",
+  thor: "Thor",
+  lancome: "Lancome",
+};
+
+function canonicalBrandName(value: string) {
+  const raw = (value || "").replace(/[®™©]/g, "").replace(/\s+/g, " ").trim();
+  const key = compactKey(raw);
+
+  if (!key) return "Unassigned Brand";
+  if (BRAND_ALIAS_MAP[key]) return BRAND_ALIAS_MAP[key];
+
+  const fuzzyMatch = Object.entries(BRAND_ALIAS_MAP).find(([alias]) =>
+    key === alias || key.startsWith(alias) || key.includes(alias)
+  );
+
+  if (fuzzyMatch) return fuzzyMatch[1];
+
+  return raw;
+}
+
+function splitAndCanonicalizeProducts(value: string, brandName = "") {
+  return Array.from(
+    new Set(
+      (value || "")
+        .split(/[,;|]/)
+        .map((item) => getCanonicalProductName(item, brandName))
+        .filter(Boolean)
+    )
+  );
+}
+
 function tokenizeKeywords(value: string) {
   return (value || "")
     .split(/[;,]/)
@@ -4805,10 +4868,28 @@ function ExplanationCard({
 }
 
 
-function getCanonicalProductName(value: string) {
-  const normalized = normalizeMatchText(value);
+function getCanonicalProductName(value: string, brandName = "") {
+  const raw = (value || "").replace(/[®™©]/g, "").replace(/\s+/g, " ").trim();
+  const brand = canonicalBrandName(brandName);
+  const normalizedBrand = normalizeMatchText(brand);
 
-  if (!normalized) return "Unspecified Product";
+  if (!raw) return "Unspecified Product";
+
+  let cleaned = raw;
+
+  if (normalizedBrand && normalizedBrand !== "unassigned brand") {
+    cleaned = cleaned
+      .replace(new RegExp(`^${brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s+`, "i"), "")
+      .replace(new RegExp(`\\s+by\\s+${brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i"), "")
+      .trim();
+  }
+
+  const normalized = normalizeMatchText(cleaned);
+
+  if (normalized.includes("wrangler")) return "Wrangler";
+  if (normalized.includes("grand cherokee")) return "Grand Cherokee";
+  if (normalized.includes("gladiator")) return "Gladiator";
+  if (normalized.includes("cherokee")) return "Cherokee";
 
   if (
     normalized.includes("zero sugar") ||
@@ -4838,7 +4919,7 @@ function getCanonicalProductName(value: string) {
     return "Adidas Ultraboost";
   }
 
-  return value || "Unspecified Product";
+  return cleaned || raw || "Unspecified Product";
 }
 
 function getCampaignObjectName(item: any) {
@@ -4949,15 +5030,19 @@ function normalizeMonitoringSpot(item: any) {
     item.brand_name ||
     "ARGUS Advertising Intelligence";
 
-  const brand =
+  const brand = canonicalBrandName(
     item.brand_name ||
-    getDisplayBrandName(item);
+      getDisplayBrandName(item)
+  );
 
-  const product =
+  const rawProduct =
     item.products_text ||
     item.product ||
     item.product_name ||
     "Advertising Signal";
+
+  const canonicalProducts = splitAndCanonicalizeProducts(rawProduct, brand);
+  const product = canonicalProducts.join(", ") || "Advertising Signal";
 
   const description =
     [
@@ -4998,7 +5083,7 @@ function normalizeMonitoringSpot(item: any) {
     advertiser,
     brand,
     product,
-    canonicalProduct: getCanonicalProductName(product),
+    canonicalProduct: canonicalProducts.length === 1 ? canonicalProducts[0] : product,
     campaignObject:
       item.promotion_name ||
       item.campaign_name ||
@@ -5098,7 +5183,7 @@ export default function MonitoringPage() {
   }, [monitoringFeed]);
 
   const uniqueFeedProducts = useMemo(() => {
-    return new Set(monitoringFeed.map((item) => item.product).filter(Boolean))
+    return new Set(monitoringFeed.flatMap((item) => item.canonicalProduct || item.product).filter(Boolean))
       .size;
   }, [monitoringFeed]);
 
