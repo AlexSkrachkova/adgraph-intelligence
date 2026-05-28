@@ -15,7 +15,15 @@ import { supabase } from "@/lib/supabase";
 
 const GALAXY_BACKGROUND = "/wallpaperflare.com_wallpaper.jpg";
 
-const hiddenBrandNames = ["Nintendo Switch", "Samsung Galaxy"];
+const hiddenBrandNames = [
+  "Nintendo Switch",
+  "Samsung Galaxy",
+  "PROMO",
+  "PRG",
+  "DIGITAL",
+  "Digital",
+  "Promo",
+];
 
 type RelationshipFilter = "all" | "competitors" | "products" | "campaigns" | "audiences";
 
@@ -142,6 +150,15 @@ const BRAND_ALIAS_MAP: Record<string, string> = {
   gmc: "GMC",
   thor: "Thor",
   lancome: "Lancome",
+  carshield: "Car Shield",
+  carshieldcom: "Car Shield",
+  audienhearing: "Audien Hearing",
+  paramountplus: "Paramount Plus",
+  libertymutual: "Liberty Mutual",
+  libertymutualinsurance: "Liberty Mutual",
+  progressive: "Progressive",
+  progressiveinsurance: "Progressive",
+  republicbankfoundation: "Republic Bank Foundation",
 };
 
 function canonicalBrandName(value: string) {
@@ -197,6 +214,29 @@ function canonicalProductName(value: string, brandName = "") {
 
   return cleaned || raw;
 }
+
+
+function isNoisyImportedEntityName(value: string) {
+  const text = (value || "").toLowerCase().trim();
+
+  if (!text) return true;
+
+  const exactNoise = ["promo", "prg", "digital", "unknown advertiser"];
+  if (exactNoise.includes(text)) return true;
+
+  const noisePatterns = [
+    "promo",
+    "program",
+    "station id",
+    "news open",
+    "weather open",
+    "wlky.com",
+    "digital",
+  ];
+
+  return noisePatterns.some((pattern) => text === pattern || text.includes(pattern));
+}
+
 
 function splitArgusProducts(value: string, brandName = "") {
   return Array.from(
@@ -611,7 +651,8 @@ function buildEcosystemProfile(
             !(
               node.entityType === "brand" &&
               hiddenBrandNames.includes(node.entity?.name)
-            )
+            ) &&
+            !isNoisyImportedEntityName(node.entity?.name || "")
         )
         .map((node: any) => [node.nodeId, node])
     ).values()
@@ -857,19 +898,19 @@ const nodeTypes = {
 };
 
 function getScatterPosition(index: number, total: number, scenarioMode: boolean) {
-  const columns = scenarioMode ? 3 : 5;
-  const spacingX = scenarioMode ? 330 : 310;
-  const spacingY = scenarioMode ? 245 : 215;
+  const columns = scenarioMode ? 4 : 7;
+  const spacingX = scenarioMode ? 360 : 340;
+  const spacingY = scenarioMode ? 250 : 235;
 
   const row = Math.floor(index / columns);
   const col = index % columns;
   const rows = Math.ceil(total / columns);
 
-  const baseX = 680 - ((columns - 1) * spacingX) / 2;
-  const baseY = 430 - ((rows - 1) * spacingY) / 2;
+  const baseX = 980 - ((columns - 1) * spacingX) / 2;
+  const baseY = 520 - ((rows - 1) * spacingY) / 2;
 
-  const waveX = Math.sin(index * 1.73) * 70;
-  const waveY = Math.cos(index * 1.31) * 58;
+  const waveX = Math.sin(index * 1.73) * 78;
+  const waveY = Math.cos(index * 1.31) * 54;
 
   return {
     x: baseX + col * spacingX + waveX,
@@ -984,7 +1025,8 @@ function buildRelationshipInsights(selectedNode: any, relationships: any[], node
         !(
           item.otherNode.entityType === "brand" &&
           hiddenBrandNames.includes(item.otherNode.entity?.name)
-        )
+        ) &&
+        !isNoisyImportedEntityName(item.otherNode.entity?.name || "")
     )
     .sort((a: any, b: any) => b.strength - a.strength);
 }
@@ -2735,7 +2777,7 @@ export default function RelationshipExplorer() {
           )}
 
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_440px]">
-            <div className="relative h-[680px] overflow-hidden rounded-[2rem] border border-white/10 bg-black shadow-[0_0_45px_rgba(34,211,238,0.08)] sm:h-[760px] xl:h-[850px]">
+            <div className="relative h-[680px] overflow-hidden rounded-[2rem] border border-white/10 bg-black shadow-[0_0_45px_rgba(34,211,238,0.08)] sm:h-[900px] xl:h-[850px]">
               <div
                 className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center opacity-64"
                 style={{
@@ -2748,6 +2790,8 @@ export default function RelationshipExplorer() {
               <GraphLegend />
 
               <ReactFlow
+                minZoom={0.15}
+                maxZoom={1.8}
                 nodes={moleculeData.nodes}
                 edges={moleculeData.edges}
                 fitView

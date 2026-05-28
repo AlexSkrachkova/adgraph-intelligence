@@ -94,6 +94,21 @@ type ImportHistoryItem = {
   errors: number;
 };
 
+type ImportProgress = {
+  totalRows: number;
+  processedRows: number;
+  percent: number;
+  currentName: string;
+  companies: number;
+  brands: number;
+  products: number;
+  campaigns: number;
+  audiences: number;
+  relationships: number;
+  skipped: number;
+  errors: number;
+};
+
 const requiredColumns = [
   "company",
   "brand",
@@ -325,14 +340,60 @@ function getNielsenName(row: CsvRow) {
   );
 }
 
+
+function isLikelyDigitalOrStationNoise(name: string) {
+  const value = name.toLowerCase();
+
+  const digitalNoisePatterns = [
+    "digital",
+    "wlky.com",
+    "cbs -",
+    "nbc -",
+    "abc -",
+    "fox -",
+    "website",
+    "homepage",
+    "web only",
+    "social media",
+    "online video",
+    "streaming promo",
+  ];
+
+  return digitalNoisePatterns.some((pattern) => value.includes(pattern));
+}
+
+function isLikelyProgramOrPromoNoise(name: string) {
+  const value = name.toLowerCase();
+
+  const hardNoise = [
+    "promo",
+    "prg",
+    "program",
+    "programming",
+    "station id",
+    "news open",
+    "weather",
+    "sports open",
+    "coming up",
+    "tonight on",
+    "next on",
+  ];
+
+  return hardNoise.some((pattern) => value === pattern || value.includes(pattern));
+}
+
+
 function shouldSkipNielsenRow(row: CsvRow) {
   const clipType = getNielsenClipType(row);
-  const name = getNielsenName(row).toLowerCase();
+  const name = getNielsenName(row);
+  const lowerName = name.toLowerCase();
 
-  // 2 = PROMO, 34 = PRG in the Nielsen/H-Tech export.
+  // Nielsen/H-Tech cleanup:
+  // 2 = PROMO, 34 = PRG. Also remove DIGITAL/station/web/program noise.
   if (clipType === "2" || clipType === "34") return true;
-  if (name === "promo" || name === "prg") return true;
-  if (name.includes("promo") && name.length <= 18) return true;
+  if (lowerName === "promo" || lowerName === "prg" || lowerName === "digital") return true;
+  if (isLikelyProgramOrPromoNoise(name)) return true;
+  if (isLikelyDigitalOrStationNoise(name)) return true;
 
   return false;
 }
@@ -427,24 +488,37 @@ function inferNielsenCategory(name: string) {
 }
 
 function cleanNielsenBrandName(name: string) {
-  const cleaned = cleanValue(name)
-    .replace(/\s+-\s+.*$/g, "")
-    .replace(/\s+\|\s+.*$/g, "")
-    .replace(/\s+–\s+.*$/g, "")
-    .replace(/\.com\b/gi, "")
+  let cleaned = cleanValue(name)
     .replace(/^CBS\s+-\s+/i, "")
     .replace(/^NBC\s+-\s+/i, "")
     .replace(/^ABC\s+-\s+/i, "")
     .replace(/^FOX\s+-\s+/i, "")
+    .replace(/^CW\s+-\s+/i, "")
+    .replace(/^MYTV\s+-\s+/i, "")
+    .replace(/^[A-Z]{2,5}\.com\s+-\s+/i, "")
+    .trim();
+
+  // Keep advertiser after station/site prefix: "WLKY.com - Republic Bank Foundation"
+  cleaned = cleaned.replace(/^[A-Z0-9.-]+\.com\s+-\s+/i, "");
+
+  // Remove only URL/platform suffixes, not meaningful advertiser names.
+  cleaned = cleaned
+    .replace(/\s+-\s+(visit\s+)?[a-z0-9-]+\.(com|net|org|tv).*$/i, "")
+    .replace(/\s+\|\s+.*$/g, "")
+    .replace(/\s+–\s+.*$/g, "")
+    .replace(/\.com\b/gi, "")
     .trim();
 
   if (!cleaned) return "Unknown Advertiser";
 
-  if (cleaned.toLowerCase().includes("car shield")) return "Car Shield";
-  if (cleaned.toLowerCase().includes("audien hearing")) return "Audien Hearing";
-  if (cleaned.toLowerCase().includes("paramount plus")) return "Paramount Plus";
-  if (cleaned.toLowerCase().includes("liberty mutual")) return "Liberty Mutual";
-  if (cleaned.toLowerCase().includes("progressive")) return "Progressive";
+  const value = cleaned.toLowerCase();
+
+  if (value.includes("car shield") || value.includes("carshield")) return "Car Shield";
+  if (value.includes("audien hearing")) return "Audien Hearing";
+  if (value.includes("paramount plus")) return "Paramount Plus";
+  if (value.includes("liberty mutual")) return "Liberty Mutual";
+  if (value.includes("progressive")) return "Progressive";
+  if (value.includes("republic bank foundation")) return "Republic Bank Foundation";
 
   return cleaned;
 }
@@ -803,6 +877,7 @@ export default function CsvImportPage() {
   const [status, setStatus] = useState("");
   const [previewRows, setPreviewRows] = useState<EnrichedRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [importProgress, setImportProgress] = useState<ImportProgress | null>(null);
   const [report, setReport] = useState<ImportReport | null>(null);
   const [importHistory, setImportHistory] = useState<ImportHistoryItem[]>([]);
 
@@ -912,6 +987,21 @@ The Coca-Cola Company,Coca-Cola,Coca-Cola Zero,Coca-Cola Lifestyle Campaign,Soft
 
     const rows = enrichRows(parseCsv(csvText));
 
+    setImportProgress({
+      totalRows: rows.length,
+      processedRows: 0,
+      percent: 0,
+      currentName: "Preparing import...",
+      companies: 0,
+      brands: 0,
+      products: 0,
+      campaigns: 0,
+      audiences: 0,
+      relationships: 0,
+      skipped: 0,
+      errors: 0,
+    });
+
     const nextReport: ImportReport = {
       rows: rows.length,
       companies: 0,
@@ -925,9 +1015,28 @@ The Coca-Cola Company,Coca-Cola,Coca-Cola Zero,Coca-Cola Lifestyle Campaign,Soft
       errors: [],
     };
 
-    for (const row of rows) {
+    for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+      const row = rows[rowIndex];
+
       if (!row.isValid) {
         nextReport.skipped++;
+
+        setImportProgress({
+          totalRows: rows.length,
+          processedRows: rowIndex + 1,
+          percent: Math.round(((rowIndex + 1) / rows.length) * 100),
+          currentName: row.brandName || row.campaignName || "Skipped invalid row",
+          companies: nextReport.companies,
+          brands: nextReport.brands,
+          products: nextReport.products,
+          campaigns: nextReport.campaigns,
+          audiences: nextReport.audiences,
+          relationships: nextReport.relationships,
+          skipped: nextReport.skipped,
+          errors: nextReport.errors.length,
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 0));
         continue;
       }
 
@@ -1126,6 +1235,23 @@ The Coca-Cola Company,Coca-Cola,Coca-Cola Zero,Coca-Cola Lifestyle Campaign,Soft
           `Row ${row.rowNumber}: ${error?.message || "Unknown import error"}`
         );
       }
+
+      setImportProgress({
+        totalRows: rows.length,
+        processedRows: rowIndex + 1,
+        percent: Math.round(((rowIndex + 1) / rows.length) * 100),
+        currentName: row.brandName || row.campaignName || row.companyName || `Row ${row.rowNumber}`,
+        companies: nextReport.companies,
+        brands: nextReport.brands,
+        products: nextReport.products,
+        campaigns: nextReport.campaigns,
+        audiences: nextReport.audiences,
+        relationships: nextReport.relationships,
+        skipped: nextReport.skipped,
+        errors: nextReport.errors.length,
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
     }
 
     const nextHistory: ImportHistoryItem[] = [
@@ -1148,6 +1274,17 @@ The Coca-Cola Company,Coca-Cola,Coca-Cola Zero,Coca-Cola Lifestyle Campaign,Soft
     saveImportHistory(nextHistory);
     setReport(nextReport);
     setLoading(false);
+    setImportProgress((current) =>
+      current
+        ? {
+            ...current,
+            processedRows: current.totalRows,
+            percent: 100,
+            currentName: "Import complete",
+            errors: nextReport.errors.length,
+          }
+        : current
+    );
 
     if (nextReport.errors.length > 0) {
       setStatus(
@@ -1261,7 +1398,65 @@ Samsung,Samsung Galaxy,Galaxy S25,Samsung Galaxy Campaign,Android Power Users,Mo
 
               {status && (
                 <div className="mt-5 rounded-2xl border border-green-300/30 bg-green-500/10 p-4 text-green-100">
-                  {status}
+                  <div className="flex items-center gap-2">
+                    <span>{status}</span>
+
+                    {loading && (
+                      <span className="flex items-end gap-1">
+                        {[0, 1, 2].map((dot) => (
+                          <span
+                            key={dot}
+                            className="h-2 w-2 rounded-full bg-green-200"
+                            style={{
+                              animation: "importDotBounce 0.75s ease-in-out infinite",
+                              animationDelay: `${dot * 0.16}s`,
+                            }}
+                          />
+                        ))}
+                      </span>
+                    )}
+                  </div>
+
+                  {importProgress && (
+                    <div className="mt-4">
+                      <div className="mb-2 flex items-center justify-between text-xs text-green-100/80">
+                        <span>
+                          {importProgress.processedRows} / {importProgress.totalRows} rows
+                        </span>
+                        <span>{importProgress.percent}%</span>
+                      </div>
+
+                      <div className="h-3 overflow-hidden rounded-full bg-black/40">
+                        <div
+                          className="h-full rounded-full bg-green-300 transition-all duration-300"
+                          style={{ width: `${importProgress.percent}%` }}
+                        />
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-green-50/90 md:grid-cols-4">
+                        <div>Brands: {importProgress.brands}</div>
+                        <div>Campaigns: {importProgress.campaigns}</div>
+                        <div>Audiences: {importProgress.audiences}</div>
+                        <div>Links: {importProgress.relationships}</div>
+                      </div>
+
+                      <div className="mt-2 text-xs text-green-100/70">
+                        Current: {importProgress.currentName}
+                      </div>
+                    </div>
+                  )}
+
+                  <style jsx>{`
+                    @keyframes importDotBounce {
+                      0%, 80%, 100% {
+                        transform: translateY(0);
+                      }
+
+                      35% {
+                        transform: translateY(-9px);
+                      }
+                    }
+                  `}</style>
                 </div>
               )}
             </section>
