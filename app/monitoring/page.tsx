@@ -5345,6 +5345,34 @@ function buildBrandIntelligenceProfile(
   };
 }
 
+type InfoPanel = {
+  title: string;
+  eyebrow?: string;
+  tone?: "cyan" | "pink" | "indigo" | "green" | "amber" | "red";
+  body: ReactNode;
+};
+
+function toneClasses(tone: InfoPanel["tone"] = "cyan") {
+  if (tone === "pink") return "border-fuchsia-300/25 bg-fuchsia-500/10 text-fuchsia-200";
+  if (tone === "indigo") return "border-indigo-300/25 bg-indigo-500/10 text-indigo-200";
+  if (tone === "green") return "border-green-300/25 bg-green-500/10 text-green-200";
+  if (tone === "amber") return "border-amber-300/25 bg-amber-500/10 text-amber-200";
+  if (tone === "red") return "border-red-300/25 bg-red-500/10 text-red-200";
+  return "border-cyan-300/25 bg-cyan-500/10 text-cyan-200";
+}
+
+function Pill({ children }: { children: ReactNode; key?: any }) {
+  return (
+    <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-gray-200">
+      {children}
+    </span>
+  );
+}
+
+function EmptyState({ label }: { label: string }) {
+  return <div className="text-sm text-gray-500">{label}</div>;
+}
+
 export default function MonitoringPage() {
   const [spots, setSpots] = useState<any[]>([]);
   const [argusStats, setArgusStats] = useState<ArgusStats | null>(null);
@@ -5360,6 +5388,7 @@ export default function MonitoringPage() {
   const [selectedBrandName, setSelectedBrandName] = useState<string | null>(null);
   const [brandProfileMode, setBrandProfileMode] = useState<BrandProfileMode>("f1");
   const [selectedSignal, setSelectedSignal] = useState<any | null>(null);
+  const [infoPanel, setInfoPanel] = useState<InfoPanel | null>(null);
 
   useEffect(() => {
     async function loadMonitoring() {
@@ -5394,1311 +5423,291 @@ export default function MonitoringPage() {
     loadMonitoring();
   }, []);
 
-
-  const fallbackSignals = useMemo(() => {
-    return [];
-  }, []);
-
-  const monitoringFeed = useMemo(() => {
-    return spots.map(normalizeMonitoringSpot);
-  }, [spots]);
-
+  const monitoringFeed = useMemo(() => spots.map(normalizeMonitoringSpot), [spots]);
 
   const selectedBrandProfile = useMemo(() => {
     if (!selectedBrandName) return null;
     return buildBrandIntelligenceProfile(selectedBrandName, monitoringFeed);
   }, [selectedBrandName, monitoringFeed]);
 
-  const featuredSignal = monitoringFeed[0];
-
-  const uniqueAdvertisers = useMemo(() => {
-    return new Set(monitoringFeed.map((item) => item.advertiser).filter(Boolean))
-      .size;
-  }, [monitoringFeed]);
-
   const uniqueFeedProducts = useMemo(() => {
-    return new Set(monitoringFeed.flatMap((item) => item.canonicalProduct || item.product).filter(Boolean))
-      .size;
-  }, [monitoringFeed]);
-
-  const uniqueBrands = useMemo(() => {
-    return new Set(monitoringFeed.map((item) => item.brand).filter(Boolean)).size;
-  }, [monitoringFeed]);
-
-  const uniqueCampaigns = useMemo(() => {
     return new Set(
-      monitoringFeed.map((item) => item.campaignObject).filter(Boolean)
+      monitoringFeed
+        .flatMap((item) => String(item.canonicalProduct || item.product || "").split(/[,;|]/))
+        .map((item) => item.trim())
+        .filter(Boolean)
     ).size;
   }, [monitoringFeed]);
 
-  const classifiedSignals = useMemo(() => {
-    return monitoringFeed.filter(
-      (item) =>
-        item.iabClass &&
-        !String(item.iabClass).includes("Unclassified") &&
-        !String(item.iabClass).includes("pending")
-    ).length;
-  }, [monitoringFeed]);
-
-  const riskSignalCount = useMemo(() => {
-    return monitoringFeed.filter((item) => item.riskLabels?.length > 0).length;
-  }, [monitoringFeed]);
+  const uniqueBrands = useMemo(() => new Set(monitoringFeed.map((item) => item.brand).filter(Boolean)).size, [monitoringFeed]);
+  const uniqueCampaigns = useMemo(() => new Set(monitoringFeed.map((item) => item.campaignObject).filter(Boolean)).size, [monitoringFeed]);
+  const classifiedSignals = useMemo(() => monitoringFeed.filter((item) => item.iabClass && !String(item.iabClass).includes("Unclassified") && !String(item.iabClass).includes("pending")).length, [monitoringFeed]);
+  const riskSignalCount = useMemo(() => monitoringFeed.filter((item) => item.riskLabels?.length > 0).length, [monitoringFeed]);
 
   const topBrands = useMemo(() => {
     const counts: Record<string, number> = {};
-
     monitoringFeed.forEach((item) => {
       if (!item.brand) return;
       counts[item.brand] = (counts[item.brand] || 0) + 1;
     });
-
-    return Object.entries(counts)
-      .map(([value, count]) => ({ value, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 6);
+    return Object.entries(counts).map(([value, count]) => ({ value, count })).sort((a, b) => b.count - a.count).slice(0, 6);
   }, [monitoringFeed]);
 
   const topCategories = useMemo(() => {
     const counts: Record<string, number> = {};
-
     monitoringFeed.forEach((item) => {
       const category = item.network || item.program || "Uncategorized";
       counts[category] = (counts[category] || 0) + 1;
     });
-
-    return Object.entries(counts)
-      .map(([value, count]) => ({ value, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 6);
+    return Object.entries(counts).map(([value, count]) => ({ value, count })).sort((a, b) => b.count - a.count).slice(0, 6);
   }, [monitoringFeed]);
 
-  const latestArgusAds = useMemo(() => {
-    return [...monitoringFeed]
-      .sort((a, b) => {
-        const aTime = a.ingestedAt ? new Date(a.ingestedAt).getTime() : 0;
-        const bTime = b.ingestedAt ? new Date(b.ingestedAt).getTime() : 0;
-        return bTime - aTime;
-      })
-      .slice(0, 5);
-  }, [monitoringFeed]);
-
-  const brandOptions = useMemo(() => {
-    return dedupe(monitoringFeed.map((item) => item.brand)).sort();
-  }, [monitoringFeed]);
-
-  const categoryOptions = useMemo(() => {
-    return dedupe(
-      monitoringFeed.map((item) => item.network || item.program || "Uncategorized")
-    ).sort();
-  }, [monitoringFeed]);
-
-  const iabOptions = useMemo(() => {
-    return dedupe(monitoringFeed.map((item) => item.iabClass)).sort();
-  }, [monitoringFeed]);
-
+  const brandOptions = useMemo(() => dedupe(monitoringFeed.map((item) => item.brand)).sort(), [monitoringFeed]);
+  const categoryOptions = useMemo(() => dedupe(monitoringFeed.map((item) => item.network || item.program || "Uncategorized")).sort(), [monitoringFeed]);
+  const iabOptions = useMemo(() => dedupe(monitoringFeed.map((item) => item.iabClass)).sort(), [monitoringFeed]);
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
   const filteredMonitoringFeed = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-
     return monitoringFeed.filter((item) => {
-      const haystack = [
-        item.title,
-        item.brand,
-        item.advertiser,
-        item.product,
-        item.canonicalProduct,
-        item.campaignObject,
-        item.network,
-        item.program,
-        item.iabClass,
-        item.description,
-        item.source,
-        ...(item.riskLabels || []),
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      const searchMatch = !query || haystack.includes(query);
-      const brandMatch = brandFilter === "all" || item.brand === brandFilter;
-      const categoryValue = item.network || item.program || "Uncategorized";
-      const categoryMatch =
-        categoryFilter === "all" || categoryValue === categoryFilter;
-      const iabMatch = iabFilter === "all" || item.iabClass === iabFilter;
-      const alphaTarget =
-        groupMode === "product"
-          ? item.canonicalProduct || item.product
-          : groupMode === "campaign"
-          ? item.campaignObject || item.title
-          : item.brand;
-      const alphaMatch =
-        alphaFilter === "all" ||
-        String(alphaTarget || "")
-          .toUpperCase()
-          .startsWith(alphaFilter);
-
-      return searchMatch && brandMatch && categoryMatch && iabMatch && alphaMatch;
+      const haystack = [item.title, item.brand, item.advertiser, item.product, item.canonicalProduct, item.campaignObject, item.network, item.program, item.iabClass, item.description, item.source, ...(item.riskLabels || [])].filter(Boolean).join(" ").toLowerCase();
+      const alphaTarget = groupMode === "product" ? item.canonicalProduct || item.product : groupMode === "campaign" ? item.campaignObject || item.title : item.brand;
+      return (!query || haystack.includes(query)) &&
+        (brandFilter === "all" || item.brand === brandFilter) &&
+        (categoryFilter === "all" || (item.network || item.program || "Uncategorized") === categoryFilter) &&
+        (iabFilter === "all" || item.iabClass === iabFilter) &&
+        (alphaFilter === "all" || String(alphaTarget || "").toUpperCase().startsWith(alphaFilter));
     });
-  }, [
-    monitoringFeed,
-    searchQuery,
-    brandFilter,
-    categoryFilter,
-    iabFilter,
-    alphaFilter,
-    groupMode,
-  ]);
+  }, [monitoringFeed, searchQuery, brandFilter, categoryFilter, iabFilter, alphaFilter, groupMode]);
 
   const rankedBrands = useMemo(() => {
     const source = rankingMode === "now" ? filteredMonitoringFeed : monitoringFeed;
     const counts: Record<string, number> = {};
-
     source.forEach((item) => {
       if (!item.brand) return;
       counts[item.brand] = (counts[item.brand] || 0) + 1;
     });
-
-    return Object.entries(counts)
-      .map(([value, count]) => ({ value, count }))
-      .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value))
-      .slice(0, 8);
+    return Object.entries(counts).map(([value, count]) => ({ value, count })).sort((a, b) => b.count - a.count || a.value.localeCompare(b.value)).slice(0, 8);
   }, [filteredMonitoringFeed, monitoringFeed, rankingMode]);
 
   const rankedProducts = useMemo(() => {
     const source = rankingMode === "now" ? filteredMonitoringFeed : monitoringFeed;
     const counts: Record<string, number> = {};
-
     source.forEach((item) => {
       const product = item.canonicalProduct || item.product;
       if (!product) return;
       counts[product] = (counts[product] || 0) + 1;
     });
-
-    return Object.entries(counts)
-      .map(([value, count]) => ({ value, count }))
-      .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value))
-      .slice(0, 8);
+    return Object.entries(counts).map(([value, count]) => ({ value, count })).sort((a, b) => b.count - a.count || a.value.localeCompare(b.value)).slice(0, 8);
   }, [filteredMonitoringFeed, monitoringFeed, rankingMode]);
-
-  const setQualitySummary = useMemo(() => {
-    const duplicatedBrands = rankedBrands.filter((item) => item.count > 1).length;
-    const missingIab = monitoringFeed.filter(
-      (item) => !item.iabClass || String(item.iabClass).includes("Unclassified")
-    ).length;
-    const missingProducts = monitoringFeed.filter(
-      (item) => !item.product || item.product === "Advertising Signal"
-    ).length;
-
-    return {
-      duplicatedBrands,
-      missingIab,
-      missingProducts,
-      filteredCount: filteredMonitoringFeed.length,
-      totalCount: monitoringFeed.length,
-    };
-  }, [monitoringFeed, filteredMonitoringFeed, rankedBrands]);
-
-
 
   const groupedSignals = useMemo(() => {
     const groups: Record<string, any[]> = {};
-
     filteredMonitoringFeed.forEach((item) => {
-      const key =
-        groupMode === "campaign"
-          ? item.campaignObject || item.title || "Unknown Campaign"
-          : groupMode === "product"
-          ? item.canonicalProduct || item.product || "Unknown Product"
-          : item.brand || "Unknown Brand";
-
+      const key = groupMode === "campaign" ? item.campaignObject || item.title || "Unknown Campaign" : groupMode === "product" ? item.canonicalProduct || item.product || "Unknown Product" : item.brand || "Unknown Brand";
       if (!groups[key]) groups[key] = [];
       groups[key].push(item);
     });
-
-    return Object.entries(groups)
-      .map(([key, signals]) => ({
-        key,
-        signals,
-        count: signals.length,
-        brands: dedupe(signals.map((signal) => signal.brand)),
-        products: dedupe(
-          signals.map((signal) => signal.canonicalProduct || signal.product)
-        ),
-        rawProducts: dedupe(signals.map((signal) => signal.product)),
-        campaigns: dedupe(
-          signals.map((signal) => signal.campaignObject || signal.title)
-        ),
-        advertisers: dedupe(signals.map((signal) => signal.advertiser)),
-        iabClasses: dedupe(signals.map((signal) => signal.iabClass)),
-        iabConfidence: dedupe(signals.map((signal) => signal.iabConfidence)),
-        iabMatchedKeywords: dedupe(
-          signals.flatMap((signal) => signal.iabMatchedKeywords || [])
-        ),
-        dataQualityFlags: dedupe(
-          signals.flatMap((signal) => getDataQualityFlags(signal))
-        ),
-        sources: dedupe(signals.map((signal) => signal.source)),
-      }))
-      .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
+    return Object.entries(groups).map(([key, signals]) => ({
+      key,
+      signals,
+      count: signals.length,
+      brands: dedupe(signals.map((signal) => signal.brand)),
+      products: dedupe(signals.map((signal) => signal.canonicalProduct || signal.product)),
+      campaigns: dedupe(signals.map((signal) => signal.campaignObject || signal.title)),
+      iabClasses: dedupe(signals.map((signal) => signal.iabClass)),
+      sources: dedupe(signals.map((signal) => signal.source)),
+      dataQualityFlags: dedupe(signals.flatMap((signal) => getDataQualityFlags(signal))),
+    })).sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
   }, [filteredMonitoringFeed, groupMode]);
 
-  const groupModeDescription =
-    groupMode === "campaign"
-      ? "Grouping by campaign/promotion shows which products, brands, IAB classes and ARGUS ad signals appear inside each campaign object."
-      : groupMode === "product"
-      ? "Grouping by product shows all ARGUS campaigns and brands where each detected product appears."
-      : "Grouping by brand shows all ARGUS products, campaigns, IAB classes and signals connected to each brand.";
+  const pageHistoryPanel = (profile?: BrandIntelligenceProfile | null): InfoPanel => ({
+    title: "F1 / Page History",
+    eyebrow: "Monitoring Page Story",
+    tone: "cyan",
+    body: (
+      <div className="space-y-4">
+        <p>
+          Monitoring is the live signal layer of Brand Galaxy. It collects ARGUS advertising records, normalizes them into brands, products, campaigns, sources and IAB categories, then prepares those entities for relationship exploration.
+        </p>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"><div className="text-2xl font-black text-white">{monitoringFeed.length}</div><div className="text-xs text-gray-400">loaded signals</div></div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"><div className="text-2xl font-black text-white">{uniqueBrands}</div><div className="text-xs text-gray-400">brands</div></div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"><div className="text-2xl font-black text-white">{uniqueFeedProducts}</div><div className="text-xs text-gray-400">products</div></div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"><div className="text-2xl font-black text-white">{uniqueCampaigns}</div><div className="text-xs text-gray-400">campaigns</div></div>
+        </div>
+        <p>
+          Current feed state: {loading ? "loading live ARGUS feed" : argusError ? "ARGUS route returned an error" : "live feed loaded"}. Signals are grouped by {groupMode}, filtered by user controls, and enriched with IAB taxonomy matching when imported classification is missing.
+        </p>
+        {profile && <p>Selected brand context: {profile.name} has {profile.signalCount} visible monitoring signals, {profile.products.length} products, {profile.campaigns.length} campaigns and {profile.sources.length} data source(s).</p>}
+      </div>
+    ),
+  });
+
+  const openBrandProfile = (brandName: string, mode: BrandProfileMode = "f2") => {
+    setSelectedBrandName(brandName);
+    setBrandProfileMode(mode);
+  };
+
+  const openInfo = (panel: InfoPanel) => setInfoPanel(panel);
 
   return (
     <>
       <NavBar />
-
       <main className="relative min-h-screen overflow-hidden bg-[#020617] px-4 py-8 text-white sm:px-6 lg:p-10">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(217,70,239,0.22),transparent_28%),radial-gradient(circle_at_80%_10%,rgba(34,211,238,0.18),transparent_25%),radial-gradient(circle_at_50%_80%,rgba(99,102,241,0.18),transparent_30%)]" />
         <div className="pointer-events-none absolute inset-0 opacity-40 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:80px_80px]" />
 
         <div className="relative z-10">
           <div className="mb-10">
-            <div className="mb-4 inline-flex rounded-full border border-cyan-300/30 bg-cyan-500/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-cyan-200">
-              Signal Observatory
-            </div>
-
-            <h1 className="mb-4 text-5xl font-black tracking-tight sm:text-7xl">
-              Monitoring Center
-            </h1>
-
-            <p className="max-w-3xl text-lg leading-8 text-gray-300">
-              Advertising signals transformed into brand, product, campaign and
-              audience intelligence for the Brand Galaxy graph.
-            </p>
+            <button onClick={() => openInfo({ title: "Signal Command View", eyebrow: "Clickable Monitoring Header", tone: "cyan", body: <p>This command view is the control surface for live ad intelligence. It lets you inspect the data pipeline, open the page story, launch brand cards and drill into every signal group.</p> })} className="mb-4 inline-flex rounded-full border border-cyan-300/30 bg-cyan-500/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-cyan-200 transition hover:border-cyan-200 hover:bg-cyan-500/20">
+              Signal Command View
+            </button>
+            <h1 className="mb-4 text-5xl font-black tracking-tight sm:text-7xl">Monitoring Center</h1>
+            <button onClick={() => openInfo({ title: "AI-Powered Advertising Intelligence", eyebrow: "Page Mission", tone: "pink", body: <p>Monitoring turns raw advertising rows into usable intelligence: brand identity, product hints, campaign objects, audience/category context, IAB classification and source/risk evidence. The goal is to feed Brand Galaxy with clean relationship-ready entities.</p> })} className="max-w-3xl text-left text-lg leading-8 text-gray-300 transition hover:text-white">
+              AI-Powered Advertising Intelligence for Brand Galaxy: advertising signals transformed into brand, product, campaign and audience intelligence.
+            </button>
           </div>
 
           <div className="mb-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-            <MetricCard
-              value={argusStats?.total_ads || spots.length}
-              label="ARGUS Ads"
-              tone="cyan"
-              source="Source: ARGUS Public API"
-              tooltip="Total classified ads returned by the ARGUS public API stats endpoint. The feed below loads live ARGUS ad records through the secure backend route."
-            />
+            {[
+              { value: argusStats?.total_ads || spots.length, label: "ARGUS Ads", tone: "cyan" as const, body: "Total ads returned by the ARGUS stats/feed endpoints. This card reflects the loaded monitoring source rather than a static demo table." },
+              { value: uniqueBrands, label: "Detected Brands", tone: "pink" as const, body: "Unique canonical brand names extracted from ARGUS advertiser/brand fields and fallback title matching." },
+              { value: uniqueFeedProducts, label: "Detected Products", tone: "indigo" as const, body: "Unique product strings normalized from ARGUS product text. These become product/satellite nodes for Brand Galaxy." },
+              { value: classifiedSignals, label: "IAB Classified", tone: "green" as const, body: "Signals with imported or inferred IAB classification. Missing classes are kept visible for review." },
+            ].map((card) => (
+              <button key={card.label} onClick={() => openInfo({ title: card.label, eyebrow: "Dataset Context", tone: card.tone, body: <p>{card.body}</p> })} className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 text-left backdrop-blur-xl transition duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.09]">
+                <div className={`mb-3 text-4xl font-black ${card.tone === "pink" ? "text-fuchsia-200" : card.tone === "indigo" ? "text-indigo-200" : card.tone === "green" ? "text-green-200" : "text-cyan-200"}`}>{card.value}</div>
+                <div className="text-sm font-semibold text-gray-200">{card.label}</div>
+                <div className="mt-2 text-xs leading-5 text-gray-500">Click for explanation</div>
+              </button>
+            ))}
+          </div>
 
-            <MetricCard
-              value={uniqueBrands}
-              label="Detected Brands"
-              tone="pink"
-              source="Source: ARGUS brand_name"
-              tooltip="Unique brands detected in the currently loaded ARGUS ad feed. This is based on live classified ad records, not the old demo brands table."
-            />
+          {argusError && <div className="mb-6 rounded-3xl border border-red-300/20 bg-red-500/10 p-5 text-sm text-red-100">{argusError}</div>}
 
-            <MetricCard
-              value={uniqueFeedProducts}
-              label="Detected Products"
-              tone="indigo"
-              source="Source: ARGUS products_text"
-              tooltip="Unique product strings detected from ARGUS products_text. Product normalization groups similar labels into canonical product objects where possible."
-            />
-
-            <MetricCard
-              value={uniqueCampaigns}
-              label="Campaign Signals"
-              tone="green"
-              source="Source: ARGUS promotion_name"
-              tooltip="Unique ARGUS promotion/campaign names detected in the current feed. Multiple ads can belong to the same campaign or promotion."
-            />
+          <div className="mb-6 grid grid-cols-1 gap-5 xl:grid-cols-3">
+            <button onClick={() => openInfo({ title: "Dataset Context", eyebrow: "Live Feed", tone: "cyan", body: <p>The current dataset is loaded from /api/argus/ads and /api/argus/stats. It is then normalized client-side into consistent brands, products, campaigns, sources and classification metadata.</p> })} className="rounded-[2rem] border border-white/10 bg-black/25 p-5 text-left transition hover:border-cyan-300/30 hover:bg-cyan-500/10">
+              <div className="mb-2 text-xs uppercase tracking-[0.25em] text-cyan-300">Dataset Context</div>
+              <div className="text-sm leading-6 text-gray-300">ARGUS Public API → normalized Monitoring Feed → Brand Galaxy entities.</div>
+            </button>
+            <button onClick={() => openInfo({ title: "Classification Method", eyebrow: "IAB Logic", tone: "green", body: <p>Classification prefers imported ARGUS IAB fields. If they are missing, the page compares title, advertiser, brand, product and category text against the bundled IAB taxonomy keywords.</p> })} className="rounded-[2rem] border border-white/10 bg-black/25 p-5 text-left transition hover:border-green-300/30 hover:bg-green-500/10">
+              <div className="mb-2 text-xs uppercase tracking-[0.25em] text-green-300">Classification Method</div>
+              <div className="text-sm leading-6 text-gray-300">Imported IAB first, taxonomy keyword inference second, manual review visible.</div>
+            </button>
+            <button onClick={() => openInfo({ title: "Current Feed Scope", eyebrow: "Feed State", tone: "amber", body: <p>The page currently shows {filteredMonitoringFeed.length} filtered signals from {monitoringFeed.length} loaded records, with {riskSignalCount} risk/observation-labelled signals.</p> })} className="rounded-[2rem] border border-white/10 bg-black/25 p-5 text-left transition hover:border-amber-300/30 hover:bg-amber-500/10">
+              <div className="mb-2 text-xs uppercase tracking-[0.25em] text-amber-300">Current Feed Scope</div>
+              <div className="text-sm leading-6 text-gray-300">{filteredMonitoringFeed.length}/{monitoringFeed.length} signals visible · {riskSignalCount} risk labels.</div>
+            </button>
           </div>
 
           <div className="mb-8 grid grid-cols-1 gap-5 xl:grid-cols-3">
-            <ExplanationCard title="Dataset Context">
-              <p>
-                The metrics above now come from the live ARGUS public API.
-                Ads are classified records, while brands, products, IAB labels
-                and campaigns are extracted intelligence fields from those ads.
-              </p>
-              <p>
-                The numbers are not expected to match one-to-one: one ad can
-                contain one brand, several products, one promotion, multiple IAB
-                content categories and observation/risk labels.
-              </p>
-            </ExplanationCard>
-
-            <ExplanationCard title="Classification Method">
-              <p>
-                ARGUS provides IAB product and content taxonomy fields directly.
-                Imported ARGUS IAB values are shown first; local taxonomy inference
-                is only used as a fallback when an ARGUS field is missing.
-              </p>
-              <p>
-                If an item is still marked as unclassified, it means the ARGUS
-                record did not include a usable IAB value and the local fallback
-                matcher did not produce a strong enough match.
-              </p>
-            </ExplanationCard>
-
-            <ExplanationCard title="Current Feed Scope">
-              <p>
-                The feed loads live classified ads from{" "}
-                <span className="text-cyan-100">ARGUS Public API</span> through
-                your secure Next.js API route, so the API key stays server-side.
-              </p>
-              <p>
-                Feed-level unique advertisers: {uniqueAdvertisers}. Feed-level
-                unique products: {uniqueFeedProducts}. Classified signals:{" "}
-                {classifiedSignals}. Risk/observation signals: {riskSignalCount}.
-              </p>
-            </ExplanationCard>
-          </div>
-
-          <div className="mb-8 overflow-hidden rounded-[2rem] border border-cyan-300/25 bg-cyan-500/10 shadow-[0_0_70px_rgba(34,211,238,0.12)] backdrop-blur-xl">
-            <div className="border-b border-white/10 bg-black/25 p-6">
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-green-300/30 bg-green-500/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.25em] text-green-200">
-                <span className="h-2 w-2 rounded-full bg-green-300 shadow-[0_0_14px_rgba(134,239,172,0.8)]" />
-                ARGUS LIVE API CONNECTED
-              </div>
-
-              <h2 className="text-4xl font-black tracking-tight text-white">
-                Live Advertising Intelligence Feed
-              </h2>
-
-              <p className="mt-3 max-w-4xl text-sm leading-6 text-gray-300">
-                This dashboard is now reading classified ads directly from the
-                ARGUS Public API through <span className="text-cyan-100">/api/argus/ads</span>.
-                Brand, product, campaign, IAB, confidence and observation fields
-                below are coming from the live API response.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-0 xl:grid-cols-[1.1fr_0.9fr_0.9fr]">
-              <div className="border-b border-white/10 p-6 xl:border-b-0 xl:border-r">
-                <div className="mb-4 text-xs uppercase tracking-[0.25em] text-cyan-200">
-                  Latest ARGUS Ads
-                </div>
-
-                <div className="space-y-3">
-                  {latestArgusAds.length > 0 ? (
-                    latestArgusAds.map((ad) => (
-                      <div
-                        key={ad.id}
-                        className="rounded-2xl border border-white/10 bg-black/25 p-4"
-                      >
-                        <div className="mb-2 flex flex-wrap items-center gap-2">
-                          <span className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-100">
-                            {ad.spotCode}
-                          </span>
-                          <span className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
-                            {ad.brand}
-                          </span>
-                          <span className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-gray-300">
-                            {ad.duration}s
-                          </span>
-                        </div>
-
-                        <div className="font-bold text-white">{ad.title}</div>
-                        <div className="mt-1 text-xs text-gray-400">
-                          {ad.product}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-gray-400">
-                      Waiting for ARGUS ads...
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="border-b border-white/10 p-6 xl:border-b-0 xl:border-r">
-                <div className="mb-4 text-xs uppercase tracking-[0.25em] text-fuchsia-200">
-                  Top Live Brands
-                </div>
-
-                <div className="space-y-3">
-                  {(topBrands.length > 0 ? topBrands : argusStats?.by_brand || [])
-                    .slice(0, 6)
-                    .map((brand) => (
-                      <button
-                        key={brand.value}
-                        onClick={() => {
-                          setSelectedBrandName(brand.value);
-                          setBrandProfileMode("f1");
-                        }}
-                        className="flex w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3 text-left transition hover:border-fuchsia-300/40 hover:bg-fuchsia-500/10"
-                      >
-                        <span className="truncate text-sm font-semibold text-white">
-                          {brand.value}
-                        </span>
-                        <span className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
-                          {brand.count}
-                        </span>
-                      </button>
-                    ))}
-                </div>
-              </div>
-
-              <div className="p-6">
-                <div className="mb-4 text-xs uppercase tracking-[0.25em] text-amber-200">
-                  Top Categories / Risk
-                </div>
-
-                <div className="mb-4 grid grid-cols-2 gap-3">
-                  <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
-                    <div className="text-3xl font-black text-cyan-100">
-                      {classifiedSignals}
-                    </div>
-                    <div className="mt-1 text-xs text-gray-400">
-                      Classified in feed
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
-                    <div className="text-3xl font-black text-red-100">
-                      {riskSignalCount}
-                    </div>
-                    <div className="mt-1 text-xs text-gray-400">
-                      Observation signals
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  {(topCategories.length > 0
-                    ? topCategories
-                    : argusStats?.by_category || []
-                  )
-                    .slice(0, 5)
-                    .map((category) => (
-                      <div
-                        key={category.value}
-                        className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3"
-                      >
-                        <span className="truncate text-sm font-semibold text-white">
-                          {category.value}
-                        </span>
-                        <span className="rounded-full border border-amber-300/20 bg-amber-500/10 px-3 py-1 text-xs text-amber-100">
-                          {category.count}
-                        </span>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {argusError && (
-            <div className="mb-6 rounded-[2rem] border border-red-300/20 bg-red-500/10 p-5 text-sm text-red-100">
-              ARGUS API error: {argusError}
-            </div>
-          )}
-
-          {loading ? (
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-10 text-gray-300 backdrop-blur-xl">
-              Loading live ARGUS monitoring intelligence...
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_1fr]">
-              <aside className="rounded-[2rem] border border-cyan-300/20 bg-cyan-500/10 p-6 backdrop-blur-xl shadow-[0_0_60px_rgba(34,211,238,0.08)]">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <div className="text-xs uppercase tracking-[0.3em] text-cyan-200">
-                    Intelligence Snapshot
-                  </div>
-                  <InfoTooltip text="This panel highlights the first available signal in the monitoring feed. It is a snapshot, not a total count." />
-                </div>
-
-                <h2 className="mb-6 text-3xl font-black">
-                  Signal Command View
-                </h2>
-
-                {featuredSignal ? (
-                  <div className="rounded-3xl border border-white/10 bg-black/30 p-5">
-                    <div className="mb-3 inline-flex rounded-full border border-fuchsia-300/30 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
-                      {featuredSignal.type}
-                    </div>
-
-                    <h3 className="mb-4 text-2xl font-black">
-                      {featuredSignal.title}
-                    </h3>
-
-                    <div className="space-y-3 text-sm text-gray-300">
-                      <div>
-                        Brand:
-                        <span className="ml-2 font-semibold text-white">
-                          {featuredSignal.brand}
-                        </span>
-                      </div>
-
-                      <div>
-                        Product:
-                        <span className="ml-2 break-words font-semibold text-white">
-                          {featuredSignal.product}
-                        </span>
-                      </div>
-
-                      <div>
-                        Network:
-                        <span className="ml-2 font-semibold text-white">
-                          {featuredSignal.network}
-                        </span>
-                      </div>
-
-                      <div>
-                        IAB:
-                        <span className="ml-2 font-semibold text-white">
-                          {featuredSignal.iabClass}
-                        </span>
-                      </div>
-
-                      <div>
-                        Confidence:
-                        <span className="ml-2 font-semibold text-white">
-                          {featuredSignal.confidence ?? featuredSignal.iabConfidence ?? "N/A"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="rounded-3xl border border-white/10 bg-black/30 p-5 text-sm text-gray-400">
-                    No monitoring signals found yet.
-                  </div>
-                )}
-
-                <div className="mt-5 rounded-3xl border border-white/10 bg-black/24 p-5">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <div className="text-sm font-semibold text-cyan-200">
-                      Pipeline Status
-                    </div>
-                    <InfoTooltip text="This describes the intended intelligence pipeline: raw monitoring row, entity extraction, graph linking, classification, then Brand Galaxy insight generation." />
-                  </div>
-
-                  <div className="space-y-3 text-sm text-gray-300">
-                    <div>✦ Entity extraction ready</div>
-                    <div>✦ Graph linking active</div>
-                    <div>✦ IAB classification layer prepared</div>
-                    <div>✦ Brand Galaxy insight generation enabled</div>
-                  </div>
-                </div>
-
-                <div className="mt-5 rounded-3xl border border-white/10 bg-black/24 p-5">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <div className="text-sm font-semibold text-fuchsia-200">
-                      Active Grouping
-                    </div>
-                    <InfoTooltip text="Grouping does not change the raw data. It only changes how the monitoring feed is organized for review: by campaign, product or brand." />
-                  </div>
-
-                  <div className="text-sm leading-6 text-gray-300">
-                    {groupModeDescription}
-                  </div>
-                </div>
-              </aside>
-
-              <section className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-xl shadow-[0_0_60px_rgba(34,211,238,0.08)]">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <div className="text-xs uppercase tracking-[0.3em] text-fuchsia-200">
-                    Signal Feed
-                  </div>
-                  <InfoTooltip text="The Monitoring Intelligence Feed shows live classified ad records from the ARGUS public API, grouped by campaign, product or brand." />
-                </div>
-
-                <h2 className="mb-2 text-3xl font-black">
-                  Monitoring Intelligence Feed
-                </h2>
-
-                <p className="mb-6 text-sm leading-6 text-gray-400">
-                  Each card now represents one grouped ARGUS intelligence object. Use
-                  the controls below to review live ad data by campaign,
-                  product, or brand.
-                </p>
-
-
-                <div className="mb-6 rounded-[2rem] border border-white/10 bg-black/25 p-5">
-                  <div className="mb-4 flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
-                    <div>
-                      <div className="text-sm font-semibold text-cyan-200">
-                        Search / Filter / A-Z Control
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Analyst controls for set checking, dedup review and brand-first navigation.
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        setSearchQuery("");
-                        setBrandFilter("all");
-                        setCategoryFilter("all");
-                        setIabFilter("all");
-                        setAlphaFilter("all");
-                      }}
-                      className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition hover:border-cyan-300/30 hover:text-white"
-                    >
-                      Reset filters
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-3 xl:grid-cols-[1.6fr_1fr_1fr_1fr]">
-                    <input
-                      value={searchQuery}
-                      onChange={(event) => setSearchQuery(event.target.value)}
-                      placeholder="Search brand, product, campaign, IAB, category..."
-                      className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-sm text-white outline-none transition placeholder:text-gray-600 focus:border-cyan-300/40"
-                    />
-
-                    <select
-                      value={brandFilter}
-                      onChange={(event) => setBrandFilter(event.target.value)}
-                      className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-300/40"
-                    >
-                      <option value="all">All brands</option>
-                      {brandOptions.map((brand) => (
-                        <option key={brand} value={brand}>
-                          {brand}
-                        </option>
-                      ))}
-                    </select>
-
-                    <select
-                      value={categoryFilter}
-                      onChange={(event) => setCategoryFilter(event.target.value)}
-                      className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-300/40"
-                    >
-                      <option value="all">All categories</option>
-                      {categoryOptions.map((category) => (
-                        <option key={category} value={category}>
-                          {category}
-                        </option>
-                      ))}
-                    </select>
-
-                    <select
-                      value={iabFilter}
-                      onChange={(event) => setIabFilter(event.target.value)}
-                      className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-300/40"
-                    >
-                      <option value="all">All IAB classes</option>
-                      {iabOptions.map((iab) => (
-                        <option key={iab} value={iab}>
-                          {iab}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <button
-                      onClick={() => setAlphaFilter("all")}
-                      className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
-                        alphaFilter === "all"
-                          ? "border-cyan-300/40 bg-cyan-500/15 text-cyan-100"
-                          : "border-white/10 bg-black/25 text-gray-500 hover:text-white"
-                      }`}
-                    >
-                      ALL
-                    </button>
-
-                    {alphabet.map((letter) => (
-                      <button
-                        key={letter}
-                        onClick={() => setAlphaFilter(letter)}
-                        className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
-                          alphaFilter === letter
-                            ? "border-cyan-300/40 bg-cyan-500/15 text-cyan-100"
-                            : "border-white/10 bg-black/25 text-gray-500 hover:text-white"
-                        }`}
-                      >
-                        {letter}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mb-6 flex flex-wrap gap-3">
-                  {[
-                    { key: "campaign", label: "Group by Campaign" },
-                    { key: "product", label: "Group by Product" },
-                    { key: "brand", label: "Group by Brand" },
-                  ].map((mode) => (
-                    <button
-                      key={mode.key}
-                      onClick={() => setGroupMode(mode.key as GroupMode)}
-                      className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition duration-300 ${
-                        groupMode === mode.key
-                          ? "border-cyan-300/40 bg-cyan-500/15 text-cyan-100 shadow-[0_0_22px_rgba(34,211,238,0.1)]"
-                          : "border-white/10 bg-black/25 text-gray-400 hover:border-white/20 hover:text-white"
-                      }`}
-                    >
-                      {mode.label}
-                    </button>
+            <div className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5 xl:col-span-2">
+              <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <button onClick={() => openInfo(pageHistoryPanel())} className="text-left">
+                  <div className="text-xs uppercase tracking-[0.25em] text-cyan-300">F1 / Page Story</div>
+                  <h2 className="mt-1 text-2xl font-black text-white">History / Page Story</h2>
+                </button>
+                <div className="flex flex-wrap gap-2">
+                  {(["campaign", "product", "brand"] as GroupMode[]).map((mode) => (
+                    <button key={mode} onClick={() => setGroupMode(mode)} className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] transition ${groupMode === mode ? "border-cyan-300/40 bg-cyan-500/15 text-cyan-100" : "border-white/10 bg-white/[0.04] text-gray-400 hover:text-white"}`}>{mode}</button>
                   ))}
                 </div>
+              </div>
 
-                <div className="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
-                  <div className="rounded-[2rem] border border-cyan-300/20 bg-cyan-500/10 p-5">
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <div>
-                        <div className="text-sm font-semibold text-cyan-200">
-                          Top Now / Overall Top
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Now = current filters. Overall = full loaded set.
-                        </div>
-                      </div>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search signal, brand, product..." className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none transition placeholder:text-gray-600 focus:border-cyan-300/40" />
+                <select value={brandFilter} onChange={(event) => setBrandFilter(event.target.value)} className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/40"><option value="all">All brands</option>{brandOptions.map((brand) => <option key={brand} value={brand}>{brand}</option>)}</select>
+                <select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)} className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/40"><option value="all">All categories</option>{categoryOptions.map((category) => <option key={category} value={category}>{category}</option>)}</select>
+                <select value={iabFilter} onChange={(event) => setIabFilter(event.target.value)} className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/40"><option value="all">All IAB</option>{iabOptions.map((iab) => <option key={iab} value={iab}>{iab}</option>)}</select>
+              </div>
 
-                      <div className="flex rounded-2xl border border-white/10 bg-black/25 p-1">
-                        {[
-                          { key: "now", label: "Now" },
-                          { key: "overall", label: "Overall" },
-                        ].map((mode) => (
-                          <button
-                            key={mode.key}
-                            onClick={() => setRankingMode(mode.key as RankingMode)}
-                            className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
-                              rankingMode === mode.key
-                                ? "bg-cyan-500/20 text-cyan-100"
-                                : "text-gray-500 hover:text-white"
-                            }`}
-                          >
-                            {mode.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      {rankedBrands.map((brand, index) => (
-                        <button
-                          key={brand.value}
-                          onClick={() => {
-                            setBrandFilter(brand.value);
-                            setSelectedBrandName(brand.value);
-                            setBrandProfileMode("f1");
-                          }}
-                          className="flex w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3 text-left transition hover:border-cyan-300/30"
-                        >
-                          <span className="truncate text-sm font-semibold text-white">
-                            #{index + 1} {brand.value}
-                          </span>
-                          <span className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-100">
-                            {brand.count}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-[2rem] border border-fuchsia-300/20 bg-fuchsia-500/10 p-5">
-                    <div className="mb-3 text-sm font-semibold text-fuchsia-200">
-                      Top Products
-                    </div>
-
-                    <div className="space-y-2">
-                      {rankedProducts.map((product, index) => (
-                        <button
-                          key={product.value}
-                          onClick={() => {
-                            setSearchQuery(product.value);
-                            setGroupMode("product");
-                          }}
-                          className="flex w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3 text-left transition hover:border-fuchsia-300/30"
-                        >
-                          <span className="truncate text-sm font-semibold text-white">
-                            #{index + 1} {product.value}
-                          </span>
-                          <span className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
-                            {product.count}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-[2rem] border border-amber-300/20 bg-amber-500/10 p-5">
-                    <div className="mb-3 text-sm font-semibold text-amber-200">
-                      Set Quality Check
-                    </div>
-
-                    <div className="space-y-3 text-sm text-gray-300">
-                      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 p-3">
-                        <span>Visible after filters</span>
-                        <span className="font-bold text-white">
-                          {setQualitySummary.filteredCount}/{setQualitySummary.totalCount}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 p-3">
-                        <span>Repeated brand signals</span>
-                        <span className="font-bold text-white">
-                          {setQualitySummary.duplicatedBrands}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 p-3">
-                        <span>Missing IAB</span>
-                        <span className="font-bold text-white">
-                          {setQualitySummary.missingIab}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 p-3">
-                        <span>Missing products</span>
-                        <span className="font-bold text-white">
-                          {setQualitySummary.missingProducts}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-
-                {groupedSignals.length === 0 ? (
-                  <div className="rounded-[2rem] border border-white/10 bg-black/30 p-8 text-gray-300">
-                    No ARGUS monitoring signals available yet. Check the API route or try again after the ARGUS service has data.
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {groupedSignals.map((group) => {
-                      const primarySignal = group.signals[0];
-
-                      return (
-                        <div
-                          key={group.key}
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => setSelectedSignal(primarySignal)}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter") setSelectedSignal(primarySignal);
-                          }}
-                          className="w-full cursor-pointer rounded-[2rem] border border-white/10 bg-black/30 p-6 text-left shadow-[0_0_35px_rgba(255,255,255,0.04)] transition duration-300 hover:-translate-y-0.5 hover:border-cyan-300/30 hover:bg-black/40"
-                        >
-                          <div className="mb-4 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                            <div className="min-w-0">
-                              <div className="mb-3 inline-flex rounded-full border border-green-300/30 bg-green-500/10 px-3 py-1 text-xs text-green-200">
-                                GROUPED BY {groupMode.toUpperCase()}
-                              </div>
-
-                              <h3 className="break-words text-2xl font-black text-white">
-                                {group.key}
-                              </h3>
-
-                              <p className="mt-2 max-w-3xl text-sm leading-6 text-gray-400">
-                                This grouped object contains {group.count} signal
-                                {group.count === 1 ? "" : "s"} connected to{" "}
-                                {group.products.length} product
-                                {group.products.length === 1 ? "" : "s"},{" "}
-                                {group.brands.length} brand
-                                {group.brands.length === 1 ? "" : "s"} and{" "}
-                                {group.campaigns.length} campaign
-                                {group.campaigns.length === 1 ? "" : "s"}.
-                              </p>
-                            </div>
-
-                            <div className="flex flex-wrap gap-3">
-                              <div className="rounded-2xl border border-cyan-300/30 bg-cyan-500/10 px-4 py-3 text-cyan-100">
-                                {group.count} signal
-                                {group.count === 1 ? "" : "s"}
-                              </div>
-
-                              <div className="rounded-2xl border border-fuchsia-300/30 bg-fuchsia-500/10 px-4 py-3 text-fuchsia-100">
-                                {group.products.length} product
-                                {group.products.length === 1 ? "" : "s"}
-                              </div>
-
-                              <div className="rounded-2xl border border-green-300/30 bg-green-500/10 px-4 py-3 text-green-100">
-                                {group.brands.length} brand
-                                {group.brands.length === 1 ? "" : "s"}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="mb-5 grid grid-cols-1 gap-3 xl:grid-cols-3">
-                            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                              <div className="mb-2 flex items-center justify-between gap-2 text-xs uppercase tracking-[0.2em] text-cyan-300">
-                                Related Products
-                                <InfoTooltip text="Products found inside this group. When grouped by product, this usually shows the canonical product object for the group." />
-                              </div>
-
-                              <div className="space-y-2 text-sm text-gray-300">
-                                {group.products.slice(0, 6).map((product) => (
-                                  <div key={product}>{product}</div>
-                                ))}
-                              </div>
-                            </div>
-
-                            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                              <div className="mb-2 flex items-center justify-between gap-2 text-xs uppercase tracking-[0.2em] text-fuchsia-300">
-                                Related Campaigns
-                                <InfoTooltip text="Campaigns found inside this group. When grouped by campaign, this shows the campaign object plus any duplicate or related campaign labels." />
-                              </div>
-
-                              <div className="space-y-2 text-sm text-gray-300">
-                                {group.campaigns.slice(0, 6).map((campaign) => (
-                                  <div key={campaign}>{campaign}</div>
-                                ))}
-                              </div>
-                            </div>
-
-                            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                              <div className="mb-2 flex items-center justify-between gap-2 text-xs uppercase tracking-[0.2em] text-green-300">
-                                Related Brands
-                                <InfoTooltip text="Brands found inside this group. This helps distinguish commercial brands from legal companies or owners." />
-                              </div>
-
-                              <div className="space-y-2 text-sm text-gray-300">
-                                {group.brands.slice(0, 6).map((brand) => (
-                                  <div key={brand}>{brand}</div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-2 2xl:grid-cols-4">
-                            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                              <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
-                                Primary Advertiser
-                                <InfoTooltip text="The first advertiser detected inside this grouped object. Additional advertisers appear in the grouped hierarchy if present." />
-                              </div>
-                              <div className="break-words font-bold">
-                                {primarySignal.advertiser}
-                              </div>
-                            </div>
-
-                            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                              <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
-                                Primary Brand
-                                <InfoTooltip text="The first brand detected inside this grouped object. Brand grouping is based on normalized display labels from the current monitoring feed." />
-                              </div>
-                              <div className="break-words font-bold">
-                                {primarySignal.brand}
-                              </div>
-                            </div>
-
-                            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                              <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
-                                Primary Product
-                                <InfoTooltip text="The first product detected inside this grouped object. Product-level normalization is the next phase, especially for variants like Zero Sugar / Coke Zero." />
-                              </div>
-                              <div className="break-words font-bold">
-                                {primarySignal.product}
-                              </div>
-                            </div>
-
-                            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                              <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
-                                IAB Class
-                                <InfoTooltip text="Classification based on IAB taxonomy when imported. If missing, this field explicitly says that mapping is pending instead of hiding the absence." />
-                              </div>
-                              <div className="break-words font-bold">
-                                {group.iabClasses[0] ||
-                                  "Unclassified / pending IAB mapping"}
-                              </div>
-                              <div className="mt-2 text-xs text-gray-500">
-                                Confidence: {group.iabConfidence[0] || "None"}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="space-y-3">
-                            {group.signals.slice(0, 4).map((signal) => (
-                              <button
-                                key={signal.id}
-                                type="button"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  setSelectedSignal(signal);
-                                }}
-                                className="w-full rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-left transition hover:border-cyan-300/30"
-                              >
-                                <div className="mb-2 flex flex-wrap items-center gap-2">
-                                  <div className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-100">
-                                    {signal.type}
-                                  </div>
-
-                                  {signal.duration && (
-                                    <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-gray-300">
-                                      {signal.duration} sec
-                                    </div>
-                                  )}
-
-                                  {signal.spotCode && (
-                                    <div className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
-                                      Ad: {signal.spotCode}
-                                    </div>
-                                  )}
-
-                                  {signal.riskLabels?.length > 0 && (
-                                    <div className="rounded-full border border-red-300/20 bg-red-500/10 px-3 py-1 text-xs text-red-100">
-                                      {signal.riskLabels.length} observation tag{signal.riskLabels.length === 1 ? "" : "s"}
-                                    </div>
-                                  )}
-                                </div>
-
-                                <div className="font-semibold text-white">
-                                  {signal.title}
-                                </div>
-
-                                <div className="mt-2 text-sm leading-6 text-gray-400">
-                                  {signal.description}
-                                </div>
-
-                                <div className="mt-3 text-xs uppercase tracking-[0.2em] text-gray-500">
-                                  Source: {signal.source} · Classification:{" "}
-                                  {signal.classificationSource}
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-
-                          <div className="mt-5 rounded-2xl border border-fuchsia-300/20 bg-fuchsia-500/10 p-4 text-sm leading-6 text-fuchsia-100">
-                            Grouping view: this card summarizes multiple
-                            monitoring signals around one{" "}
-                            {groupMode === "campaign"
-                              ? "campaign"
-                              : groupMode === "product"
-                              ? "product"
-                              : "brand"}{" "}
-                            object. Switch the grouping mode above to inspect
-                            the same dataset from another perspective.
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </section>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button onClick={() => setAlphaFilter("all")} className={`rounded-full border px-3 py-1 text-xs ${alphaFilter === "all" ? "border-cyan-300/40 bg-cyan-500/15 text-cyan-100" : "border-white/10 bg-white/[0.04] text-gray-500"}`}>All</button>
+                {alphabet.map((letter) => <button key={letter} onClick={() => setAlphaFilter(letter)} className={`rounded-full border px-3 py-1 text-xs ${alphaFilter === letter ? "border-cyan-300/40 bg-cyan-500/15 text-cyan-100" : "border-white/10 bg-white/[0.04] text-gray-500 hover:text-white"}`}>{letter}</button>)}
+              </div>
             </div>
-          )}
+
+            <div className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
+              <button onClick={() => openInfo({ title: "Top Live Brands", eyebrow: "Brand Intelligence Entry", tone: "pink", body: <p>These are the strongest brands in the currently loaded monitoring feed. Each row opens the F2 Brand Card with profile, products, campaigns, audiences, IAB footprint, sources and risk labels.</p> })} className="mb-4 text-left">
+                <div className="text-xs uppercase tracking-[0.25em] text-fuchsia-300">Top Live Brands</div>
+                <h2 className="mt-1 text-2xl font-black text-white">Brand Intelligence</h2>
+              </button>
+              <div className="space-y-3">
+                {topBrands.length ? topBrands.map((brand) => (
+                  <button key={brand.value} onClick={() => openBrandProfile(brand.value, "f2")} className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-black/25 p-4 text-left transition hover:border-fuchsia-300/40 hover:bg-fuchsia-500/10">
+                    <span className="font-bold text-white">{brand.value}</span><span className="text-sm text-fuchsia-200">{brand.count} signals →</span>
+                  </button>
+                )) : <EmptyState label="No brand signals loaded yet." />}
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-8 grid grid-cols-1 gap-5 xl:grid-cols-2">
+            <div className="rounded-[2rem] border border-white/10 bg-black/25 p-5">
+              <div className="mb-3 flex items-center justify-between"><h3 className="text-lg font-black text-white">Live categories</h3><button onClick={() => openInfo({ title: "Category Distribution", tone: "green", body: <p>Categories come from ARGUS primary_category, subcategory, program or IAB fields. They are used as audience/context signals for the graph.</p> })} className="text-xs text-cyan-200">Explain</button></div>
+              <div className="space-y-3">{topCategories.map((item) => <div key={item.value} className="rounded-2xl border border-white/10 bg-white/[0.04] p-3"><div className="flex justify-between gap-3 text-sm"><span className="text-gray-200">{item.value}</span><span className="font-bold text-green-200">{item.count}</span></div></div>)}</div>
+            </div>
+            <div className="rounded-[2rem] border border-white/10 bg-black/25 p-5">
+              <div className="mb-3 flex items-center justify-between"><h3 className="text-lg font-black text-white">Top products</h3><button onClick={() => openInfo({ title: "Product Ranking", tone: "indigo", body: <p>Product ranking shows normalized product objects visible in the current feed. These can become product satellites around brands in Brand Galaxy.</p> })} className="text-xs text-cyan-200">Explain</button></div>
+              <div className="mb-4 flex gap-2"><button onClick={() => setRankingMode("now")} className={`rounded-full px-3 py-1 text-xs ${rankingMode === "now" ? "bg-indigo-500/20 text-indigo-100" : "bg-white/[0.05] text-gray-400"}`}>Filtered</button><button onClick={() => setRankingMode("overall")} className={`rounded-full px-3 py-1 text-xs ${rankingMode === "overall" ? "bg-indigo-500/20 text-indigo-100" : "bg-white/[0.05] text-gray-400"}`}>Overall</button></div>
+              <div className="space-y-3">{rankedProducts.map((item) => <div key={item.value} className="rounded-2xl border border-white/10 bg-white/[0.04] p-3"><div className="flex justify-between gap-3 text-sm"><span className="text-gray-200">{item.value}</span><span className="font-bold text-indigo-200">{item.count}</span></div></div>)}</div>
+            </div>
+          </div>
+
+          <section className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5 backdrop-blur-xl">
+            <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+              <div>
+                <button onClick={() => openInfo({ title: "Signal Cards", eyebrow: "Clickable Signal Groups", tone: "cyan", body: <p>Every card below is clickable. Opening a card reveals signal detail, brand, product, campaign, IAB/category, risk labels and a human-readable explanation.</p> })} className="text-left">
+                  <div className="text-xs uppercase tracking-[0.25em] text-cyan-300">Signal Cards</div>
+                  <h2 className="mt-1 text-3xl font-black text-white">Grouped Monitoring Signals</h2>
+                </button>
+                <p className="mt-2 text-sm text-gray-400">{filteredMonitoringFeed.length} signals grouped by {groupMode}.</p>
+              </div>
+            </div>
+
+            {loading ? <div className="rounded-3xl border border-white/10 bg-black/25 p-8 text-center text-gray-400">Loading monitoring feed...</div> : (
+              <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                {groupedSignals.map((group) => (
+                  <button key={group.key} onClick={() => setSelectedSignal(group.signals[0])} className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:-translate-y-0.5 hover:border-cyan-300/35 hover:bg-cyan-500/10">
+                    <div className="mb-3 flex items-start justify-between gap-4"><div><div className="text-xs uppercase tracking-[0.2em] text-cyan-300">{groupMode} group</div><h3 className="mt-1 text-xl font-black text-white">{group.key}</h3></div><div className="rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-1 text-xs font-bold text-cyan-100">{group.count} signals</div></div>
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                      <div><div className="mb-2 text-xs text-gray-500">Brands</div><div className="flex flex-wrap gap-2">{group.brands.slice(0, 4).map((item) => <Pill key={item}>{item}</Pill>)}</div></div>
+                      <div><div className="mb-2 text-xs text-gray-500">Products</div><div className="flex flex-wrap gap-2">{group.products.slice(0, 4).map((item) => <Pill key={item}>{item}</Pill>)}</div></div>
+                      <div className="md:col-span-2"><div className="mb-2 text-xs text-gray-500">IAB / Source</div><div className="flex flex-wrap gap-2">{[...group.iabClasses.slice(0, 2), ...group.sources.slice(0, 2)].map((item) => <Pill key={item}>{item}</Pill>)}</div></div>
+                    </div>
+                  </button>
+                ))}
+                {!groupedSignals.length && <div className="rounded-3xl border border-white/10 bg-black/25 p-8 text-center text-gray-400 xl:col-span-2">No monitoring signals match the current filters.</div>}
+              </div>
+            )}
+          </section>
         </div>
 
-
         {selectedBrandProfile && (
-          <div className="fixed inset-0 z-[85] flex items-center justify-center bg-black/70 px-4 backdrop-blur-xl">
-            <div className="max-h-[90vh] w-full max-w-6xl overflow-y-auto rounded-[2rem] border border-fuchsia-300/25 bg-[#020617] p-6 shadow-[0_0_100px_rgba(217,70,239,0.16)]">
-              <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-[1.5rem] border border-fuchsia-300/30 bg-fuchsia-500/10 text-4xl shadow-[0_0_45px_rgba(217,70,239,0.18)]">
-                    {selectedBrandProfile.logoEmoji}
-                  </div>
-
-                  <div>
-                    <div className="mb-2 inline-flex rounded-full border border-fuchsia-300/25 bg-fuchsia-500/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-fuchsia-200">
-                      Brand Intelligence Profile
-                    </div>
-
-                    <h3 className="text-4xl font-black text-white">
-                      {selectedBrandProfile.name}
-                    </h3>
-
-                    <div className="mt-2 text-sm text-gray-400">
-                      {selectedBrandProfile.slogan}
-                    </div>
-
-                    {selectedBrandProfile.website && (
-                      <a
-                        href={selectedBrandProfile.website}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-2 inline-flex text-sm font-semibold text-cyan-200 hover:text-cyan-100"
-                      >
-                        {selectedBrandProfile.website}
-                      </a>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <div className="flex rounded-2xl border border-white/10 bg-black/25 p-1">
-                    {[
-                      { key: "f1", label: "F1" },
-                      { key: "f2", label: "F2" },
-                    ].map((mode) => (
-                      <button
-                        key={mode.key}
-                        onClick={() => setBrandProfileMode(mode.key as BrandProfileMode)}
-                        className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
-                          brandProfileMode === mode.key
-                            ? "bg-fuchsia-500/20 text-fuchsia-100"
-                            : "text-gray-500 hover:text-white"
-                        }`}
-                      >
-                        {mode.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={() => setSelectedBrandName(null)}
-                    className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition hover:border-white/20 hover:text-white"
-                  >
-                    Close
-                  </button>
-                </div>
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 px-4 backdrop-blur-xl">
+            <div className="max-h-[88vh] w-full max-w-6xl overflow-y-auto rounded-[2rem] border border-fuchsia-300/25 bg-[#020617] p-6 shadow-[0_0_90px_rgba(217,70,239,0.16)]">
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4"><div className="flex h-16 w-16 items-center justify-center rounded-3xl border border-white/10 bg-white/[0.06] text-4xl">{selectedBrandProfile.logoEmoji}</div><div><div className="mb-2 inline-flex rounded-full border border-fuchsia-300/25 bg-fuchsia-500/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-fuchsia-200">{brandProfileMode === "f1" ? "F1 / Page History" : "F2 / Brand Card"}</div><h3 className="text-4xl font-black text-white">{brandProfileMode === "f1" ? "Monitoring Page Story" : selectedBrandProfile.name}</h3><p className="mt-2 text-sm text-gray-400">{brandProfileMode === "f1" ? "History, context and current feed state for this page." : selectedBrandProfile.slogan}</p></div></div>
+                <button onClick={() => setSelectedBrandName(null)} className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition hover:border-white/20 hover:text-white">Close</button>
               </div>
-
-              <div className="mb-5 grid grid-cols-2 gap-4 md:grid-cols-4">
-                {[
-                  ["Signals", selectedBrandProfile.signalCount],
-                  ["Classified", selectedBrandProfile.classifiedCount],
-                  ["Products", selectedBrandProfile.products.length],
-                  ["Campaigns", selectedBrandProfile.campaigns.length],
-                ].map(([label, value]) => (
-                  <div
-                    key={label}
-                    className="rounded-3xl border border-white/10 bg-black/25 p-5"
-                  >
-                    <div className="text-3xl font-black text-fuchsia-100">
-                      {value}
-                    </div>
-                    <div className="mt-1 text-xs uppercase tracking-[0.2em] text-gray-500">
-                      {label}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <div className="mb-5 flex flex-wrap gap-2">{([{ key: "f1", label: "F1 Page History" }, { key: "f2", label: "F2 Brand Card" }] as { key: BrandProfileMode; label: string }[]).map((mode) => <button key={mode.key} onClick={() => setBrandProfileMode(mode.key)} className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] transition ${brandProfileMode === mode.key ? "border-fuchsia-300/40 bg-fuchsia-500/15 text-fuchsia-100" : "border-white/10 bg-white/[0.04] text-gray-400 hover:text-white"}`}>{mode.label}</button>)}</div>
 
               {brandProfileMode === "f1" ? (
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
-                    <div className="mb-2 text-xs uppercase tracking-[0.2em] text-cyan-300">
-                      Company / ownership
-                    </div>
-                    <div className="text-xl font-black text-white">
-                      {selectedBrandProfile.company}
-                    </div>
-                    <div className="mt-2 text-sm leading-6 text-gray-400">
-                      {selectedBrandProfile.ownership}
-                    </div>
-                  </div>
-
-                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
-                    <div className="mb-2 text-xs uppercase tracking-[0.2em] text-emerald-300">
-                      IAB footprint
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {(selectedBrandProfile.iabFootprint.length
-                        ? selectedBrandProfile.iabFootprint
-                        : ["Unclassified / pending IAB mapping"]
-                      ).slice(0, 6).map((item) => (
-                        <span
-                          key={item}
-                          className="rounded-full border border-emerald-300/20 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-100"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
-                    <div className="mb-3 text-xs uppercase tracking-[0.2em] text-fuchsia-300">
-                      Products
-                    </div>
-                    <div className="space-y-2 text-sm text-gray-300">
-                      {(selectedBrandProfile.products.length
-                        ? selectedBrandProfile.products
-                        : ["No products detected yet"]
-                      ).slice(0, 8).map((item) => (
-                        <div key={item}>{item}</div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
-                    <div className="mb-3 text-xs uppercase tracking-[0.2em] text-amber-300">
-                      Campaigns
-                    </div>
-                    <div className="space-y-2 text-sm text-gray-300">
-                      {(selectedBrandProfile.campaigns.length
-                        ? selectedBrandProfile.campaigns
-                        : ["No campaigns detected yet"]
-                      ).slice(0, 8).map((item) => (
-                        <div key={item}>{item}</div>
-                      ))}
-                    </div>
-                  </div>
+                <div className="space-y-5 text-sm leading-7 text-gray-300">
+                  {pageHistoryPanel(selectedBrandProfile).body}
+                  <div className="rounded-3xl border border-cyan-300/20 bg-cyan-500/10 p-5"><div className="mb-2 text-sm font-bold text-cyan-100">What Monitoring does</div><p>It provides a page-level operational history: source state, signal normalization, brand/product/campaign extraction, IAB classification and risk/source context.</p></div>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5 lg:col-span-2">
-                    <div className="mb-2 text-xs uppercase tracking-[0.2em] text-cyan-300">
-                      Brand history / context
-                    </div>
-                    <p className="text-sm leading-7 text-gray-300">
-                      {selectedBrandProfile.history}
-                    </p>
-
-                    <div className="mt-5 text-xs uppercase tracking-[0.2em] text-fuchsia-300">
-                      Aliases
-                    </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {selectedBrandProfile.aliases.map((alias) => (
-                        <span
-                          key={alias}
-                          className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-gray-200"
-                        >
-                          {alias}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
-                    <div className="mb-2 text-xs uppercase tracking-[0.2em] text-amber-300">
-                      Audiences / categories
-                    </div>
-                    <div className="space-y-2 text-sm text-gray-300">
-                      {dedupe([
-                        ...selectedBrandProfile.audiences,
-                        ...selectedBrandProfile.categories,
-                      ])
-                        .slice(0, 12)
-                        .map((item) => (
-                          <div key={item}>{item}</div>
-                        ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5 lg:col-span-3">
-                    <div className="mb-3 text-xs uppercase tracking-[0.2em] text-green-300">
-                      Latest signals
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                      {selectedBrandProfile.signals.slice(0, 6).map((signal) => (
-                        <button
-                          key={signal.id}
-                          onClick={() => setSelectedSignal(signal)}
-                          className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left transition hover:border-green-300/30 hover:bg-green-500/10"
-                        >
-                          <div className="text-sm font-bold text-white">
-                            {signal.title}
-                          </div>
-                          <div className="mt-1 text-xs text-gray-400">
-                            {signal.campaignObject || signal.product}
-                          </div>
-                          <div className="mt-2 text-xs text-green-200">
-                            {signal.iabClass || "Unclassified"}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {selectedBrandProfile.riskLabels.length > 0 && (
-                <div className="mt-5 rounded-3xl border border-red-300/20 bg-red-500/10 p-5">
-                  <div className="mb-3 text-sm font-semibold text-red-200">
-                    Risk / observation labels
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedBrandProfile.riskLabels.map((label) => (
-                      <span
-                        key={label}
-                        className="rounded-full border border-red-300/20 bg-black/25 px-3 py-1 text-xs text-red-100"
-                      >
-                        {label}
-                      </span>
-                    ))}
-                  </div>
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-cyan-300">Website / Company</div>{selectedBrandProfile.website ? <a href={selectedBrandProfile.website} target="_blank" rel="noreferrer" className="text-cyan-200 hover:text-cyan-100">{selectedBrandProfile.website}</a> : <EmptyState label="Website pending." />}<div className="mt-3 text-lg font-bold text-white">{selectedBrandProfile.company}</div><div className="mt-1 text-sm text-gray-400">{selectedBrandProfile.ownership}</div></div>
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-fuchsia-300">Aliases</div><div className="flex flex-wrap gap-2">{selectedBrandProfile.aliases.length ? selectedBrandProfile.aliases.map((alias) => <Pill key={alias}>{alias}</Pill>) : <EmptyState label="No aliases yet." />}</div></div>
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-red-300">Risk Labels</div><div className="flex flex-wrap gap-2">{selectedBrandProfile.riskLabels.length ? selectedBrandProfile.riskLabels.map((label) => <Pill key={label}>{label}</Pill>) : <EmptyState label="No risk labels in current feed." />}</div></div>
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-indigo-300">Products</div><div className="flex flex-wrap gap-2">{selectedBrandProfile.products.length ? selectedBrandProfile.products.map((item) => <Pill key={item}>{item}</Pill>) : <EmptyState label="No products yet." />}</div></div>
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-green-300">Campaigns</div><div className="space-y-2">{selectedBrandProfile.campaigns.length ? selectedBrandProfile.campaigns.map((item) => <div key={item} className="text-sm text-gray-300">{item}</div>) : <EmptyState label="No campaigns yet." />}</div></div>
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-amber-300">Audiences / IAB</div><div className="space-y-2">{dedupe([...selectedBrandProfile.audiences, ...selectedBrandProfile.iabFootprint]).slice(0, 12).map((item) => <div key={item} className="text-sm text-gray-300">{item}</div>)}</div></div>
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5 lg:col-span-3"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-cyan-300">Sources</div><div className="mb-4 flex flex-wrap gap-2">{selectedBrandProfile.sources.length ? selectedBrandProfile.sources.map((item) => <Pill key={item}>{item}</Pill>) : <EmptyState label="No source metadata yet." />}</div><div className="grid grid-cols-2 gap-3 md:grid-cols-4"><div className="rounded-2xl bg-white/[0.04] p-4"><div className="text-2xl font-black text-white">{selectedBrandProfile.signalCount}</div><div className="text-xs text-gray-400">signals</div></div><div className="rounded-2xl bg-white/[0.04] p-4"><div className="text-2xl font-black text-white">{selectedBrandProfile.classifiedCount}</div><div className="text-xs text-gray-400">classified</div></div><div className="rounded-2xl bg-white/[0.04] p-4"><div className="text-2xl font-black text-white">{selectedBrandProfile.products.length}</div><div className="text-xs text-gray-400">products</div></div><div className="rounded-2xl bg-white/[0.04] p-4"><div className="text-2xl font-black text-white">{selectedBrandProfile.campaigns.length}</div><div className="text-xs text-gray-400">campaigns</div></div></div></div>
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5 lg:col-span-3"><div className="mb-3 text-xs uppercase tracking-[0.2em] text-green-300">Latest signals</div><div className="grid grid-cols-1 gap-3 md:grid-cols-2">{selectedBrandProfile.signals.slice(0, 6).map((signal) => <button key={signal.id} onClick={() => setSelectedSignal(signal)} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left transition hover:border-green-300/30 hover:bg-green-500/10"><div className="text-sm font-bold text-white">{signal.title}</div><div className="mt-1 text-xs text-gray-400">{signal.campaignObject || signal.product}</div><div className="mt-2 text-xs text-green-200">{signal.iabClass || "Unclassified"}</div></button>)}</div></div>
                 </div>
               )}
             </div>
@@ -6708,133 +5717,27 @@ export default function MonitoringPage() {
         {selectedSignal && (
           <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 px-4 backdrop-blur-xl">
             <div className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-cyan-300/25 bg-[#020617] p-6 shadow-[0_0_90px_rgba(34,211,238,0.16)]">
-              <div className="mb-5 flex items-start justify-between gap-4">
-                <div>
-                  <div className="mb-2 inline-flex rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-cyan-200">
-                    Clickable Signal Detail
-                  </div>
-
-                  <h3 className="text-3xl font-black text-white">
-                    {selectedSignal.title}
-                  </h3>
-
-                  <div className="mt-2 text-sm text-gray-400">
-                    {selectedSignal.source} · {selectedSignal.spotCode || selectedSignal.id}
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setSelectedSignal(null)}
-                  className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition hover:border-white/20 hover:text-white"
-                >
-                  Close
-                </button>
-              </div>
-
+              <div className="mb-5 flex items-start justify-between gap-4"><div><div className="mb-2 inline-flex rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-cyan-200">Clickable Signal Detail</div><h3 className="text-3xl font-black text-white">{selectedSignal.title}</h3><div className="mt-2 text-sm text-gray-400">{selectedSignal.source} · {selectedSignal.spotCode || selectedSignal.id}</div></div><button onClick={() => setSelectedSignal(null)} className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition hover:border-white/20 hover:text-white">Close</button></div>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <button
-                  onClick={() => {
-                    setSelectedBrandName(selectedSignal.brand);
-                    setBrandProfileMode("f1");
-                  }}
-                  className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:border-cyan-300/40 hover:bg-cyan-500/10"
-                >
-                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-cyan-300">
-                    Brand
-                  </div>
-                  <div className="text-2xl font-black text-white">
-                    {selectedSignal.brand}
-                  </div>
-                  <div className="mt-2 text-sm text-gray-400">
-                    Advertiser / Company: {selectedSignal.advertiser}
-                  </div>
-                  <div className="mt-3 text-xs uppercase tracking-[0.2em] text-cyan-200">
-                    Open brand profile →
-                  </div>
-                </button>
-
-                <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
-                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-fuchsia-300">
-                    Product
-                  </div>
-                  <div className="text-2xl font-black text-white">
-                    {selectedSignal.canonicalProduct || selectedSignal.product}
-                  </div>
-                  <div className="mt-2 text-sm text-gray-400">
-                    Raw product text: {selectedSignal.product}
-                  </div>
-                </div>
-
-                <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
-                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-green-300">
-                    Campaign
-                  </div>
-                  <div className="text-2xl font-black text-white">
-                    {selectedSignal.campaignObject || selectedSignal.title}
-                  </div>
-                  <div className="mt-2 text-sm text-gray-400">
-                    Duration: {selectedSignal.duration || "N/A"} sec
-                  </div>
-                </div>
-
-                <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
-                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-amber-300">
-                    IAB / Category
-                  </div>
-                  <div className="text-lg font-bold text-white">
-                    {selectedSignal.iabClass || "Unclassified / pending IAB mapping"}
-                  </div>
-                  <div className="mt-2 text-sm text-gray-400">
-                    Confidence: {selectedSignal.iabConfidence || selectedSignal.confidence || "N/A"}
-                  </div>
-                </div>
+                <button onClick={() => openBrandProfile(selectedSignal.brand, "f2")} className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:border-fuchsia-300/40 hover:bg-fuchsia-500/10"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-fuchsia-300">Brand</div><div className="text-2xl font-black text-white">{selectedSignal.brand}</div><div className="mt-2 text-sm text-gray-400">Advertiser / Company: {selectedSignal.advertiser}</div><div className="mt-3 text-xs uppercase tracking-[0.2em] text-fuchsia-200">Open F2 Brand Card →</div></button>
+                <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-indigo-300">Product</div><div className="text-2xl font-black text-white">{selectedSignal.canonicalProduct || selectedSignal.product}</div><div className="mt-2 text-sm text-gray-400">Raw product text: {selectedSignal.product}</div></div>
+                <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-green-300">Campaign</div><div className="text-2xl font-black text-white">{selectedSignal.campaignObject || selectedSignal.title}</div><div className="mt-2 text-sm text-gray-400">Duration: {selectedSignal.duration || "N/A"} sec</div></div>
+                <div className="rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-xs uppercase tracking-[0.2em] text-amber-300">IAB / Category</div><div className="text-lg font-bold text-white">{selectedSignal.iabClass || "Unclassified / pending IAB mapping"}</div><div className="mt-2 text-sm text-gray-400">Confidence: {selectedSignal.iabConfidence || selectedSignal.confidence || "N/A"}</div></div>
               </div>
-
-              <div className="mt-4 rounded-3xl border border-white/10 bg-black/25 p-5">
-                <div className="mb-2 text-sm font-semibold text-cyan-200">
-                  Human-readable explanation
-                </div>
-                <p className="text-sm leading-7 text-gray-300">
-                  This signal is grouped around the brand{" "}
-                  <span className="font-semibold text-white">{selectedSignal.brand}</span>,
-                  connected to product{" "}
-                  <span className="font-semibold text-white">
-                    {selectedSignal.canonicalProduct || selectedSignal.product}
-                  </span>
-                  , campaign{" "}
-                  <span className="font-semibold text-white">
-                    {selectedSignal.campaignObject || selectedSignal.title}
-                  </span>
-                  , and IAB/category{" "}
-                  <span className="font-semibold text-white">
-                    {selectedSignal.iabClass || "Unclassified"}
-                  </span>
-                  . It can be used by the relationship graph as a brand-first
-                  intelligence signal.
-                </p>
-              </div>
-
-              {selectedSignal.riskLabels?.length > 0 && (
-                <div className="mt-4 rounded-3xl border border-red-300/20 bg-red-500/10 p-5">
-                  <div className="mb-2 text-sm font-semibold text-red-200">
-                    Risk / Observation Labels
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedSignal.riskLabels.map((label: string) => (
-                      <span
-                        key={label}
-                        className="rounded-full border border-red-300/20 bg-black/25 px-3 py-1 text-xs text-red-100"
-                      >
-                        {label}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <div className="mt-4 rounded-3xl border border-white/10 bg-black/25 p-5"><div className="mb-2 text-sm font-semibold text-cyan-200">Human-readable explanation</div><p className="text-sm leading-7 text-gray-300">This signal connects <span className="font-semibold text-white">{selectedSignal.brand}</span> to <span className="font-semibold text-white">{selectedSignal.canonicalProduct || selectedSignal.product}</span>, campaign <span className="font-semibold text-white">{selectedSignal.campaignObject || selectedSignal.title}</span>, and IAB/category <span className="font-semibold text-white">{selectedSignal.iabClass || "Unclassified"}</span>. It is ready to be used as a brand-first intelligence signal in Brand Galaxy.</p></div>
+              {selectedSignal.riskLabels?.length > 0 && <div className="mt-4 rounded-3xl border border-red-300/20 bg-red-500/10 p-5"><div className="mb-2 text-sm font-semibold text-red-200">Risk / Observation Labels</div><div className="flex flex-wrap gap-2">{selectedSignal.riskLabels.map((label: string) => <Pill key={label}>{label}</Pill>)}</div></div>}
             </div>
           </div>
         )}
 
+        {infoPanel && (
+          <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 px-4 backdrop-blur-xl">
+            <div className="max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] border border-white/10 bg-[#020617] p-6 shadow-[0_0_90px_rgba(34,211,238,0.14)]">
+              <div className="mb-5 flex items-start justify-between gap-4"><div><div className={`mb-2 inline-flex rounded-full border px-3 py-1 text-xs uppercase tracking-[0.25em] ${toneClasses(infoPanel.tone)}`}>{infoPanel.eyebrow || "Information Panel"}</div><h3 className="text-3xl font-black text-white">{infoPanel.title}</h3></div><button onClick={() => setInfoPanel(null)} className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition hover:border-white/20 hover:text-white">Close</button></div>
+              <div className="space-y-4 text-sm leading-7 text-gray-300">{infoPanel.body}</div>
+            </div>
+          </div>
+        )}
       </main>
     </>
   );
