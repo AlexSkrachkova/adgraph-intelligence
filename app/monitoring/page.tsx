@@ -5,12 +5,34 @@ import NavBar from "@/components/NavBar";
 
 type GroupMode = "campaign" | "product" | "brand";
 type RankingMode = "now" | "overall";
+type BrandProfileMode = "f1" | "f2";
 
 type ArgusStats = {
   total_ads: number;
   by_category?: { value: string; count: number }[];
   by_brand?: { value: string; count: number }[];
   risk_labels?: string[];
+};
+
+type BrandIntelligenceProfile = {
+  name: string;
+  logoEmoji: string;
+  slogan: string;
+  website: string;
+  company: string;
+  aliases: string[];
+  products: string[];
+  campaigns: string[];
+  audiences: string[];
+  iabFootprint: string[];
+  categories: string[];
+  sources: string[];
+  riskLabels: string[];
+  signals: any[];
+  signalCount: number;
+  classifiedCount: number;
+  history: string;
+  ownership: string;
 };
 
 type IabTaxonomyRow = {
@@ -5126,6 +5148,203 @@ function normalizeMonitoringSpot(item: any) {
   };
 }
 
+
+const BRAND_PROFILE_REGISTRY: Record<
+  string,
+  {
+    logoEmoji: string;
+    slogan: string;
+    website: string;
+    ownership: string;
+    history: string;
+    aliases: string[];
+  }
+> = {
+  jeep: {
+    logoEmoji: "🚙",
+    slogan: "Go Anywhere. Do Anything.",
+    website: "https://www.jeep.com",
+    ownership: "Stellantis",
+    history: "SUV and off-road automotive brand inside the Stellantis portfolio.",
+    aliases: ["JEEP", "Jeep®", "Wrangler by Jeep"],
+  },
+  libertymutual: {
+    logoEmoji: "🗽",
+    slogan: "Only pay for what you need.",
+    website: "https://www.libertymutual.com",
+    ownership: "Liberty Mutual Insurance",
+    history: "Insurance brand commonly associated with direct-response auto and home insurance advertising.",
+    aliases: ["Liberty Mutual Insurance"],
+  },
+  progressive: {
+    logoEmoji: "🛡️",
+    slogan: "Name your price.",
+    website: "https://www.progressive.com",
+    ownership: "Progressive",
+    history: "Insurance brand focused on auto, home and bundle insurance campaigns.",
+    aliases: ["Progressive Insurance"],
+  },
+  carshield: {
+    logoEmoji: "🛠️",
+    slogan: "Protection plans for vehicle repairs.",
+    website: "https://www.carshield.com",
+    ownership: "Car Shield",
+    history: "Direct-response automotive protection / vehicle service contract advertiser.",
+    aliases: ["CarShield", "Car Shield"],
+  },
+  netflix: {
+    logoEmoji: "🎬",
+    slogan: "Watch anywhere.",
+    website: "https://www.netflix.com",
+    ownership: "Netflix",
+    history: "Streaming entertainment platform with subscription and original content campaigns.",
+    aliases: ["Netflix Premium"],
+  },
+  paramountplus: {
+    logoEmoji: "🎞️",
+    slogan: "A mountain of entertainment.",
+    website: "https://www.paramountplus.com",
+    ownership: "Paramount",
+    history: "Streaming entertainment service in the Paramount media portfolio.",
+    aliases: ["Paramount Plus", "Paramount+"],
+  },
+  spotify: {
+    logoEmoji: "🎧",
+    slogan: "Music for everyone.",
+    website: "https://www.spotify.com",
+    ownership: "Spotify",
+    history: "Audio streaming platform focused on music, podcasts and audiobooks.",
+    aliases: ["Spotify Premium"],
+  },
+  apple: {
+    logoEmoji: "📱",
+    slogan: "Think different.",
+    website: "https://www.apple.com",
+    ownership: "Apple",
+    history: "Consumer technology brand focused on hardware, software and services.",
+    aliases: ["Apple Inc.", "iPhone", "MacBook"],
+  },
+  samsung: {
+    logoEmoji: "📲",
+    slogan: "Do what you can't.",
+    website: "https://www.samsung.com",
+    ownership: "Samsung",
+    history: "Consumer technology and electronics brand focused on mobile and connected ecosystems.",
+    aliases: ["Samsung Galaxy", "Galaxy AI"],
+  },
+};
+
+function normalizeProfileKey(value: string) {
+  return (value || "")
+    .toLowerCase()
+    .replace(/[®™©’']/g, "")
+    .replace(/&/g, "and")
+    .replace(/\b(inc|llc|ltd|corp|corporation|company|insurance)\b/g, "")
+    .replace(/[^a-z0-9]+/g, "")
+    .trim();
+}
+
+function getBrandRegistryProfile(brandName: string) {
+  const key = normalizeProfileKey(brandName);
+  if (BRAND_PROFILE_REGISTRY[key]) return BRAND_PROFILE_REGISTRY[key];
+
+  const match = Object.entries(BRAND_PROFILE_REGISTRY).find(([registryKey, data]) => {
+    const aliasKeys = data.aliases.map(normalizeProfileKey);
+    return (
+      key === registryKey ||
+      key.includes(registryKey) ||
+      registryKey.includes(key) ||
+      aliasKeys.includes(key)
+    );
+  });
+
+  return match?.[1] || null;
+}
+
+function buildBrandIntelligenceProfile(
+  brandName: string,
+  feed: any[]
+): BrandIntelligenceProfile {
+  const signals = feed.filter(
+    (item) =>
+      normalizeProfileKey(item.brand) === normalizeProfileKey(brandName) ||
+      normalizeProfileKey(item.advertiser) === normalizeProfileKey(brandName)
+  );
+
+  const registry = getBrandRegistryProfile(brandName);
+
+  const products = dedupe(
+    signals.flatMap((item) => [
+      item.canonicalProduct,
+      ...(String(item.product || "")
+        .split(/[,;|]/)
+        .map((product) => product.trim())),
+    ])
+  )
+    .filter(Boolean)
+    .slice(0, 12);
+
+  const campaigns = dedupe(
+    signals.map((item) => item.campaignObject || item.title).filter(Boolean)
+  ).slice(0, 12);
+
+  const audiences = dedupe(
+    signals
+      .flatMap((item) => [
+        item.program,
+        item.network,
+        item.iabClass,
+        ...(item.riskLabels || []),
+      ])
+      .filter(Boolean)
+  ).slice(0, 12);
+
+  const iabFootprint = dedupe(
+    signals.map((item) => item.iabClass).filter(Boolean)
+  ).slice(0, 10);
+
+  const categories = dedupe(
+    signals.flatMap((item) => [item.network, item.program]).filter(Boolean)
+  ).slice(0, 10);
+
+  const sources = dedupe(signals.map((item) => item.source).filter(Boolean));
+  const riskLabels = dedupe(signals.flatMap((item) => item.riskLabels || []));
+
+  const companies = dedupe(
+    signals.map((item) => item.advertiser).filter(Boolean)
+  );
+
+  const classifiedCount = signals.filter(
+    (item) =>
+      item.iabClass &&
+      !String(item.iabClass).includes("Unclassified") &&
+      !String(item.iabClass).includes("pending")
+  ).length;
+
+  return {
+    name: brandName,
+    logoEmoji: registry?.logoEmoji || "🪐",
+    slogan: registry?.slogan || "Brand intelligence profile pending.",
+    website: registry?.website || "",
+    company: registry?.ownership || companies[0] || brandName,
+    aliases: dedupe([brandName, ...(registry?.aliases || []), ...companies]).slice(0, 10),
+    products,
+    campaigns,
+    audiences,
+    iabFootprint,
+    categories,
+    sources,
+    riskLabels,
+    signals,
+    signalCount: signals.length,
+    classifiedCount,
+    ownership: registry?.ownership || companies[0] || "Ownership data pending",
+    history:
+      registry?.history ||
+      "This profile was generated from live monitoring, ARGUS and imported advertising signals. Add verified ownership/history data later for a richer F2 card.",
+  };
+}
+
 export default function MonitoringPage() {
   const [spots, setSpots] = useState<any[]>([]);
   const [argusStats, setArgusStats] = useState<ArgusStats | null>(null);
@@ -5138,6 +5357,8 @@ export default function MonitoringPage() {
   const [iabFilter, setIabFilter] = useState("all");
   const [alphaFilter, setAlphaFilter] = useState("all");
   const [rankingMode, setRankingMode] = useState<RankingMode>("now");
+  const [selectedBrandName, setSelectedBrandName] = useState<string | null>(null);
+  const [brandProfileMode, setBrandProfileMode] = useState<BrandProfileMode>("f1");
   const [selectedSignal, setSelectedSignal] = useState<any | null>(null);
 
   useEffect(() => {
@@ -5182,6 +5403,11 @@ export default function MonitoringPage() {
     return spots.map(normalizeMonitoringSpot);
   }, [spots]);
 
+
+  const selectedBrandProfile = useMemo(() => {
+    if (!selectedBrandName) return null;
+    return buildBrandIntelligenceProfile(selectedBrandName, monitoringFeed);
+  }, [selectedBrandName, monitoringFeed]);
 
   const featuredSignal = monitoringFeed[0];
 
@@ -5590,9 +5816,13 @@ export default function MonitoringPage() {
                   {(topBrands.length > 0 ? topBrands : argusStats?.by_brand || [])
                     .slice(0, 6)
                     .map((brand) => (
-                      <div
+                      <button
                         key={brand.value}
-                        className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3"
+                        onClick={() => {
+                          setSelectedBrandName(brand.value);
+                          setBrandProfileMode("f1");
+                        }}
+                        className="flex w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3 text-left transition hover:border-fuchsia-300/40 hover:bg-fuchsia-500/10"
                       >
                         <span className="truncate text-sm font-semibold text-white">
                           {brand.value}
@@ -5600,7 +5830,7 @@ export default function MonitoringPage() {
                         <span className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
                           {brand.count}
                         </span>
-                      </div>
+                      </button>
                     ))}
                 </div>
               </div>
@@ -5937,7 +6167,11 @@ export default function MonitoringPage() {
                       {rankedBrands.map((brand, index) => (
                         <button
                           key={brand.value}
-                          onClick={() => setBrandFilter(brand.value)}
+                          onClick={() => {
+                            setBrandFilter(brand.value);
+                            setSelectedBrandName(brand.value);
+                            setBrandProfileMode("f1");
+                          }}
                           className="flex w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3 text-left transition hover:border-cyan-300/30"
                         >
                           <span className="truncate text-sm font-semibold text-white">
@@ -6234,6 +6468,243 @@ export default function MonitoringPage() {
           )}
         </div>
 
+
+        {selectedBrandProfile && (
+          <div className="fixed inset-0 z-[85] flex items-center justify-center bg-black/70 px-4 backdrop-blur-xl">
+            <div className="max-h-[90vh] w-full max-w-6xl overflow-y-auto rounded-[2rem] border border-fuchsia-300/25 bg-[#020617] p-6 shadow-[0_0_100px_rgba(217,70,239,0.16)]">
+              <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-[1.5rem] border border-fuchsia-300/30 bg-fuchsia-500/10 text-4xl shadow-[0_0_45px_rgba(217,70,239,0.18)]">
+                    {selectedBrandProfile.logoEmoji}
+                  </div>
+
+                  <div>
+                    <div className="mb-2 inline-flex rounded-full border border-fuchsia-300/25 bg-fuchsia-500/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-fuchsia-200">
+                      Brand Intelligence Profile
+                    </div>
+
+                    <h3 className="text-4xl font-black text-white">
+                      {selectedBrandProfile.name}
+                    </h3>
+
+                    <div className="mt-2 text-sm text-gray-400">
+                      {selectedBrandProfile.slogan}
+                    </div>
+
+                    {selectedBrandProfile.website && (
+                      <a
+                        href={selectedBrandProfile.website}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-2 inline-flex text-sm font-semibold text-cyan-200 hover:text-cyan-100"
+                      >
+                        {selectedBrandProfile.website}
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex rounded-2xl border border-white/10 bg-black/25 p-1">
+                    {[
+                      { key: "f1", label: "F1" },
+                      { key: "f2", label: "F2" },
+                    ].map((mode) => (
+                      <button
+                        key={mode.key}
+                        onClick={() => setBrandProfileMode(mode.key as BrandProfileMode)}
+                        className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+                          brandProfileMode === mode.key
+                            ? "bg-fuchsia-500/20 text-fuchsia-100"
+                            : "text-gray-500 hover:text-white"
+                        }`}
+                      >
+                        {mode.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedBrandName(null)}
+                    className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition hover:border-white/20 hover:text-white"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+
+              <div className="mb-5 grid grid-cols-2 gap-4 md:grid-cols-4">
+                {[
+                  ["Signals", selectedBrandProfile.signalCount],
+                  ["Classified", selectedBrandProfile.classifiedCount],
+                  ["Products", selectedBrandProfile.products.length],
+                  ["Campaigns", selectedBrandProfile.campaigns.length],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="rounded-3xl border border-white/10 bg-black/25 p-5"
+                  >
+                    <div className="text-3xl font-black text-fuchsia-100">
+                      {value}
+                    </div>
+                    <div className="mt-1 text-xs uppercase tracking-[0.2em] text-gray-500">
+                      {label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {brandProfileMode === "f1" ? (
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
+                    <div className="mb-2 text-xs uppercase tracking-[0.2em] text-cyan-300">
+                      Company / ownership
+                    </div>
+                    <div className="text-xl font-black text-white">
+                      {selectedBrandProfile.company}
+                    </div>
+                    <div className="mt-2 text-sm leading-6 text-gray-400">
+                      {selectedBrandProfile.ownership}
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
+                    <div className="mb-2 text-xs uppercase tracking-[0.2em] text-emerald-300">
+                      IAB footprint
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {(selectedBrandProfile.iabFootprint.length
+                        ? selectedBrandProfile.iabFootprint
+                        : ["Unclassified / pending IAB mapping"]
+                      ).slice(0, 6).map((item) => (
+                        <span
+                          key={item}
+                          className="rounded-full border border-emerald-300/20 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-100"
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
+                    <div className="mb-3 text-xs uppercase tracking-[0.2em] text-fuchsia-300">
+                      Products
+                    </div>
+                    <div className="space-y-2 text-sm text-gray-300">
+                      {(selectedBrandProfile.products.length
+                        ? selectedBrandProfile.products
+                        : ["No products detected yet"]
+                      ).slice(0, 8).map((item) => (
+                        <div key={item}>{item}</div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
+                    <div className="mb-3 text-xs uppercase tracking-[0.2em] text-amber-300">
+                      Campaigns
+                    </div>
+                    <div className="space-y-2 text-sm text-gray-300">
+                      {(selectedBrandProfile.campaigns.length
+                        ? selectedBrandProfile.campaigns
+                        : ["No campaigns detected yet"]
+                      ).slice(0, 8).map((item) => (
+                        <div key={item}>{item}</div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5 lg:col-span-2">
+                    <div className="mb-2 text-xs uppercase tracking-[0.2em] text-cyan-300">
+                      Brand history / context
+                    </div>
+                    <p className="text-sm leading-7 text-gray-300">
+                      {selectedBrandProfile.history}
+                    </p>
+
+                    <div className="mt-5 text-xs uppercase tracking-[0.2em] text-fuchsia-300">
+                      Aliases
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {selectedBrandProfile.aliases.map((alias) => (
+                        <span
+                          key={alias}
+                          className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-gray-200"
+                        >
+                          {alias}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
+                    <div className="mb-2 text-xs uppercase tracking-[0.2em] text-amber-300">
+                      Audiences / categories
+                    </div>
+                    <div className="space-y-2 text-sm text-gray-300">
+                      {dedupe([
+                        ...selectedBrandProfile.audiences,
+                        ...selectedBrandProfile.categories,
+                      ])
+                        .slice(0, 12)
+                        .map((item) => (
+                          <div key={item}>{item}</div>
+                        ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5 lg:col-span-3">
+                    <div className="mb-3 text-xs uppercase tracking-[0.2em] text-green-300">
+                      Latest signals
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                      {selectedBrandProfile.signals.slice(0, 6).map((signal) => (
+                        <button
+                          key={signal.id}
+                          onClick={() => setSelectedSignal(signal)}
+                          className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left transition hover:border-green-300/30 hover:bg-green-500/10"
+                        >
+                          <div className="text-sm font-bold text-white">
+                            {signal.title}
+                          </div>
+                          <div className="mt-1 text-xs text-gray-400">
+                            {signal.campaignObject || signal.product}
+                          </div>
+                          <div className="mt-2 text-xs text-green-200">
+                            {signal.iabClass || "Unclassified"}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedBrandProfile.riskLabels.length > 0 && (
+                <div className="mt-5 rounded-3xl border border-red-300/20 bg-red-500/10 p-5">
+                  <div className="mb-3 text-sm font-semibold text-red-200">
+                    Risk / observation labels
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedBrandProfile.riskLabels.map((label) => (
+                      <span
+                        key={label}
+                        className="rounded-full border border-red-300/20 bg-black/25 px-3 py-1 text-xs text-red-100"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {selectedSignal && (
           <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 px-4 backdrop-blur-xl">
             <div className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-cyan-300/25 bg-[#020617] p-6 shadow-[0_0_90px_rgba(34,211,238,0.16)]">
@@ -6261,7 +6732,13 @@ export default function MonitoringPage() {
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
+                <button
+                  onClick={() => {
+                    setSelectedBrandName(selectedSignal.brand);
+                    setBrandProfileMode("f1");
+                  }}
+                  className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:border-cyan-300/40 hover:bg-cyan-500/10"
+                >
                   <div className="mb-2 text-xs uppercase tracking-[0.2em] text-cyan-300">
                     Brand
                   </div>
@@ -6271,7 +6748,10 @@ export default function MonitoringPage() {
                   <div className="mt-2 text-sm text-gray-400">
                     Advertiser / Company: {selectedSignal.advertiser}
                   </div>
-                </div>
+                  <div className="mt-3 text-xs uppercase tracking-[0.2em] text-cyan-200">
+                    Open brand profile →
+                  </div>
+                </button>
 
                 <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
                   <div className="mb-2 text-xs uppercase tracking-[0.2em] text-fuchsia-300">
