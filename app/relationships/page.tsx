@@ -902,27 +902,25 @@ function getScatterPosition(
   total: number,
   scenarioMode: boolean
 ) {
-  const columns = scenarioMode ? 8 : 12;
+  const columns = scenarioMode ? 7 : 11;
 
-  const spacingX = scenarioMode ? 260 : 240;
-  const spacingY = scenarioMode ? 240 : 220;
+  const spacingX = scenarioMode ? 420 : 390;
+  const spacingY = scenarioMode ? 300 : 285;
 
   const row = Math.floor(index / columns);
   const col = index % columns;
-
   const rows = Math.ceil(total / columns);
 
-  const baseX = 950 - ((columns - 1) * spacingX) / 2;
+  const baseX = 980 - ((columns - 1) * spacingX) / 2;
   const baseY = 540 - ((rows - 1) * spacingY) / 2;
 
-  // organic offsets
   const offsetX =
-    Math.sin(index * 1.37) * 70 +
-    Math.cos(index * 0.71) * 30;
+    Math.sin(index * 1.37) * 95 +
+    Math.cos(index * 0.71) * 45;
 
   const offsetY =
-    Math.cos(index * 1.11) * 60 +
-    Math.sin(index * 0.53) * 25;
+    Math.cos(index * 1.11) * 75 +
+    Math.sin(index * 0.53) * 35;
 
   return {
     x: baseX + col * spacingX + offsetX,
