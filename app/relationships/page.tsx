@@ -902,31 +902,31 @@ function getScatterPosition(
   total: number,
   scenarioMode: boolean
 ) {
-  const centerX = 950;
-  const centerY = 520;
+  const columns = scenarioMode ? 8 : 12;
 
-  const spreadX = scenarioMode ? 1400 : 1800;
-  const spreadY = scenarioMode ? 800 : 1000;
+  const spacingX = scenarioMode ? 260 : 240;
+  const spacingY = scenarioMode ? 240 : 220;
 
-  const goldenAngle = 2.399963229728653;
+  const row = Math.floor(index / columns);
+  const col = index % columns;
 
-  const radius = Math.sqrt(index / total);
+  const rows = Math.ceil(total / columns);
 
-  const angle = index * goldenAngle;
+  const baseX = 950 - ((columns - 1) * spacingX) / 2;
+  const baseY = 540 - ((rows - 1) * spacingY) / 2;
 
-  const randomOffsetX = Math.sin(index * 12.9898) * 40;
-  const randomOffsetY = Math.cos(index * 78.233) * 40;
+  // organic offsets
+  const offsetX =
+    Math.sin(index * 1.37) * 70 +
+    Math.cos(index * 0.71) * 30;
+
+  const offsetY =
+    Math.cos(index * 1.11) * 60 +
+    Math.sin(index * 0.53) * 25;
 
   return {
-    x:
-      centerX +
-      Math.cos(angle) * radius * spreadX +
-      randomOffsetX,
-
-    y:
-      centerY +
-      Math.sin(angle) * radius * spreadY +
-      randomOffsetY,
+    x: baseX + col * spacingX + offsetX,
+    y: baseY + row * spacingY + offsetY,
   };
 }
 
