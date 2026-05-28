@@ -5,6 +5,16 @@ import NavBar from "@/components/NavBar";
 
 type GroupMode = "campaign" | "product" | "brand";
 type RankingMode = "now" | "overall";
+type BrandProfileMode = "f1" | "f2";
+
+type PlatformInfo = {
+  title: string;
+  label: string;
+  summary: string;
+  points: string[];
+  source?: string;
+};
+
 type ArgusStats = {
   total_ads: number;
   by_category?: { value: string; count: number }[];
@@ -44,4563 +54,4536 @@ type IabTaxonomyRow = {
 
 const IAB_TAXONOMY: IabTaxonomyRow[] = [
   {
-    id: "1000",
-    label: "Adult Content",
-    tier1: "Adult Content",
-    tier2: "",
-    tier3: "",
-    keywords: "adult content",
-  },
-  {
-    id: "1001",
-    label: "Alcohol",
-    tier1: "Alcohol",
-    tier2: "",
-    tier3: "",
-    keywords: "alcohol",
-  },
-  {
-    id: "1002",
-    label: "Bars",
-    tier1: "Alcohol",
-    tier2: "Bars",
-    tier3: "",
-    keywords: "bars",
-  },
-  {
-    id: "1003",
-    label: "Beer",
-    tier1: "Alcohol",
-    tier2: "Beer",
-    tier3: "",
-    keywords: "beer",
-  },
-  {
-    id: "1004",
-    label: "Hard Sodas, Seltzers, Alco Pops",
-    tier1: "Alcohol",
-    tier2: "Hard Sodas, Seltzers, Alco Pops",
-    tier3: "",
-    keywords: "hard sodas, seltzers, alco pops",
-  },
-  {
-    id: "1005",
-    label: "Spirits",
-    tier1: "Alcohol",
-    tier2: "Spirits",
-    tier3: "",
-    keywords: "spirits; vodka; whiskey; rum",
-  },
-  {
-    id: "1006",
-    label: "Wine",
-    tier1: "Alcohol",
-    tier2: "Wine",
-    tier3: "",
-    keywords: "wine,sangria",
-  },
-  {
-    id: "1007",
-    label: "Culture and Fine Arts",
-    tier1: "Culture and Fine Arts",
-    tier2: "",
-    tier3: "",
-    keywords: "culture and fine arts",
-  },
-  {
-    id: "1008",
-    label: "Museums and Galleries",
-    tier1: "Culture and Fine Arts",
-    tier2: "Museums and Galleries",
-    tier3: "",
-    keywords: "museums and galleries",
-  },
-  {
-    id: "1009",
-    label: "Business and Industrial",
-    tier1: "Business and Industrial",
-    tier2: "",
-    tier3: "",
-    keywords: "business and industrial",
-  },
-  {
-    id: "1010",
-    label: "Advertising and Marketing",
-    tier1: "Business and Industrial",
-    tier2: "Advertising and Marketing",
-    tier3: "",
-    keywords: "advertising and marketing",
-  },
-  {
-    id: "1011",
-    label: "Business Services",
-    tier1: "Business and Industrial",
-    tier2: "Business Services",
-    tier3: "",
-    keywords: "business services",
-  },
-  {
-    id: "1012",
-    label: "Consulting",
-    tier1: "Business and Industrial",
-    tier2: "Business Services",
-    tier3: "Consulting",
-    keywords: "consulting",
+    "id": "1000",
+    "label": "Adult Content",
+    "tier1": "Adult Content",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "adult content"
+  },
+  {
+    "id": "1001",
+    "label": "Alcohol",
+    "tier1": "Alcohol",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "alcohol"
+  },
+  {
+    "id": "1002",
+    "label": "Bars",
+    "tier1": "Alcohol",
+    "tier2": "Bars",
+    "tier3": "",
+    "keywords": "bars"
+  },
+  {
+    "id": "1003",
+    "label": "Beer",
+    "tier1": "Alcohol",
+    "tier2": "Beer",
+    "tier3": "",
+    "keywords": "beer"
+  },
+  {
+    "id": "1004",
+    "label": "Hard Sodas, Seltzers, Alco Pops",
+    "tier1": "Alcohol",
+    "tier2": "Hard Sodas, Seltzers, Alco Pops",
+    "tier3": "",
+    "keywords": "hard sodas, seltzers, alco pops"
+  },
+  {
+    "id": "1005",
+    "label": "Spirits",
+    "tier1": "Alcohol",
+    "tier2": "Spirits",
+    "tier3": "",
+    "keywords": "spirits; vodka; whiskey; rum"
+  },
+  {
+    "id": "1006",
+    "label": "Wine",
+    "tier1": "Alcohol",
+    "tier2": "Wine",
+    "tier3": "",
+    "keywords": "wine,sangria"
+  },
+  {
+    "id": "1007",
+    "label": "Culture and Fine Arts",
+    "tier1": "Culture and Fine Arts",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "culture and fine arts"
+  },
+  {
+    "id": "1008",
+    "label": "Museums and Galleries",
+    "tier1": "Culture and Fine Arts",
+    "tier2": "Museums and Galleries",
+    "tier3": "",
+    "keywords": "museums and galleries"
+  },
+  {
+    "id": "1009",
+    "label": "Business and Industrial",
+    "tier1": "Business and Industrial",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "business and industrial"
+  },
+  {
+    "id": "1010",
+    "label": "Advertising and Marketing",
+    "tier1": "Business and Industrial",
+    "tier2": "Advertising and Marketing",
+    "tier3": "",
+    "keywords": "advertising and marketing"
+  },
+  {
+    "id": "1011",
+    "label": "Business Services",
+    "tier1": "Business and Industrial",
+    "tier2": "Business Services",
+    "tier3": "",
+    "keywords": "business services"
+  },
+  {
+    "id": "1012",
+    "label": "Consulting",
+    "tier1": "Business and Industrial",
+    "tier2": "Business Services",
+    "tier3": "Consulting",
+    "keywords": "consulting"
   },
   {
-    id: "1013",
-    label: "Employee Expense and Time Tracking Services",
-    tier1: "Business and Industrial",
-    tier2: "Business Services",
-    tier3: "Employee Expense and Time Tracking Services",
-    keywords: "employee expense and time tracking services",
+    "id": "1013",
+    "label": "Employee Expense and Time Tracking Services",
+    "tier1": "Business and Industrial",
+    "tier2": "Business Services",
+    "tier3": "Employee Expense and Time Tracking Services",
+    "keywords": "employee expense and time tracking services"
   },
   {
-    id: "1014",
-    label: "Human Resources and Recruiting",
-    tier1: "Business and Industrial",
-    tier2: "Business Services",
-    tier3: "Human Resources and Recruiting",
-    keywords: "human resources and recruiting",
+    "id": "1014",
+    "label": "Human Resources and Recruiting",
+    "tier1": "Business and Industrial",
+    "tier2": "Business Services",
+    "tier3": "Human Resources and Recruiting",
+    "keywords": "human resources and recruiting"
   },
   {
-    id: "1015",
-    label: "Information Technology Services",
-    tier1: "Business and Industrial",
-    tier2: "Business Services",
-    tier3: "Information Technology Services",
-    keywords: "information technology services",
+    "id": "1015",
+    "label": "Information Technology Services",
+    "tier1": "Business and Industrial",
+    "tier2": "Business Services",
+    "tier3": "Information Technology Services",
+    "keywords": "information technology services"
   },
   {
-    id: "1016",
-    label: "Laundry and Dry Cleaning Services",
-    tier1: "Business and Industrial",
-    tier2: "Business Services",
-    tier3: "Laundry and Dry Cleaning Services",
-    keywords: "laundry and dry cleaning services",
+    "id": "1016",
+    "label": "Laundry and Dry Cleaning Services",
+    "tier1": "Business and Industrial",
+    "tier2": "Business Services",
+    "tier3": "Laundry and Dry Cleaning Services",
+    "keywords": "laundry and dry cleaning services"
   },
   {
-    id: "1017",
-    label: "Logistics and Delivery",
-    tier1: "Business and Industrial",
-    tier2: "Business Services",
-    tier3: "Logistics and Delivery",
-    keywords: "logistics and delivery",
+    "id": "1017",
+    "label": "Logistics and Delivery",
+    "tier1": "Business and Industrial",
+    "tier2": "Business Services",
+    "tier3": "Logistics and Delivery",
+    "keywords": "logistics and delivery"
   },
   {
-    id: "1018",
-    label: "Office Equipment and Supplies",
-    tier1: "Business and Industrial",
-    tier2: "Business Services",
-    tier3: "Office Equipment and Supplies",
-    keywords: "office equipment and supplies",
+    "id": "1018",
+    "label": "Office Equipment and Supplies",
+    "tier1": "Business and Industrial",
+    "tier2": "Business Services",
+    "tier3": "Office Equipment and Supplies",
+    "keywords": "office equipment and supplies"
   },
   {
-    id: "1019",
-    label: "Photographers",
-    tier1: "Business and Industrial",
-    tier2: "Business Services",
-    tier3: "Photographers",
-    keywords: "photographers",
+    "id": "1019",
+    "label": "Photographers",
+    "tier1": "Business and Industrial",
+    "tier2": "Business Services",
+    "tier3": "Photographers",
+    "keywords": "photographers"
   },
   {
-    id: "1020",
-    label: "Printing/Fax/WiFi Services",
-    tier1: "Business and Industrial",
-    tier2: "Business Services",
-    tier3: "Printing/Fax/WiFi Services",
-    keywords: "printing/fax/wifi services",
+    "id": "1020",
+    "label": "Printing/Fax/WiFi Services",
+    "tier1": "Business and Industrial",
+    "tier2": "Business Services",
+    "tier3": "Printing/Fax/WiFi Services",
+    "keywords": "printing/fax/wifi services"
   },
   {
-    id: "1021",
-    label: "Public Relations and Strategic Communication",
-    tier1: "Business and Industrial",
-    tier2: "Business Services",
-    tier3: "Public Relations and Strategic Communication",
-    keywords: "public relations and strategic communication",
+    "id": "1021",
+    "label": "Public Relations and Strategic Communication",
+    "tier1": "Business and Industrial",
+    "tier2": "Business Services",
+    "tier3": "Public Relations and Strategic Communication",
+    "keywords": "public relations and strategic communication"
   },
   {
-    id: "1022",
-    label: "Security & Protection",
-    tier1: "Business and Industrial",
-    tier2: "Business Services",
-    tier3: "Security & Protection",
-    keywords: "security & protection",
+    "id": "1022",
+    "label": "Security & Protection",
+    "tier1": "Business and Industrial",
+    "tier2": "Business Services",
+    "tier3": "Security & Protection",
+    "keywords": "security & protection"
   },
   {
-    id: "1023",
-    label: "Storage Facilities",
-    tier1: "Business and Industrial",
-    tier2: "Business Services",
-    tier3: "Storage Facilities",
-    keywords: "storage facilities",
+    "id": "1023",
+    "label": "Storage Facilities",
+    "tier1": "Business and Industrial",
+    "tier2": "Business Services",
+    "tier3": "Storage Facilities",
+    "keywords": "storage facilities"
   },
   {
-    id: "1024",
-    label: "Telecom Services",
-    tier1: "Business and Industrial",
-    tier2: "Business Services",
-    tier3: "Telecom Services",
-    keywords: "telecom services",
+    "id": "1024",
+    "label": "Telecom Services",
+    "tier1": "Business and Industrial",
+    "tier2": "Business Services",
+    "tier3": "Telecom Services",
+    "keywords": "telecom services"
   },
   {
-    id: "1025",
-    label: "Web Hosting and Cloud Computing",
-    tier1: "Business and Industrial",
-    tier2: "Business Services",
-    tier3: "Web Hosting and Cloud Computing",
-    keywords: "web hosting and cloud computing",
+    "id": "1025",
+    "label": "Web Hosting and Cloud Computing",
+    "tier1": "Business and Industrial",
+    "tier2": "Business Services",
+    "tier3": "Web Hosting and Cloud Computing",
+    "keywords": "web hosting and cloud computing"
   },
   {
-    id: "1026",
-    label: "Construction",
-    tier1: "Business and Industrial",
-    tier2: "Construction",
-    tier3: "",
-    keywords: "construction",
+    "id": "1026",
+    "label": "Construction",
+    "tier1": "Business and Industrial",
+    "tier2": "Construction",
+    "tier3": "",
+    "keywords": "construction"
   },
   {
-    id: "1027",
-    label: "Energy Industry",
-    tier1: "Business and Industrial",
-    tier2: "Energy Industry",
-    tier3: "",
-    keywords: "energy industry",
+    "id": "1027",
+    "label": "Energy Industry",
+    "tier1": "Business and Industrial",
+    "tier2": "Energy Industry",
+    "tier3": "",
+    "keywords": "energy industry"
   },
   {
-    id: "1028",
-    label: "Electric Power Industry",
-    tier1: "Business and Industrial",
-    tier2: "Energy Industry",
-    tier3: "Electric Power Industry",
-    keywords: "electric power industry",
+    "id": "1028",
+    "label": "Electric Power Industry",
+    "tier1": "Business and Industrial",
+    "tier2": "Energy Industry",
+    "tier3": "Electric Power Industry",
+    "keywords": "electric power industry"
   },
   {
-    id: "1029",
-    label: "Energy Services",
-    tier1: "Business and Industrial",
-    tier2: "Energy Industry",
-    tier3: "Energy Services",
-    keywords: "energy services",
+    "id": "1029",
+    "label": "Energy Services",
+    "tier1": "Business and Industrial",
+    "tier2": "Energy Industry",
+    "tier3": "Energy Services",
+    "keywords": "energy services"
   },
   {
-    id: "1030",
-    label: "Green Energy",
-    tier1: "Business and Industrial",
-    tier2: "Energy Industry",
-    tier3: "Green Energy",
-    keywords: "green energy",
+    "id": "1030",
+    "label": "Green Energy",
+    "tier1": "Business and Industrial",
+    "tier2": "Energy Industry",
+    "tier3": "Green Energy",
+    "keywords": "green energy"
   },
   {
-    id: "1031",
-    label: "Oil, Gas and Consumable Fuels",
-    tier1: "Business and Industrial",
-    tier2: "Energy Industry",
-    tier3: "Oil, Gas and Consumable Fuels",
-    keywords: "oil, gas and consumable fuels",
+    "id": "1031",
+    "label": "Oil, Gas and Consumable Fuels",
+    "tier1": "Business and Industrial",
+    "tier2": "Energy Industry",
+    "tier3": "Oil, Gas and Consumable Fuels",
+    "keywords": "oil, gas and consumable fuels"
   },
   {
-    id: "1032",
-    label: "Forestry and Logging",
-    tier1: "Business and Industrial",
-    tier2: "Forestry and Logging",
-    tier3: "",
-    keywords: "forestry and logging",
+    "id": "1032",
+    "label": "Forestry and Logging",
+    "tier1": "Business and Industrial",
+    "tier2": "Forestry and Logging",
+    "tier3": "",
+    "keywords": "forestry and logging"
   },
   {
-    id: "1033",
-    label: "Industrial Storage",
-    tier1: "Business and Industrial",
-    tier2: "Industrial Storage",
-    tier3: "",
-    keywords: "industrial storage",
+    "id": "1033",
+    "label": "Industrial Storage",
+    "tier1": "Business and Industrial",
+    "tier2": "Industrial Storage",
+    "tier3": "",
+    "keywords": "industrial storage"
   },
   {
-    id: "1034",
-    label: "Industrials",
-    tier1: "Business and Industrial",
-    tier2: "Industrials",
-    tier3: "",
-    keywords: "industrials",
+    "id": "1034",
+    "label": "Industrials",
+    "tier1": "Business and Industrial",
+    "tier2": "Industrials",
+    "tier3": "",
+    "keywords": "industrials"
   },
   {
-    id: "1035",
-    label: "Aerospace and Defense",
-    tier1: "Business and Industrial",
-    tier2: "Industrials",
-    tier3: "Aerospace and Defense",
-    keywords: "aerospace and defense",
+    "id": "1035",
+    "label": "Aerospace and Defense",
+    "tier1": "Business and Industrial",
+    "tier2": "Industrials",
+    "tier3": "Aerospace and Defense",
+    "keywords": "aerospace and defense"
   },
   {
-    id: "1036",
-    label: "Construction and Engineering",
-    tier1: "Business and Industrial",
-    tier2: "Industrials",
-    tier3: "Construction and Engineering",
-    keywords: "construction and engineering",
+    "id": "1036",
+    "label": "Construction and Engineering",
+    "tier1": "Business and Industrial",
+    "tier2": "Industrials",
+    "tier3": "Construction and Engineering",
+    "keywords": "construction and engineering"
   },
   {
-    id: "1037",
-    label: "Industrial Conglomerates",
-    tier1: "Business and Industrial",
-    tier2: "Industrials",
-    tier3: "Industrial Conglomerates",
-    keywords: "industrial conglomerates",
+    "id": "1037",
+    "label": "Industrial Conglomerates",
+    "tier1": "Business and Industrial",
+    "tier2": "Industrials",
+    "tier3": "Industrial Conglomerates",
+    "keywords": "industrial conglomerates"
   },
   {
-    id: "1038",
-    label: "Trading Companies and Distributors",
-    tier1: "Business and Industrial",
-    tier2: "Industrials",
-    tier3: "Trading Companies and Distributors",
-    keywords: "trading companies and distributors",
+    "id": "1038",
+    "label": "Trading Companies and Distributors",
+    "tier1": "Business and Industrial",
+    "tier2": "Industrials",
+    "tier3": "Trading Companies and Distributors",
+    "keywords": "trading companies and distributors"
   },
   {
-    id: "1039",
-    label: "Transportation",
-    tier1: "Business and Industrial",
-    tier2: "Industrials",
-    tier3: "Transportation",
-    keywords: "transportation",
+    "id": "1039",
+    "label": "Transportation",
+    "tier1": "Business and Industrial",
+    "tier2": "Industrials",
+    "tier3": "Transportation",
+    "keywords": "transportation"
   },
   {
-    id: "1040",
-    label: "Manufacturing",
-    tier1: "Business and Industrial",
-    tier2: "Manufacturing",
-    tier3: "",
-    keywords: "manufacturing",
+    "id": "1040",
+    "label": "Manufacturing",
+    "tier1": "Business and Industrial",
+    "tier2": "Manufacturing",
+    "tier3": "",
+    "keywords": "manufacturing"
   },
   {
-    id: "1041",
-    label: "Medical and Biotechnology",
-    tier1: "Business and Industrial",
-    tier2: "Medical and Biotechnology",
-    tier3: "",
-    keywords: "medical and biotechnology",
+    "id": "1041",
+    "label": "Medical and Biotechnology",
+    "tier1": "Business and Industrial",
+    "tier2": "Medical and Biotechnology",
+    "tier3": "",
+    "keywords": "medical and biotechnology"
   },
   {
-    id: "1042",
-    label: "Mining and Quarrying",
-    tier1: "Business and Industrial",
-    tier2: "Mining and Quarrying",
-    tier3: "",
-    keywords: "mining and quarrying",
+    "id": "1042",
+    "label": "Mining and Quarrying",
+    "tier1": "Business and Industrial",
+    "tier2": "Mining and Quarrying",
+    "tier3": "",
+    "keywords": "mining and quarrying"
   },
   {
-    id: "1043",
-    label: "Science and Laboratory",
-    tier1: "Business and Industrial",
-    tier2: "Science and Laboratory",
-    tier3: "",
-    keywords: "science and laboratory",
+    "id": "1043",
+    "label": "Science and Laboratory",
+    "tier1": "Business and Industrial",
+    "tier2": "Science and Laboratory",
+    "tier3": "",
+    "keywords": "science and laboratory"
   },
   {
-    id: "1044",
-    label: "Signage",
-    tier1: "Business and Industrial",
-    tier2: "Signage",
-    tier3: "",
-    keywords: "signage",
+    "id": "1044",
+    "label": "Signage",
+    "tier1": "Business and Industrial",
+    "tier2": "Signage",
+    "tier3": "",
+    "keywords": "signage"
   },
   {
-    id: "1045",
-    label: "Small Business",
-    tier1: "Business and Industrial",
-    tier2: "Small Business",
-    tier3: "",
-    keywords: "small business",
+    "id": "1045",
+    "label": "Small Business",
+    "tier1": "Business and Industrial",
+    "tier2": "Small Business",
+    "tier3": "",
+    "keywords": "small business"
   },
   {
-    id: "1046",
-    label: "Waste Disposal and Recycling",
-    tier1: "Business and Industrial",
-    tier2: "Waste Disposal and Recycling",
-    tier3: "",
-    keywords: "waste disposal and recycling",
+    "id": "1046",
+    "label": "Waste Disposal and Recycling",
+    "tier1": "Business and Industrial",
+    "tier2": "Waste Disposal and Recycling",
+    "tier3": "",
+    "keywords": "waste disposal and recycling"
   },
   {
-    id: "1047",
-    label: "Cannabis",
-    tier1: "Cannabis",
-    tier2: "",
-    tier3: "",
-    keywords: "cannabis",
+    "id": "1047",
+    "label": "Cannabis",
+    "tier1": "Cannabis",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "cannabis"
   },
   {
-    id: "1048",
-    label: "Cannabis Consumables",
-    tier1: "Cannabis",
-    tier2: "Cannabis Consumables",
-    tier3: "",
-    keywords: "cannabis consumables",
+    "id": "1048",
+    "label": "Cannabis Consumables",
+    "tier1": "Cannabis",
+    "tier2": "Cannabis Consumables",
+    "tier3": "",
+    "keywords": "cannabis consumables"
   },
   {
-    id: "1049",
-    label: "Cannabis Drinks",
-    tier1: "Cannabis",
-    tier2: "Cannabis Consumables",
-    tier3: "Cannabis Drinks",
-    keywords: "cannabis drinks",
+    "id": "1049",
+    "label": "Cannabis Drinks",
+    "tier1": "Cannabis",
+    "tier2": "Cannabis Consumables",
+    "tier3": "Cannabis Drinks",
+    "keywords": "cannabis drinks"
   },
   {
-    id: "1050",
-    label: "Cannabis Edibles",
-    tier1: "Cannabis",
-    tier2: "Cannabis Consumables",
-    tier3: "Cannabis Edibles",
-    keywords: "cannabis edibles",
+    "id": "1050",
+    "label": "Cannabis Edibles",
+    "tier1": "Cannabis",
+    "tier2": "Cannabis Consumables",
+    "tier3": "Cannabis Edibles",
+    "keywords": "cannabis edibles"
   },
   {
-    id: "1051",
-    label: "Cannabis Equipment",
-    tier1: "Cannabis",
-    tier2: "Cannabis Equipment",
-    tier3: "",
-    keywords: "cannabis equipment",
+    "id": "1051",
+    "label": "Cannabis Equipment",
+    "tier1": "Cannabis",
+    "tier2": "Cannabis Equipment",
+    "tier3": "",
+    "keywords": "cannabis equipment"
   },
   {
-    id: "1052",
-    label: "Cannabis Stores",
-    tier1: "Cannabis",
-    tier2: "Cannabis Stores",
-    tier3: "",
-    keywords: "cannabis stores",
+    "id": "1052",
+    "label": "Cannabis Stores",
+    "tier1": "Cannabis",
+    "tier2": "Cannabis Stores",
+    "tier3": "",
+    "keywords": "cannabis stores"
   },
   {
-    id: "1053",
-    label: "Cannabis Stocks",
-    tier1: "Cannabis",
-    tier2: "Cannabis Stocks",
-    tier3: "",
-    keywords: "cannabis stocks",
+    "id": "1053",
+    "label": "Cannabis Stocks",
+    "tier1": "Cannabis",
+    "tier2": "Cannabis Stocks",
+    "tier3": "",
+    "keywords": "cannabis stocks"
   },
   {
-    id: "1054",
-    label: "CBD Consumables",
-    tier1: "Cannabis",
-    tier2: "CBD Consumables",
-    tier3: "",
-    keywords: "cbd consumables",
+    "id": "1054",
+    "label": "CBD Consumables",
+    "tier1": "Cannabis",
+    "tier2": "CBD Consumables",
+    "tier3": "",
+    "keywords": "cbd consumables"
   },
   {
-    id: "1055",
-    label: "CBD Topicals",
-    tier1: "Cannabis",
-    tier2: "CBD Topicals",
-    tier3: "",
-    keywords: "cbd topicals",
+    "id": "1055",
+    "label": "CBD Topicals",
+    "tier1": "Cannabis",
+    "tier2": "CBD Topicals",
+    "tier3": "",
+    "keywords": "cbd topicals"
   },
   {
-    id: "1056",
-    label: "Clothing and Accessories",
-    tier1: "Clothing and Accessories",
-    tier2: "",
-    tier3: "",
-    keywords: "clothing and accessories",
+    "id": "1056",
+    "label": "Clothing and Accessories",
+    "tier1": "Clothing and Accessories",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "clothing and accessories"
   },
   {
-    id: "1057",
-    label: "Clothing",
-    tier1: "Clothing and Accessories",
-    tier2: "Clothing",
-    tier3: "",
-    keywords: "clothing, medical apparel, workwear, work apparel, uniforms",
+    "id": "1057",
+    "label": "Clothing",
+    "tier1": "Clothing and Accessories",
+    "tier2": "Clothing",
+    "tier3": "",
+    "keywords": "clothing, medical apparel, workwear, work apparel, uniforms"
   },
   {
-    id: "1058",
-    label: "Children's Clothing",
-    tier1: "Clothing and Accessories",
-    tier2: "Clothing",
-    tier3: "Children's Clothing",
-    keywords: "children's clothing",
+    "id": "1058",
+    "label": "Children's Clothing",
+    "tier1": "Clothing and Accessories",
+    "tier2": "Clothing",
+    "tier3": "Children's Clothing",
+    "keywords": "children's clothing"
   },
   {
-    id: "1059",
-    label: "Maternity Clothing",
-    tier1: "Clothing and Accessories",
-    tier2: "Clothing",
-    tier3: "Maternity Clothing",
-    keywords: "maternity clothing",
+    "id": "1059",
+    "label": "Maternity Clothing",
+    "tier1": "Clothing and Accessories",
+    "tier2": "Clothing",
+    "tier3": "Maternity Clothing",
+    "keywords": "maternity clothing"
   },
   {
-    id: "1060",
-    label: "Men's Clothing",
-    tier1: "Clothing and Accessories",
-    tier2: "Clothing",
-    tier3: "Men's Clothing",
-    keywords: "men's clothing",
+    "id": "1060",
+    "label": "Men's Clothing",
+    "tier1": "Clothing and Accessories",
+    "tier2": "Clothing",
+    "tier3": "Men's Clothing",
+    "keywords": "men's clothing"
   },
   {
-    id: "1061",
-    label: "Sportswear",
-    tier1: "Clothing and Accessories",
-    tier2: "Clothing",
-    tier3: "Sportswear",
-    keywords: "sportswear",
+    "id": "1061",
+    "label": "Sportswear",
+    "tier1": "Clothing and Accessories",
+    "tier2": "Clothing",
+    "tier3": "Sportswear",
+    "keywords": "sportswear"
   },
   {
-    id: "1062",
-    label: "Underwear and Lingerie",
-    tier1: "Clothing and Accessories",
-    tier2: "Clothing",
-    tier3: "Underwear and Lingerie",
-    keywords: "underwear and lingerie",
+    "id": "1062",
+    "label": "Underwear and Lingerie",
+    "tier1": "Clothing and Accessories",
+    "tier2": "Clothing",
+    "tier3": "Underwear and Lingerie",
+    "keywords": "underwear and lingerie"
   },
   {
-    id: "1063",
-    label: "Wedding Dresses/Bridal Wear/Tuxedos",
-    tier1: "Clothing and Accessories",
-    tier2: "Clothing",
-    tier3: "Wedding Dresses/Bridal Wear/Tuxedos",
-    keywords: "wedding dresses/bridal wear/tuxedos",
+    "id": "1063",
+    "label": "Wedding Dresses/Bridal Wear/Tuxedos",
+    "tier1": "Clothing and Accessories",
+    "tier2": "Clothing",
+    "tier3": "Wedding Dresses/Bridal Wear/Tuxedos",
+    "keywords": "wedding dresses/bridal wear/tuxedos"
   },
   {
-    id: "1064",
-    label: "Women's Clothing",
-    tier1: "Clothing and Accessories",
-    tier2: "Clothing",
-    tier3: "Women's Clothing",
-    keywords: "women's clothing",
+    "id": "1064",
+    "label": "Women's Clothing",
+    "tier1": "Clothing and Accessories",
+    "tier2": "Clothing",
+    "tier3": "Women's Clothing",
+    "keywords": "women's clothing"
   },
   {
-    id: "1065",
-    label: "Clothing Accessories",
-    tier1: "Clothing and Accessories",
-    tier2: "Clothing Accessories",
-    tier3: "",
-    keywords: "clothing accessories",
+    "id": "1065",
+    "label": "Clothing Accessories",
+    "tier1": "Clothing and Accessories",
+    "tier2": "Clothing Accessories",
+    "tier3": "",
+    "keywords": "clothing accessories"
   },
   {
-    id: "1066",
-    label: "Costumes and Accessories",
-    tier1: "Clothing and Accessories",
-    tier2: "Costumes and Accessories",
-    tier3: "",
-    keywords: "costumes and accessories",
+    "id": "1066",
+    "label": "Costumes and Accessories",
+    "tier1": "Clothing and Accessories",
+    "tier2": "Costumes and Accessories",
+    "tier3": "",
+    "keywords": "costumes and accessories"
   },
   {
-    id: "1067",
-    label: "Footwear",
-    tier1: "Clothing and Accessories",
-    tier2: "Footwear",
-    tier3: "",
-    keywords: "footwear",
+    "id": "1067",
+    "label": "Footwear",
+    "tier1": "Clothing and Accessories",
+    "tier2": "Footwear",
+    "tier3": "",
+    "keywords": "footwear"
   },
   {
-    id: "1068",
-    label: "Footwear Accessories",
-    tier1: "Clothing and Accessories",
-    tier2: "Footwear Accessories",
-    tier3: "",
-    keywords: "footwear accessories",
+    "id": "1068",
+    "label": "Footwear Accessories",
+    "tier1": "Clothing and Accessories",
+    "tier2": "Footwear Accessories",
+    "tier3": "",
+    "keywords": "footwear accessories"
   },
   {
-    id: "1069",
-    label: "Handbags and Wallets",
-    tier1: "Clothing and Accessories",
-    tier2: "Handbags and Wallets",
-    tier3: "",
-    keywords: "handbags and wallets",
+    "id": "1069",
+    "label": "Handbags and Wallets",
+    "tier1": "Clothing and Accessories",
+    "tier2": "Handbags and Wallets",
+    "tier3": "",
+    "keywords": "handbags and wallets"
   },
   {
-    id: "1070",
-    label: "Jewelry and Watches",
-    tier1: "Clothing and Accessories",
-    tier2: "Jewelry and Watches",
-    tier3: "",
-    keywords: "jewelry and watches",
+    "id": "1070",
+    "label": "Jewelry and Watches",
+    "tier1": "Clothing and Accessories",
+    "tier2": "Jewelry and Watches",
+    "tier3": "",
+    "keywords": "jewelry and watches"
   },
   {
-    id: "1071",
-    label: "Sunglasses",
-    tier1: "Clothing and Accessories",
-    tier2: "Sunglasses",
-    tier3: "",
-    keywords: "sunglasses",
+    "id": "1071",
+    "label": "Sunglasses",
+    "tier1": "Clothing and Accessories",
+    "tier2": "Sunglasses",
+    "tier3": "",
+    "keywords": "sunglasses"
   },
   {
-    id: "1072",
-    label: "Collectables and Antiques",
-    tier1: "Collectables and Antiques",
-    tier2: "",
-    tier3: "",
-    keywords: "collectables and antiques",
+    "id": "1072",
+    "label": "Collectables and Antiques",
+    "tier1": "Collectables and Antiques",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "collectables and antiques"
   },
   {
-    id: "1073",
-    label: "Antiques",
-    tier1: "Collectables and Antiques",
-    tier2: "Antiques",
-    tier3: "",
-    keywords: "antiques",
+    "id": "1073",
+    "label": "Antiques",
+    "tier1": "Collectables and Antiques",
+    "tier2": "Antiques",
+    "tier3": "",
+    "keywords": "antiques"
   },
   {
-    id: "1074",
-    label: "Coins and Paper Money",
-    tier1: "Collectables and Antiques",
-    tier2: "Coins and Paper Money",
-    tier3: "",
-    keywords: "coins and paper money",
+    "id": "1074",
+    "label": "Coins and Paper Money",
+    "tier1": "Collectables and Antiques",
+    "tier2": "Coins and Paper Money",
+    "tier3": "",
+    "keywords": "coins and paper money"
   },
   {
-    id: "1075",
-    label: "Collectibles",
-    tier1: "Collectables and Antiques",
-    tier2: "Collectibles",
-    tier3: "",
-    keywords: "collectibles",
+    "id": "1075",
+    "label": "Collectibles",
+    "tier1": "Collectables and Antiques",
+    "tier2": "Collectibles",
+    "tier3": "",
+    "keywords": "collectibles"
   },
   {
-    id: "1076",
-    label: "Entertainment Memorabilia",
-    tier1: "Collectables and Antiques",
-    tier2: "Entertainment Memorabilia",
-    tier3: "",
-    keywords: "entertainment memorabilia",
+    "id": "1076",
+    "label": "Entertainment Memorabilia",
+    "tier1": "Collectables and Antiques",
+    "tier2": "Entertainment Memorabilia",
+    "tier3": "",
+    "keywords": "entertainment memorabilia"
   },
   {
-    id: "1077",
-    label: "Sports Memorabilia and Trading Cards",
-    tier1: "Collectables and Antiques",
-    tier2: "Sports Memorabilia and Trading Cards",
-    tier3: "",
-    keywords: "sports memorabilia and trading cards",
+    "id": "1077",
+    "label": "Sports Memorabilia and Trading Cards",
+    "tier1": "Collectables and Antiques",
+    "tier2": "Sports Memorabilia and Trading Cards",
+    "tier3": "",
+    "keywords": "sports memorabilia and trading cards"
   },
   {
-    id: "1078",
-    label: "Stamps",
-    tier1: "Collectables and Antiques",
-    tier2: "Stamps",
-    tier3: "",
-    keywords: "stamps",
+    "id": "1078",
+    "label": "Stamps",
+    "tier1": "Collectables and Antiques",
+    "tier2": "Stamps",
+    "tier3": "",
+    "keywords": "stamps"
   },
   {
-    id: "1079",
-    label: "Computer Software",
-    tier1: "Computer Software",
-    tier2: "",
-    tier3: "",
-    keywords: "computer software",
+    "id": "1079",
+    "label": "Computer Software",
+    "tier1": "Computer Software",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "computer software"
   },
   {
-    id: "1080",
-    label: "Enterprise Computer Software",
-    tier1: "Computer Software",
-    tier2: "Enterprise Computer Software",
-    tier3: "",
-    keywords: "enterprise computer software",
+    "id": "1080",
+    "label": "Enterprise Computer Software",
+    "tier1": "Computer Software",
+    "tier2": "Enterprise Computer Software",
+    "tier3": "",
+    "keywords": "enterprise computer software"
   },
   {
-    id: "1081",
-    label: "Personal Computer Software",
-    tier1: "Computer Software",
-    tier2: "Personal Computer Software",
-    tier3: "",
-    keywords: "personal computer software",
+    "id": "1081",
+    "label": "Personal Computer Software",
+    "tier1": "Computer Software",
+    "tier2": "Personal Computer Software",
+    "tier3": "",
+    "keywords": "personal computer software"
   },
   {
-    id: "1082",
-    label: "Cosmetic Services",
-    tier1: "Cosmetic Services",
-    tier2: "",
-    tier3: "",
-    keywords: "cosmetic services",
+    "id": "1082",
+    "label": "Cosmetic Services",
+    "tier1": "Cosmetic Services",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "cosmetic services"
   },
   {
-    id: "1083",
-    label: "Beauty Salons",
-    tier1: "Cosmetic Services",
-    tier2: "Beauty Salons",
-    tier3: "",
-    keywords: "beauty salons",
+    "id": "1083",
+    "label": "Beauty Salons",
+    "tier1": "Cosmetic Services",
+    "tier2": "Beauty Salons",
+    "tier3": "",
+    "keywords": "beauty salons"
   },
   {
-    id: "1084",
-    label: "Hair Salons",
-    tier1: "Cosmetic Services",
-    tier2: "Hair Salons",
-    tier3: "",
-    keywords: "hair salons",
+    "id": "1084",
+    "label": "Hair Salons",
+    "tier1": "Cosmetic Services",
+    "tier2": "Hair Salons",
+    "tier3": "",
+    "keywords": "hair salons"
   },
   {
-    id: "1085",
-    label: "Hair Removal",
-    tier1: "Cosmetic Services",
-    tier2: "Hair Removal",
-    tier3: "",
-    keywords: "hair removal",
+    "id": "1085",
+    "label": "Hair Removal",
+    "tier1": "Cosmetic Services",
+    "tier2": "Hair Removal",
+    "tier3": "",
+    "keywords": "hair removal"
   },
   {
-    id: "1086",
-    label: "Hair Restoration",
-    tier1: "Cosmetic Services",
-    tier2: "Hair Restoration",
-    tier3: "",
-    keywords: "hair restoration",
+    "id": "1086",
+    "label": "Hair Restoration",
+    "tier1": "Cosmetic Services",
+    "tier2": "Hair Restoration",
+    "tier3": "",
+    "keywords": "hair restoration"
   },
   {
-    id: "1087",
-    label: "Nail Salons",
-    tier1: "Cosmetic Services",
-    tier2: "Nail Salons",
-    tier3: "",
-    keywords: "nail salons",
+    "id": "1087",
+    "label": "Nail Salons",
+    "tier1": "Cosmetic Services",
+    "tier2": "Nail Salons",
+    "tier3": "",
+    "keywords": "nail salons"
   },
   {
-    id: "1088",
-    label: "Med Spas",
-    tier1: "Cosmetic Services",
-    tier2: "Med Spas",
-    tier3: "",
-    keywords: "med spas",
+    "id": "1088",
+    "label": "Med Spas",
+    "tier1": "Cosmetic Services",
+    "tier2": "Med Spas",
+    "tier3": "",
+    "keywords": "med spas"
   },
   {
-    id: "1089",
-    label: "Piercing and Tattooing",
-    tier1: "Cosmetic Services",
-    tier2: "Piercing and Tattooing",
-    tier3: "",
-    keywords: "piercing and tattooing",
+    "id": "1089",
+    "label": "Piercing and Tattooing",
+    "tier1": "Cosmetic Services",
+    "tier2": "Piercing and Tattooing",
+    "tier3": "",
+    "keywords": "piercing and tattooing"
   },
   {
-    id: "1090",
-    label: "Tanning Salons",
-    tier1: "Cosmetic Services",
-    tier2: "Tanning Salons",
-    tier3: "",
-    keywords: "tanning salons",
+    "id": "1090",
+    "label": "Tanning Salons",
+    "tier1": "Cosmetic Services",
+    "tier2": "Tanning Salons",
+    "tier3": "",
+    "keywords": "tanning salons"
   },
   {
-    id: "1091",
-    label: "Consumer Electronics",
-    tier1: "Consumer Electronics",
-    tier2: "",
-    tier3: "",
-    keywords: "consumer electronics",
+    "id": "1091",
+    "label": "Consumer Electronics",
+    "tier1": "Consumer Electronics",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "consumer electronics"
   },
   {
-    id: "1092",
-    label: "Arcade Equipment",
-    tier1: "Consumer Electronics",
-    tier2: "Arcade Equipment",
-    tier3: "",
-    keywords: "arcade equipment",
+    "id": "1092",
+    "label": "Arcade Equipment",
+    "tier1": "Consumer Electronics",
+    "tier2": "Arcade Equipment",
+    "tier3": "",
+    "keywords": "arcade equipment"
   },
   {
-    id: "1093",
-    label: "Camcorders",
-    tier1: "Consumer Electronics",
-    tier2: "Camcorders",
-    tier3: "",
-    keywords: "camcorders",
+    "id": "1093",
+    "label": "Camcorders",
+    "tier1": "Consumer Electronics",
+    "tier2": "Camcorders",
+    "tier3": "",
+    "keywords": "camcorders"
   },
   {
-    id: "1094",
-    label: "Cameras and Photo",
-    tier1: "Consumer Electronics",
-    tier2: "Cameras and Photo",
-    tier3: "",
-    keywords: "cameras and photo",
+    "id": "1094",
+    "label": "Cameras and Photo",
+    "tier1": "Consumer Electronics",
+    "tier2": "Cameras and Photo",
+    "tier3": "",
+    "keywords": "cameras and photo"
   },
   {
-    id: "1095",
-    label: "Camera and Photo Accessories",
-    tier1: "Consumer Electronics",
-    tier2: "Cameras and Photo",
-    tier3: "Camera and Photo Accessories",
-    keywords: "camera and photo accessories",
+    "id": "1095",
+    "label": "Camera and Photo Accessories",
+    "tier1": "Consumer Electronics",
+    "tier2": "Cameras and Photo",
+    "tier3": "Camera and Photo Accessories",
+    "keywords": "camera and photo accessories"
   },
   {
-    id: "1096",
-    label: "Cameras",
-    tier1: "Consumer Electronics",
-    tier2: "Cameras and Photo",
-    tier3: "Cameras",
-    keywords: "cameras",
+    "id": "1096",
+    "label": "Cameras",
+    "tier1": "Consumer Electronics",
+    "tier2": "Cameras and Photo",
+    "tier3": "Cameras",
+    "keywords": "cameras"
   },
   {
-    id: "1097",
-    label: "Photo Applications",
-    tier1: "Consumer Electronics",
-    tier2: "Cameras and Photo",
-    tier3: "Photo Applications",
-    keywords: "photo applications",
+    "id": "1097",
+    "label": "Photo Applications",
+    "tier1": "Consumer Electronics",
+    "tier2": "Cameras and Photo",
+    "tier3": "Photo Applications",
+    "keywords": "photo applications"
   },
   {
-    id: "1098",
-    label: "Circuit Boards and Components",
-    tier1: "Consumer Electronics",
-    tier2: "Circuit Boards and Components",
-    tier3: "",
-    keywords: "circuit boards and components",
+    "id": "1098",
+    "label": "Circuit Boards and Components",
+    "tier1": "Consumer Electronics",
+    "tier2": "Circuit Boards and Components",
+    "tier3": "",
+    "keywords": "circuit boards and components"
   },
   {
-    id: "1099",
-    label: "Communications Electronics",
-    tier1: "Consumer Electronics",
-    tier2: "Communications Electronics",
-    tier3: "",
-    keywords: "communications electronics",
+    "id": "1099",
+    "label": "Communications Electronics",
+    "tier1": "Consumer Electronics",
+    "tier2": "Communications Electronics",
+    "tier3": "",
+    "keywords": "communications electronics"
   },
   {
-    id: "1100",
-    label: "Computers",
-    tier1: "Consumer Electronics",
-    tier2: "Computers",
-    tier3: "",
-    keywords: "computers",
+    "id": "1100",
+    "label": "Computers",
+    "tier1": "Consumer Electronics",
+    "tier2": "Computers",
+    "tier3": "",
+    "keywords": "computers"
   },
   {
-    id: "1101",
-    label: "Laptops",
-    tier1: "Consumer Electronics",
-    tier2: "Computers",
-    tier3: "Laptops",
-    keywords: "laptops",
+    "id": "1101",
+    "label": "Laptops",
+    "tier1": "Consumer Electronics",
+    "tier2": "Computers",
+    "tier3": "Laptops",
+    "keywords": "laptops"
   },
   {
-    id: "1102",
-    label: "Desktops",
-    tier1: "Consumer Electronics",
-    tier2: "Computers",
-    tier3: "Desktops",
-    keywords: "desktops",
+    "id": "1102",
+    "label": "Desktops",
+    "tier1": "Consumer Electronics",
+    "tier2": "Computers",
+    "tier3": "Desktops",
+    "keywords": "desktops"
   },
   {
-    id: "1103",
-    label: "E-Readers",
-    tier1: "Consumer Electronics",
-    tier2: "E-Readers",
-    tier3: "",
-    keywords: "e-readers",
+    "id": "1103",
+    "label": "E-Readers",
+    "tier1": "Consumer Electronics",
+    "tier2": "E-Readers",
+    "tier3": "",
+    "keywords": "e-readers"
   },
   {
-    id: "1104",
-    label: "Electronics Accessories",
-    tier1: "Consumer Electronics",
-    tier2: "Electronics Accessories",
-    tier3: "",
-    keywords: "electronics accessories",
+    "id": "1104",
+    "label": "Electronics Accessories",
+    "tier1": "Consumer Electronics",
+    "tier2": "Electronics Accessories",
+    "tier3": "",
+    "keywords": "electronics accessories"
   },
   {
-    id: "1105",
-    label: "Headphones",
-    tier1: "Consumer Electronics",
-    tier2: "Headphones",
-    tier3: "",
-    keywords: "headphones",
+    "id": "1105",
+    "label": "Headphones",
+    "tier1": "Consumer Electronics",
+    "tier2": "Headphones",
+    "tier3": "",
+    "keywords": "headphones"
   },
   {
-    id: "1106",
-    label: "Home Theater Systems",
-    tier1: "Consumer Electronics",
-    tier2: "Home Theater Systems",
-    tier3: "",
-    keywords: "home theater systems",
+    "id": "1106",
+    "label": "Home Theater Systems",
+    "tier1": "Consumer Electronics",
+    "tier2": "Home Theater Systems",
+    "tier3": "",
+    "keywords": "home theater systems"
   },
   {
-    id: "1107",
-    label: "Marine Electronics",
-    tier1: "Consumer Electronics",
-    tier2: "Marine Electronics",
-    tier3: "",
-    keywords: "marine electronics",
+    "id": "1107",
+    "label": "Marine Electronics",
+    "tier1": "Consumer Electronics",
+    "tier2": "Marine Electronics",
+    "tier3": "",
+    "keywords": "marine electronics"
   },
   {
-    id: "1108",
-    label: "Mobile Phones and Accessories",
-    tier1: "Consumer Electronics",
-    tier2: "Mobile Phones and Accessories",
-    tier3: "",
-    keywords: "mobile phones and accessories",
+    "id": "1108",
+    "label": "Mobile Phones and Accessories",
+    "tier1": "Consumer Electronics",
+    "tier2": "Mobile Phones and Accessories",
+    "tier3": "",
+    "keywords": "mobile phones and accessories"
   },
   {
-    id: "1109",
-    label: "Networking",
-    tier1: "Consumer Electronics",
-    tier2: "Networking",
-    tier3: "",
-    keywords: "networking",
+    "id": "1109",
+    "label": "Networking",
+    "tier1": "Consumer Electronics",
+    "tier2": "Networking",
+    "tier3": "",
+    "keywords": "networking"
   },
   {
-    id: "1110",
-    label: "Printers/Copiers/Scanners/Fax",
-    tier1: "Consumer Electronics",
-    tier2: "Printers/Copiers/Scanners/Fax",
-    tier3: "",
-    keywords: "printers/copiers/scanners/fax",
+    "id": "1110",
+    "label": "Printers/Copiers/Scanners/Fax",
+    "tier1": "Consumer Electronics",
+    "tier2": "Printers/Copiers/Scanners/Fax",
+    "tier3": "",
+    "keywords": "printers/copiers/scanners/fax"
   },
   {
-    id: "1111",
-    label: "Security Devices",
-    tier1: "Consumer Electronics",
-    tier2: "Security Devices",
-    tier3: "",
-    keywords: "security devices",
+    "id": "1111",
+    "label": "Security Devices",
+    "tier1": "Consumer Electronics",
+    "tier2": "Security Devices",
+    "tier3": "",
+    "keywords": "security devices"
   },
   {
-    id: "1112",
-    label: "Tablets",
-    tier1: "Consumer Electronics",
-    tier2: "Tablets",
-    tier3: "",
-    keywords: "tablets",
+    "id": "1112",
+    "label": "Tablets",
+    "tier1": "Consumer Electronics",
+    "tier2": "Tablets",
+    "tier3": "",
+    "keywords": "tablets"
   },
   {
-    id: "1113",
-    label: "Televisions",
-    tier1: "Consumer Electronics",
-    tier2: "Televisions",
-    tier3: "",
-    keywords: "televisions",
+    "id": "1113",
+    "label": "Televisions",
+    "tier1": "Consumer Electronics",
+    "tier2": "Televisions",
+    "tier3": "",
+    "keywords": "televisions"
   },
   {
-    id: "1114",
-    label: "Video Games and Consoles",
-    tier1: "Consumer Electronics",
-    tier2: "Video Games",
-    tier3: "",
-    keywords: "video games and consoles",
+    "id": "1114",
+    "label": "Video Games and Consoles",
+    "tier1": "Consumer Electronics",
+    "tier2": "Video Games",
+    "tier3": "",
+    "keywords": "video games and consoles"
   },
   {
-    id: "1115",
-    label: "Video Games and Consoles",
-    tier1: "Consumer Electronics",
-    tier2: "Video Game Consoles",
-    tier3: "",
-    keywords: "video games and consoles",
+    "id": "1115",
+    "label": "Video Games and Consoles",
+    "tier1": "Consumer Electronics",
+    "tier2": "Video Game Consoles",
+    "tier3": "",
+    "keywords": "video games and consoles"
   },
   {
-    id: "1116",
-    label: "Video Game Console Accessories",
-    tier1: "Consumer Electronics",
-    tier2: "Video Game Console Accessories",
-    tier3: "",
-    keywords: "video game console accessories",
+    "id": "1116",
+    "label": "Video Game Console Accessories",
+    "tier1": "Consumer Electronics",
+    "tier2": "Video Game Console Accessories",
+    "tier3": "",
+    "keywords": "video game console accessories"
   },
   {
-    id: "1117",
-    label: "Consumer Packaged Goods",
-    tier1: "Consumer Packaged Goods",
-    tier2: "",
-    tier3: "",
-    keywords: "consumer packaged goods",
+    "id": "1117",
+    "label": "Consumer Packaged Goods",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "consumer packaged goods"
   },
   {
-    id: "1118",
-    label: "Baby and Toddler Products",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Baby and Toddler Products",
-    tier3: "",
-    keywords: "baby and toddler products",
+    "id": "1118",
+    "label": "Baby and Toddler Products",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Baby and Toddler Products",
+    "tier3": "",
+    "keywords": "baby and toddler products"
   },
   {
-    id: "1119",
-    label: "Diapers",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Baby and Toddler Products",
-    tier3: "Diapers",
-    keywords: "diapers",
+    "id": "1119",
+    "label": "Diapers",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Baby and Toddler Products",
+    "tier3": "Diapers",
+    "keywords": "diapers"
   },
   {
-    id: "1120",
-    label: "Nursing and Feeding Products",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Baby and Toddler Products",
-    tier3: "Nursing and Feeding Products",
-    keywords: "nursing and feeding products",
+    "id": "1120",
+    "label": "Nursing and Feeding Products",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Baby and Toddler Products",
+    "tier3": "Nursing and Feeding Products",
+    "keywords": "nursing and feeding products"
   },
   {
-    id: "1121",
-    label: "Back to School Supplies",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Back to School Supplies",
-    tier3: "",
-    keywords: "back to school supplies",
+    "id": "1121",
+    "label": "Back to School Supplies",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Back to School Supplies",
+    "tier3": "",
+    "keywords": "back to school supplies"
   },
   {
-    id: "1122",
-    label: "Barbeque",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Barbeque",
-    tier3: "",
-    keywords: "barbeque",
+    "id": "1122",
+    "label": "Barbeque",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Barbeque",
+    "tier3": "",
+    "keywords": "barbeque"
   },
   {
-    id: "1123",
-    label: "Charcoal",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Barbeque",
-    tier3: "Charcoal",
-    keywords: "charcoal",
+    "id": "1123",
+    "label": "Charcoal",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Barbeque",
+    "tier3": "Charcoal",
+    "keywords": "charcoal"
   },
   {
-    id: "1124",
-    label: "Charcoal Lighter Fluids",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Barbeque",
-    tier3: "Charcoal Lighter Fluids",
-    keywords: "charcoal lighter fluids",
+    "id": "1124",
+    "label": "Charcoal Lighter Fluids",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Barbeque",
+    "tier3": "Charcoal Lighter Fluids",
+    "keywords": "charcoal lighter fluids"
   },
   {
-    id: "1125",
-    label: "Beverages",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Beverages",
-    tier3: "",
-    keywords: "beverages",
+    "id": "1125",
+    "label": "Beverages",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Beverages",
+    "tier3": "",
+    "keywords": "beverages"
   },
   {
-    id: "1126",
-    label: "Carbonated Soft Drinks",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Beverages",
-    tier3: "Carbonated Soft Drinks",
-    keywords: "carbonated soft drinks",
+    "id": "1126",
+    "label": "Carbonated Soft Drinks",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Beverages",
+    "tier3": "Carbonated Soft Drinks",
+    "keywords": "carbonated soft drinks"
   },
   {
-    id: "1127",
-    label: "Coffee & Tea",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Beverages",
-    tier3: "Coffee & Tea",
-    keywords: "coffee & tea",
+    "id": "1127",
+    "label": "Coffee & Tea",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Beverages",
+    "tier3": "Coffee & Tea",
+    "keywords": "coffee & tea"
   },
   {
-    id: "1128",
-    label: "Drink Mixes",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Beverages",
-    tier3: "Drink Mixes",
-    keywords: "drink mixes",
+    "id": "1128",
+    "label": "Drink Mixes",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Beverages",
+    "tier3": "Drink Mixes",
+    "keywords": "drink mixes"
   },
   {
-    id: "1129",
-    label: "Juices",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Beverages",
-    tier3: "Juices",
-    keywords: "juices",
+    "id": "1129",
+    "label": "Juices",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Beverages",
+    "tier3": "Juices",
+    "keywords": "juices"
   },
   {
-    id: "1130",
-    label: "Sports/Energy Drinks",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Beverages",
-    tier3: "Sports/Energy Drinks",
-    keywords: "sports/energy drinks",
+    "id": "1130",
+    "label": "Sports/Energy Drinks",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Beverages",
+    "tier3": "Sports/Energy Drinks",
+    "keywords": "sports/energy drinks"
   },
   {
-    id: "1131",
-    label: "Water",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Beverages",
-    tier3: "Water",
-    keywords: "water",
+    "id": "1131",
+    "label": "Water",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Beverages",
+    "tier3": "Water",
+    "keywords": "water"
   },
   {
-    id: "1132",
-    label: "Cosmetics",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Cosmetics",
-    tier3: "",
-    keywords: "cosmetics",
+    "id": "1132",
+    "label": "Cosmetics",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Cosmetics",
+    "tier3": "",
+    "keywords": "cosmetics"
   },
   {
-    id: "1133",
-    label: "Cosmetics Accessories",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Cosmetics",
-    tier3: "Cosmetics Accessories",
-    keywords: "cosmetics accessories,pads",
+    "id": "1133",
+    "label": "Cosmetics Accessories",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Cosmetics",
+    "tier3": "Cosmetics Accessories",
+    "keywords": "cosmetics accessories,pads"
   },
   {
-    id: "1134",
-    label: "Cosmetics-Nail",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Cosmetics",
-    tier3: "Cosmetics-Nail",
-    keywords: "cosmetics-nail",
+    "id": "1134",
+    "label": "Cosmetics-Nail",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Cosmetics",
+    "tier3": "Cosmetics-Nail",
+    "keywords": "cosmetics-nail"
   },
   {
-    id: "1135",
-    label: "Eye",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Cosmetics",
-    tier3: "Eye",
-    keywords: "eye",
+    "id": "1135",
+    "label": "Eye",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Cosmetics",
+    "tier3": "Eye",
+    "keywords": "eye"
   },
   {
-    id: "1136",
-    label: "Facial",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Cosmetics",
-    tier3: "Facial",
-    keywords: "facial",
+    "id": "1136",
+    "label": "Facial",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Cosmetics",
+    "tier3": "Facial",
+    "keywords": "facial"
   },
   {
-    id: "1137",
-    label: "Lip",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Cosmetics",
-    tier3: "Lip",
-    keywords: "lip",
+    "id": "1137",
+    "label": "Lip",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Cosmetics",
+    "tier3": "Lip",
+    "keywords": "lip"
   },
   {
-    id: "1138",
-    label: "Storage",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Cosmetics",
-    tier3: "Storage",
-    keywords: "storage",
+    "id": "1138",
+    "label": "Storage",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Cosmetics",
+    "tier3": "Storage",
+    "keywords": "storage"
   },
   {
-    id: "1139",
-    label: "Disposable Tableware",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Disposable Tableware",
-    tier3: "",
-    keywords: "disposable tableware",
+    "id": "1139",
+    "label": "Disposable Tableware",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Disposable Tableware",
+    "tier3": "",
+    "keywords": "disposable tableware"
   },
   {
-    id: "1140",
-    label: "Cups & Plates",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Disposable Tableware",
-    tier3: "Cups & Plates",
-    keywords: "cups & plates",
+    "id": "1140",
+    "label": "Cups & Plates",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Disposable Tableware",
+    "tier3": "Cups & Plates",
+    "keywords": "cups & plates"
   },
   {
-    id: "1141",
-    label: "Disposable Tableware",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Disposable Tableware",
-    tier3: "Disposable Tableware",
-    keywords: "disposable tableware",
+    "id": "1141",
+    "label": "Disposable Tableware",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Disposable Tableware",
+    "tier3": "Disposable Tableware",
+    "keywords": "disposable tableware"
   },
   {
-    id: "1142",
-    label: "Foils, Wraps, & Bags",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Foils, Wraps, & Bags",
-    tier3: "",
-    keywords: "foils, wraps, & bags",
+    "id": "1142",
+    "label": "Foils, Wraps, & Bags",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Foils, Wraps, & Bags",
+    "tier3": "",
+    "keywords": "foils, wraps, & bags"
   },
   {
-    id: "1143",
-    label: "Foil Pans",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Foils, Wraps, & Bags",
-    tier3: "Foil Pans",
-    keywords: "foil pans",
+    "id": "1143",
+    "label": "Foil Pans",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Foils, Wraps, & Bags",
+    "tier3": "Foil Pans",
+    "keywords": "foil pans"
   },
   {
-    id: "1144",
-    label: "Foils & Wraps",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Foils, Wraps, & Bags",
-    tier3: "Foils & Wraps",
-    keywords: "foils & wraps",
+    "id": "1144",
+    "label": "Foils & Wraps",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Foils, Wraps, & Bags",
+    "tier3": "Foils & Wraps",
+    "keywords": "foils & wraps"
   },
   {
-    id: "1145",
-    label: "Food & Trash Bags",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Foils, Wraps, & Bags",
-    tier3: "Food & Trash Bags",
-    keywords: "food & trash bags",
+    "id": "1145",
+    "label": "Food & Trash Bags",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Foils, Wraps, & Bags",
+    "tier3": "Food & Trash Bags",
+    "keywords": "food & trash bags"
   },
   {
-    id: "1146",
-    label: "Fragrance",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Fragrance",
-    tier3: "",
-    keywords: "fragrance",
+    "id": "1146",
+    "label": "Fragrance",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Fragrance",
+    "tier3": "",
+    "keywords": "fragrance"
   },
   {
-    id: "1147",
-    label: "Fragrances - Women's",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Fragrance",
-    tier3: "Fragrances - Women's",
-    keywords: "fragrances - women's",
+    "id": "1147",
+    "label": "Fragrances - Women's",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Fragrance",
+    "tier3": "Fragrances - Women's",
+    "keywords": "fragrances - women's"
   },
   {
-    id: "1148",
-    label: "Shaving Lotion/Men's Fragrance",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Fragrance",
-    tier3: "Shaving Lotion/Men's Fragrance",
-    keywords: "shaving lotion/men's fragrance",
+    "id": "1148",
+    "label": "Shaving Lotion/Men's Fragrance",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Fragrance",
+    "tier3": "Shaving Lotion/Men's Fragrance",
+    "keywords": "shaving lotion/men's fragrance"
   },
   {
-    id: "1149",
-    label: "Frozen",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Frozen",
-    tier3: "",
-    keywords: "frozen",
+    "id": "1149",
+    "label": "Frozen",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Frozen",
+    "tier3": "",
+    "keywords": "frozen"
   },
   {
-    id: "1150",
-    label: "Frozen Baked Goods",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Frozen",
-    tier3: "Frozen Baked Goods",
-    keywords: "frozen baked goods",
+    "id": "1150",
+    "label": "Frozen Baked Goods",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Frozen",
+    "tier3": "Frozen Baked Goods",
+    "keywords": "frozen baked goods"
   },
   {
-    id: "1151",
-    label: "Frozen Beverages",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Frozen",
-    tier3: "Frozen Beverages",
-    keywords: "frozen beverages, slushie",
+    "id": "1151",
+    "label": "Frozen Beverages",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Frozen",
+    "tier3": "Frozen Beverages",
+    "keywords": "frozen beverages, slushie"
   },
   {
-    id: "1152",
-    label: "Frozen Desserts",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Frozen",
-    tier3: "Frozen Desserts",
-    keywords: "frozen desserts, ice cream",
+    "id": "1152",
+    "label": "Frozen Desserts",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Frozen",
+    "tier3": "Frozen Desserts",
+    "keywords": "frozen desserts, ice cream"
   },
   {
-    id: "1153",
-    label: "Frozen Fruits & Vegetables",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Frozen",
-    tier3: "Frozen Fruits & Vegetables",
-    keywords: "frozen fruits & vegetables",
+    "id": "1153",
+    "label": "Frozen Fruits & Vegetables",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Frozen",
+    "tier3": "Frozen Fruits & Vegetables",
+    "keywords": "frozen fruits & vegetables"
   },
   {
-    id: "1154",
-    label: "Frozen Juices",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Frozen",
-    tier3: "Frozen Juices",
-    keywords: "frozen juices",
+    "id": "1154",
+    "label": "Frozen Juices",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Frozen",
+    "tier3": "Frozen Juices",
+    "keywords": "frozen juices"
   },
   {
-    id: "1155",
-    label: "Frozen Meals",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Frozen",
-    tier3: "Frozen Meals",
-    keywords: "frozen meals",
+    "id": "1155",
+    "label": "Frozen Meals",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Frozen",
+    "tier3": "Frozen Meals",
+    "keywords": "frozen meals"
   },
   {
-    id: "1156",
-    label: "Frozen Meat/Poultry/Seafood",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Frozen",
-    tier3: "Frozen Meat/Poultry/Seafood",
-    keywords: "frozen meat/poultry/seafood",
+    "id": "1156",
+    "label": "Frozen Meat/Poultry/Seafood",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Frozen",
+    "tier3": "Frozen Meat/Poultry/Seafood",
+    "keywords": "frozen meat/poultry/seafood"
   },
   {
-    id: "1157",
-    label: "Frozen Snacks",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Frozen",
-    tier3: "Frozen Snacks",
-    keywords: "frozen snacks",
+    "id": "1157",
+    "label": "Frozen Snacks",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Frozen",
+    "tier3": "Frozen Snacks",
+    "keywords": "frozen snacks"
   },
   {
-    id: "1158",
-    label: "Other Frozen",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Frozen",
-    tier3: "Other Frozen",
-    keywords: "other frozen",
+    "id": "1158",
+    "label": "Other Frozen",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Frozen",
+    "tier3": "Other Frozen",
+    "keywords": "other frozen"
   },
   {
-    id: "1159",
-    label: "General Food",
-    tier1: "Consumer Packaged Goods",
-    tier2: "General Food",
-    tier3: "",
-    keywords: "general food",
+    "id": "1159",
+    "label": "General Food",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "General Food",
+    "tier3": "",
+    "keywords": "general food"
   },
   {
-    id: "1160",
-    label: "Baby Food",
-    tier1: "Consumer Packaged Goods",
-    tier2: "General Food",
-    tier3: "Baby Food",
-    keywords: "baby food",
+    "id": "1160",
+    "label": "Baby Food",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "General Food",
+    "tier3": "Baby Food",
+    "keywords": "baby food"
   },
   {
-    id: "1161",
-    label: "Bakery",
-    tier1: "Consumer Packaged Goods",
-    tier2: "General Food",
-    tier3: "Bakery",
-    keywords: "bakery",
+    "id": "1161",
+    "label": "Bakery",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "General Food",
+    "tier3": "Bakery",
+    "keywords": "bakery"
   },
   {
-    id: "1162",
-    label: "Baking",
-    tier1: "Consumer Packaged Goods",
-    tier2: "General Food",
-    tier3: "Baking",
-    keywords: "baking",
+    "id": "1162",
+    "label": "Baking",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "General Food",
+    "tier3": "Baking",
+    "keywords": "baking"
   },
   {
-    id: "1163",
-    label: "Breakfast",
-    tier1: "Consumer Packaged Goods",
-    tier2: "General Food",
-    tier3: "Breakfast",
-    keywords: "breakfast",
+    "id": "1163",
+    "label": "Breakfast",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "General Food",
+    "tier3": "Breakfast",
+    "keywords": "breakfast"
   },
   {
-    id: "1164",
-    label: "Candy",
-    tier1: "Consumer Packaged Goods",
-    tier2: "General Food",
-    tier3: "Candy",
-    keywords: "candy",
+    "id": "1164",
+    "label": "Candy",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "General Food",
+    "tier3": "Candy",
+    "keywords": "candy"
   },
   {
-    id: "1165",
-    label: "Condiments & Sauces",
-    tier1: "Consumer Packaged Goods",
-    tier2: "General Food",
-    tier3: "Condiments & Sauces",
-    keywords: "condiments & sauces",
+    "id": "1165",
+    "label": "Condiments & Sauces",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "General Food",
+    "tier3": "Condiments & Sauces",
+    "keywords": "condiments & sauces"
   },
   {
-    id: "1166",
-    label: "Cookies & Crackers",
-    tier1: "Consumer Packaged Goods",
-    tier2: "General Food",
-    tier3: "Cookies & Crackers",
-    keywords: "cookies & crackers",
+    "id": "1166",
+    "label": "Cookies & Crackers",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "General Food",
+    "tier3": "Cookies & Crackers",
+    "keywords": "cookies & crackers"
   },
   {
-    id: "1167",
-    label: "Fruit",
-    tier1: "Consumer Packaged Goods",
-    tier2: "General Food",
-    tier3: "Fruit",
-    keywords: "fruit",
+    "id": "1167",
+    "label": "Fruit",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "General Food",
+    "tier3": "Fruit",
+    "keywords": "fruit"
   },
   {
-    id: "1168",
-    label: "Meals",
-    tier1: "Consumer Packaged Goods",
-    tier2: "General Food",
-    tier3: "Meals",
-    keywords: "meals",
+    "id": "1168",
+    "label": "Meals",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "General Food",
+    "tier3": "Meals",
+    "keywords": "meals"
   },
   {
-    id: "1169",
-    label: "Snacks",
-    tier1: "Consumer Packaged Goods",
-    tier2: "General Food",
-    tier3: "Snacks",
-    keywords: "snacks",
+    "id": "1169",
+    "label": "Snacks",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "General Food",
+    "tier3": "Snacks",
+    "keywords": "snacks"
   },
   {
-    id: "1170",
-    label: "Vegetables",
-    tier1: "Consumer Packaged Goods",
-    tier2: "General Food",
-    tier3: "Vegetables",
-    keywords: "vegetables",
+    "id": "1170",
+    "label": "Vegetables",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "General Food",
+    "tier3": "Vegetables",
+    "keywords": "vegetables"
   },
   {
-    id: "1171",
-    label: "General Merchandise",
-    tier1: "Consumer Packaged Goods",
-    tier2: "General Merchandise",
-    tier3: "",
-    keywords: "general merchandise",
+    "id": "1171",
+    "label": "General Merchandise",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "General Merchandise",
+    "tier3": "",
+    "keywords": "general merchandise"
   },
   {
-    id: "1172",
-    label: "Grooming Supplies",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Grooming Supplies",
-    tier3: "",
-    keywords: "grooming supplies",
+    "id": "1172",
+    "label": "Grooming Supplies",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Grooming Supplies",
+    "tier3": "",
+    "keywords": "grooming supplies"
   },
   {
-    id: "1173",
-    label: "Hair Care",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Hair Care",
-    tier3: "",
-    keywords: "hair care",
+    "id": "1173",
+    "label": "Hair Care",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Hair Care",
+    "tier3": "",
+    "keywords": "hair care"
   },
   {
-    id: "1174",
-    label: "Hair Accessories",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Hair Care",
-    tier3: "Hair Accessories",
-    keywords: "hair accessories",
+    "id": "1174",
+    "label": "Hair Accessories",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Hair Care",
+    "tier3": "Hair Accessories",
+    "keywords": "hair accessories"
   },
   {
-    id: "1175",
-    label: "Hair Coloring",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Hair Care",
-    tier3: "Hair Coloring",
-    keywords: "hair coloring",
+    "id": "1175",
+    "label": "Hair Coloring",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Hair Care",
+    "tier3": "Hair Coloring",
+    "keywords": "hair coloring"
   },
   {
-    id: "1176",
-    label: "Hair Conditioner",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Hair Care",
-    tier3: "Hair Conditioner",
-    keywords: "hair conditioner",
+    "id": "1176",
+    "label": "Hair Conditioner",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Hair Care",
+    "tier3": "Hair Conditioner",
+    "keywords": "hair conditioner"
   },
   {
-    id: "1177",
-    label: "Hair Growth Products",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Hair Care",
-    tier3: "Hair Growth Products",
-    keywords: "hair growth products",
+    "id": "1177",
+    "label": "Hair Growth Products",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Hair Care",
+    "tier3": "Hair Growth Products",
+    "keywords": "hair growth products"
   },
   {
-    id: "1178",
-    label: "Hair Spray/Spritz",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Hair Care",
-    tier3: "Hair Spray/Spritz",
-    keywords: "hair spray/spritz",
+    "id": "1178",
+    "label": "Hair Spray/Spritz",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Hair Care",
+    "tier3": "Hair Spray/Spritz",
+    "keywords": "hair spray/spritz"
   },
   {
-    id: "1179",
-    label: "Hair Styling Gel/Mousse",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Hair Care",
-    tier3: "Hair Styling Gel/Mousse",
-    keywords: "hair styling gel/mousse",
+    "id": "1179",
+    "label": "Hair Styling Gel/Mousse",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Hair Care",
+    "tier3": "Hair Styling Gel/Mousse",
+    "keywords": "hair styling gel/mousse"
   },
   {
-    id: "1180",
-    label: "Home Permanent/Relaxer Kits",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Hair Care",
-    tier3: "Home Permanent/Relaxer Kits",
-    keywords: "home permanent/relaxer kits",
+    "id": "1180",
+    "label": "Home Permanent/Relaxer Kits",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Hair Care",
+    "tier3": "Home Permanent/Relaxer Kits",
+    "keywords": "home permanent/relaxer kits"
   },
   {
-    id: "1181",
-    label: "Shampoo",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Hair Care",
-    tier3: "Shampoo",
-    keywords: "shampoo",
+    "id": "1181",
+    "label": "Shampoo",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Hair Care",
+    "tier3": "Shampoo",
+    "keywords": "shampoo"
   },
   {
-    id: "1182",
-    label: "HFSS Products [High Fat, Sugar, Salt]",
-    tier1: "Consumer Packaged Goods",
-    tier2: "HFSS Products [High Fat, Sugar, Salt]",
-    tier3: "",
-    keywords: "hfss products [high fat, sugar, salt]",
+    "id": "1182",
+    "label": "HFSS Products [High Fat, Sugar, Salt]",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "HFSS Products [High Fat, Sugar, Salt]",
+    "tier3": "",
+    "keywords": "hfss products [high fat, sugar, salt]"
   },
   {
-    id: "1183",
-    label: "Home Care",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Home Care",
-    tier3: "",
-    keywords: "home care",
+    "id": "1183",
+    "label": "Home Care",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Home Care",
+    "tier3": "",
+    "keywords": "home care"
   },
   {
-    id: "1184",
-    label: "Household Cleaning",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Home Care",
-    tier3: "Household Cleaning",
-    keywords: "household cleaning",
+    "id": "1184",
+    "label": "Household Cleaning",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Home Care",
+    "tier3": "Household Cleaning",
+    "keywords": "household cleaning"
   },
   {
-    id: "1185",
-    label: "Laundry",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Home Care",
-    tier3: "Laundry",
-    keywords: "laundry",
+    "id": "1185",
+    "label": "Laundry",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Home Care",
+    "tier3": "Laundry",
+    "keywords": "laundry"
   },
   {
-    id: "1186",
-    label: "Hosiery",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Hosiery",
-    tier3: "",
-    keywords: "hosiery",
+    "id": "1186",
+    "label": "Hosiery",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Hosiery",
+    "tier3": "",
+    "keywords": "hosiery"
   },
   {
-    id: "1187",
-    label: "Pantyhose/Nylons",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Hosiery",
-    tier3: "Pantyhose/Nylons",
-    keywords: "pantyhose/nylons",
+    "id": "1187",
+    "label": "Pantyhose/Nylons",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Hosiery",
+    "tier3": "Pantyhose/Nylons",
+    "keywords": "pantyhose/nylons"
   },
   {
-    id: "1188",
-    label: "Socks",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Hosiery",
-    tier3: "Socks",
-    keywords: "socks",
+    "id": "1188",
+    "label": "Socks",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Hosiery",
+    "tier3": "Socks",
+    "keywords": "socks"
   },
   {
-    id: "1189",
-    label: "Tights",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Hosiery",
-    tier3: "Tights",
-    keywords: "tights",
+    "id": "1189",
+    "label": "Tights",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Hosiery",
+    "tier3": "Tights",
+    "keywords": "tights"
   },
   {
-    id: "1190",
-    label: "Household/Plastics/Storage",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Household/Plastics/Storage",
-    tier3: "",
-    keywords: "household/plastics/storage",
+    "id": "1190",
+    "label": "Household/Plastics/Storage",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Household/Plastics/Storage",
+    "tier3": "",
+    "keywords": "household/plastics/storage"
   },
   {
-    id: "1191",
-    label: "Bottles",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Household/Plastics/Storage",
-    tier3: "Bottles",
-    keywords: "bottles",
+    "id": "1191",
+    "label": "Bottles",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Household/Plastics/Storage",
+    "tier3": "Bottles",
+    "keywords": "bottles"
   },
   {
-    id: "1192",
-    label: "Drinkware",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Household/Plastics/Storage",
-    tier3: "Drinkware",
-    keywords: "drinkware",
+    "id": "1192",
+    "label": "Drinkware",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Household/Plastics/Storage",
+    "tier3": "Drinkware",
+    "keywords": "drinkware"
   },
   {
-    id: "1193",
-    label: "Household Plastics",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Household/Plastics/Storage",
-    tier3: "Household Plastics",
-    keywords: "household plastics",
+    "id": "1193",
+    "label": "Household Plastics",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Household/Plastics/Storage",
+    "tier3": "Household Plastics",
+    "keywords": "household plastics"
   },
   {
-    id: "1194",
-    label: "Kitchen Storage",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Household/Plastics/Storage",
-    tier3: "Kitchen Storage",
-    keywords: "kitchen storage",
+    "id": "1194",
+    "label": "Kitchen Storage",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Household/Plastics/Storage",
+    "tier3": "Kitchen Storage",
+    "keywords": "kitchen storage"
   },
   {
-    id: "1195",
-    label: "Meal Kits",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Meal Kits",
-    tier3: "",
-    keywords: "meal kits",
+    "id": "1195",
+    "label": "Meal Kits",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Meal Kits",
+    "tier3": "",
+    "keywords": "meal kits"
   },
   {
-    id: "1196",
-    label: "Miscellaneous General Merch",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Miscellaneous General Merch",
-    tier3: "",
-    keywords: "miscellaneous general merch",
+    "id": "1196",
+    "label": "Miscellaneous General Merch",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Miscellaneous General Merch",
+    "tier3": "",
+    "keywords": "miscellaneous general merch"
   },
   {
-    id: "1197",
-    label: "Office/School Supplies",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Office/School Supplies",
-    tier3: "",
-    keywords: "office/school supplies",
+    "id": "1197",
+    "label": "Office/School Supplies",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Office/School Supplies",
+    "tier3": "",
+    "keywords": "office/school supplies"
   },
   {
-    id: "1198",
-    label: "Children's Art Supplies",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Office/School Supplies",
-    tier3: "Children's Art Supplies",
-    keywords: "children's art supplies",
+    "id": "1198",
+    "label": "Children's Art Supplies",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Office/School Supplies",
+    "tier3": "Children's Art Supplies",
+    "keywords": "children's art supplies"
   },
   {
-    id: "1199",
-    label: "Computer Disks Frmtd/UnFrmtd",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Office/School Supplies",
-    tier3: "Computer Disks Frmtd/UnFrmtd",
-    keywords: "computer disks frmtd/unfrmtd",
+    "id": "1199",
+    "label": "Computer Disks Frmtd/UnFrmtd",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Office/School Supplies",
+    "tier3": "Computer Disks Frmtd/UnFrmtd",
+    "keywords": "computer disks frmtd/unfrmtd"
   },
   {
-    id: "1200",
-    label: "Office Products",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Office/School Supplies",
-    tier3: "Office Products",
-    keywords: "office products",
+    "id": "1200",
+    "label": "Office Products",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Office/School Supplies",
+    "tier3": "Office Products",
+    "keywords": "office products"
   },
   {
-    id: "1201",
-    label: "Writing Instruments",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Office/School Supplies",
-    tier3: "Writing Instruments",
-    keywords: "writing instruments",
+    "id": "1201",
+    "label": "Writing Instruments",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Office/School Supplies",
+    "tier3": "Writing Instruments",
+    "keywords": "writing instruments"
   },
   {
-    id: "1202",
-    label: "Over the Counter Medication",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Over the Counter Medication",
-    tier3: "",
-    keywords: "over the counter medication",
+    "id": "1202",
+    "label": "Over the Counter Medication",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Over the Counter Medication",
+    "tier3": "",
+    "keywords": "over the counter medication"
   },
   {
-    id: "1203",
-    label: "Paper Products",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Paper Products",
-    tier3: "",
-    keywords: "paper products",
+    "id": "1203",
+    "label": "Paper Products",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Paper Products",
+    "tier3": "",
+    "keywords": "paper products"
   },
   {
-    id: "1204",
-    label: "Facial Tissue",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Paper Products",
-    tier3: "Facial Tissue",
-    keywords: "facial tissue",
+    "id": "1204",
+    "label": "Facial Tissue",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Paper Products",
+    "tier3": "Facial Tissue",
+    "keywords": "facial tissue"
   },
   {
-    id: "1205",
-    label: "Paper Napkins",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Paper Products",
-    tier3: "Paper Napkins",
-    keywords: "paper napkins",
+    "id": "1205",
+    "label": "Paper Napkins",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Paper Products",
+    "tier3": "Paper Napkins",
+    "keywords": "paper napkins"
   },
   {
-    id: "1206",
-    label: "Paper Towels",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Paper Products",
-    tier3: "Paper Towels",
-    keywords: "paper towels",
+    "id": "1206",
+    "label": "Paper Towels",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Paper Products",
+    "tier3": "Paper Towels",
+    "keywords": "paper towels"
   },
   {
-    id: "1207",
-    label: "Toilet Tissue",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Paper Products",
-    tier3: "Toilet Tissue",
-    keywords: "toilet tissue",
+    "id": "1207",
+    "label": "Toilet Tissue",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Paper Products",
+    "tier3": "Toilet Tissue",
+    "keywords": "toilet tissue"
   },
   {
-    id: "1208",
-    label: "Personal Cleansing",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Personal Cleansing",
-    tier3: "",
-    keywords: "personal cleansing",
+    "id": "1208",
+    "label": "Personal Cleansing",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Personal Cleansing",
+    "tier3": "",
+    "keywords": "personal cleansing"
   },
   {
-    id: "1209",
-    label: "Bath Products",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Personal Cleansing",
-    tier3: "Bath Products",
-    keywords: "bath products",
+    "id": "1209",
+    "label": "Bath Products",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Personal Cleansing",
+    "tier3": "Bath Products",
+    "keywords": "bath products"
   },
   {
-    id: "1210",
-    label: "Bath/Body Scrubbers/Massagers",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Personal Cleansing",
-    tier3: "Bath/Body Scrubbers/Massagers",
-    keywords: "bath/body scrubbers/massagers",
+    "id": "1210",
+    "label": "Bath/Body Scrubbers/Massagers",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Personal Cleansing",
+    "tier3": "Bath/Body Scrubbers/Massagers",
+    "keywords": "bath/body scrubbers/massagers"
   },
   {
-    id: "1211",
-    label: "Deodorant",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Personal Cleansing",
-    tier3: "Deodorant",
-    keywords: "deodorant",
+    "id": "1211",
+    "label": "Deodorant",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Personal Cleansing",
+    "tier3": "Deodorant",
+    "keywords": "deodorant"
   },
   {
-    id: "1212",
-    label: "Moist Towelettes",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Personal Cleansing",
-    tier3: "Moist Towelettes",
-    keywords: "moist towelettes",
+    "id": "1212",
+    "label": "Moist Towelettes",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Personal Cleansing",
+    "tier3": "Moist Towelettes",
+    "keywords": "moist towelettes"
   },
   {
-    id: "1213",
-    label: "Soap",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Personal Cleansing",
-    tier3: "Soap",
-    keywords: "soap",
+    "id": "1213",
+    "label": "Soap",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Personal Cleansing",
+    "tier3": "Soap",
+    "keywords": "soap"
   },
   {
-    id: "1214",
-    label: "Pest Control",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Pest Control",
-    tier3: "",
-    keywords: "pest control",
+    "id": "1214",
+    "label": "Pest Control",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Pest Control",
+    "tier3": "",
+    "keywords": "pest control"
   },
   {
-    id: "1215",
-    label: "Outdoor Insect/Rodent Control Chem",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Pest Control",
-    tier3: "Outdoor Insect/Rodent Control Chem",
-    keywords: "outdoor insect/rodent control chem",
+    "id": "1215",
+    "label": "Outdoor Insect/Rodent Control Chem",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Pest Control",
+    "tier3": "Outdoor Insect/Rodent Control Chem",
+    "keywords": "outdoor insect/rodent control chem"
   },
   {
-    id: "1216",
-    label: "Pest Control",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Pest Control",
-    tier3: "Pest Control",
-    keywords: "pest control",
+    "id": "1216",
+    "label": "Pest Control",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Pest Control",
+    "tier3": "Pest Control",
+    "keywords": "pest control"
   },
   {
-    id: "1217",
-    label: "Pet Care",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Pet Care",
-    tier3: "",
-    keywords: "pet care",
+    "id": "1217",
+    "label": "Pet Care",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Pet Care",
+    "tier3": "",
+    "keywords": "pet care"
   },
   {
-    id: "1218",
-    label: "Cat/Dog Litter",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Pet Care",
-    tier3: "Cat/Dog Litter",
-    keywords: "cat/dog litter",
+    "id": "1218",
+    "label": "Cat/Dog Litter",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Pet Care",
+    "tier3": "Cat/Dog Litter",
+    "keywords": "cat/dog litter"
   },
   {
-    id: "1219",
-    label: "Pet Food",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Pet Care",
-    tier3: "Pet Food",
-    keywords: "pet food",
+    "id": "1219",
+    "label": "Pet Food",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Pet Care",
+    "tier3": "Pet Food",
+    "keywords": "pet food"
   },
   {
-    id: "1220",
-    label: "Pet Supplies",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Pet Care",
-    tier3: "Pet Supplies",
-    keywords: "pet supplies",
+    "id": "1220",
+    "label": "Pet Supplies",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Pet Care",
+    "tier3": "Pet Supplies",
+    "keywords": "pet supplies"
   },
   {
-    id: "1221",
-    label: "Pet Treats",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Pet Care",
-    tier3: "Pet Treats",
-    keywords: "pet treats",
+    "id": "1221",
+    "label": "Pet Treats",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Pet Care",
+    "tier3": "Pet Treats",
+    "keywords": "pet treats"
   },
   {
-    id: "1222",
-    label: "Refrigerated",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Refrigerated",
-    tier3: "",
-    keywords: "refrigerated",
+    "id": "1222",
+    "label": "Refrigerated",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Refrigerated",
+    "tier3": "",
+    "keywords": "refrigerated"
   },
   {
-    id: "1223",
-    label: "Dairy",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Refrigerated",
-    tier3: "Dairy",
-    keywords: "dairy",
+    "id": "1223",
+    "label": "Dairy",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Refrigerated",
+    "tier3": "Dairy",
+    "keywords": "dairy"
   },
   {
-    id: "1224",
-    label: "Refrigerated Baked Goods",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Refrigerated",
-    tier3: "Refrigerated Baked Goods",
-    keywords: "refrigerated baked goods",
+    "id": "1224",
+    "label": "Refrigerated Baked Goods",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Refrigerated",
+    "tier3": "Refrigerated Baked Goods",
+    "keywords": "refrigerated baked goods"
   },
   {
-    id: "1225",
-    label: "Refrigerated Beverages",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Refrigerated",
-    tier3: "Refrigerated Beverages",
-    keywords: "refrigerated beverages",
+    "id": "1225",
+    "label": "Refrigerated Beverages",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Refrigerated",
+    "tier3": "Refrigerated Beverages",
+    "keywords": "refrigerated beverages"
   },
   {
-    id: "1226",
-    label: "Refrigerated Condiments",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Refrigerated",
-    tier3: "Refrigerated Condiments",
-    keywords: "refrigerated condiments",
+    "id": "1226",
+    "label": "Refrigerated Condiments",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Refrigerated",
+    "tier3": "Refrigerated Condiments",
+    "keywords": "refrigerated condiments"
   },
   {
-    id: "1227",
-    label: "Refrigerated Desserts",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Refrigerated",
-    tier3: "Refrigerated Desserts",
-    keywords: "refrigerated desserts",
+    "id": "1227",
+    "label": "Refrigerated Desserts",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Refrigerated",
+    "tier3": "Refrigerated Desserts",
+    "keywords": "refrigerated desserts"
   },
   {
-    id: "1228",
-    label: "Refrigerated Dough",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Refrigerated",
-    tier3: "Refrigerated Dough",
-    keywords: "refrigerated dough",
+    "id": "1228",
+    "label": "Refrigerated Dough",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Refrigerated",
+    "tier3": "Refrigerated Dough",
+    "keywords": "refrigerated dough"
   },
   {
-    id: "1229",
-    label: "Refrigerated Meals",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Refrigerated",
-    tier3: "Refrigerated Meals",
-    keywords: "refrigerated meals",
+    "id": "1229",
+    "label": "Refrigerated Meals",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Refrigerated",
+    "tier3": "Refrigerated Meals",
+    "keywords": "refrigerated meals"
   },
   {
-    id: "1230",
-    label: "Refrigerated Meats",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Refrigerated",
-    tier3: "Refrigerated Meats",
-    keywords: "refrigerated meats",
+    "id": "1230",
+    "label": "Refrigerated Meats",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Refrigerated",
+    "tier3": "Refrigerated Meats",
+    "keywords": "refrigerated meats"
   },
   {
-    id: "1231",
-    label: "Refrigerated Miscellaneous",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Refrigerated",
-    tier3: "Refrigerated Miscellaneous",
-    keywords: "refrigerated miscellaneous",
+    "id": "1231",
+    "label": "Refrigerated Miscellaneous",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Refrigerated",
+    "tier3": "Refrigerated Miscellaneous",
+    "keywords": "refrigerated miscellaneous"
   },
   {
-    id: "1232",
-    label: "Religious Items",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Religious Items",
-    tier3: "",
-    keywords: "religious items",
+    "id": "1232",
+    "label": "Religious Items",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Religious Items",
+    "tier3": "",
+    "keywords": "religious items"
   },
   {
-    id: "1233",
-    label: "Shaving",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Shaving",
-    tier3: "",
-    keywords: "shaving",
+    "id": "1233",
+    "label": "Shaving",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Shaving",
+    "tier3": "",
+    "keywords": "shaving"
   },
   {
-    id: "1234",
-    label: "Blades",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Shaving",
-    tier3: "Blades",
-    keywords: "blades",
+    "id": "1234",
+    "label": "Blades",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Shaving",
+    "tier3": "Blades",
+    "keywords": "blades"
   },
   {
-    id: "1235",
-    label: "Razors",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Shaving",
-    tier3: "Razors",
-    keywords: "razors",
+    "id": "1235",
+    "label": "Razors",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Shaving",
+    "tier3": "Razors",
+    "keywords": "razors"
   },
   {
-    id: "1236",
-    label: "Shaving Cream",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Shaving",
-    tier3: "Shaving Cream",
-    keywords: "shaving cream",
+    "id": "1236",
+    "label": "Shaving Cream",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Shaving",
+    "tier3": "Shaving Cream",
+    "keywords": "shaving cream"
   },
   {
-    id: "1237",
-    label: "Skin Care",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Skin Care",
-    tier3: "",
-    keywords: "skin care",
+    "id": "1237",
+    "label": "Skin Care",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Skin Care",
+    "tier3": "",
+    "keywords": "skin care"
   },
   {
-    id: "1238",
-    label: "Hand & Body Lotion",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Skin Care",
-    tier3: "Hand & Body Lotion",
-    keywords: "hand & body lotion",
+    "id": "1238",
+    "label": "Hand & Body Lotion",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Skin Care",
+    "tier3": "Hand & Body Lotion",
+    "keywords": "hand & body lotion"
   },
   {
-    id: "1239",
-    label: "Skin Care",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Skin Care",
-    tier3: "Skin Care",
-    keywords: "skin care",
+    "id": "1239",
+    "label": "Skin Care",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Skin Care",
+    "tier3": "Skin Care",
+    "keywords": "skin care"
   },
   {
-    id: "1240",
-    label: "Suntan Products",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Skin Care",
-    tier3: "Suntan Products",
-    keywords: "suntan products",
+    "id": "1240",
+    "label": "Suntan Products",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Skin Care",
+    "tier3": "Suntan Products",
+    "keywords": "suntan products"
   },
   {
-    id: "1241",
-    label: "Toys and Games",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Toys and Games",
-    tier3: "",
-    keywords: "toys and games",
+    "id": "1241",
+    "label": "Toys and Games",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Toys and Games",
+    "tier3": "",
+    "keywords": "toys and games"
   },
   {
-    id: "1242",
-    label: "Games",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Toys and Games",
-    tier3: "Games",
-    keywords: "games",
+    "id": "1242",
+    "label": "Games",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Toys and Games",
+    "tier3": "Games",
+    "keywords": "games"
   },
   {
-    id: "1243",
-    label: "Outdoor Play Equipment",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Toys and Games",
-    tier3: "Outdoor Play Equipment",
-    keywords: "outdoor play equipment",
+    "id": "1243",
+    "label": "Outdoor Play Equipment",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Toys and Games",
+    "tier3": "Outdoor Play Equipment",
+    "keywords": "outdoor play equipment"
   },
   {
-    id: "1244",
-    label: "Puzzles",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Toys and Games",
-    tier3: "Puzzles",
-    keywords: "puzzles",
+    "id": "1244",
+    "label": "Puzzles",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Toys and Games",
+    "tier3": "Puzzles",
+    "keywords": "puzzles"
   },
   {
-    id: "1245",
-    label: "Toys",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Toys and Games",
-    tier3: "Toys",
-    keywords: "toys",
+    "id": "1245",
+    "label": "Toys",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Toys and Games",
+    "tier3": "Toys",
+    "keywords": "toys"
   },
   {
-    id: "1246",
-    label: "Vitamins and Supplements",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Vitamins and Supplements",
-    tier3: "",
-    keywords: "vitamins and supplements",
+    "id": "1246",
+    "label": "Vitamins and Supplements",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Vitamins and Supplements",
+    "tier3": "",
+    "keywords": "vitamins and supplements"
   },
   {
-    id: "1247",
-    label: "Digestive Supplements",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Vitamins and Supplements",
-    tier3: "Digestive Supplements",
-    keywords: "digestive supplements",
+    "id": "1247",
+    "label": "Digestive Supplements",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Vitamins and Supplements",
+    "tier3": "Digestive Supplements",
+    "keywords": "digestive supplements"
   },
   {
-    id: "1248",
-    label: "Weightloss Supplements",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Vitamins and Supplements",
-    tier3: "Weightloss Supplements",
-    keywords: "weightloss supplements",
+    "id": "1248",
+    "label": "Weightloss Supplements",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Vitamins and Supplements",
+    "tier3": "Weightloss Supplements",
+    "keywords": "weightloss supplements"
   },
   {
-    id: "1249",
-    label: "Water Treatment",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Water Treatment",
-    tier3: "",
-    keywords: "water treatment",
+    "id": "1249",
+    "label": "Water Treatment",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Water Treatment",
+    "tier3": "",
+    "keywords": "water treatment"
   },
   {
-    id: "1250",
-    label: "Water Filter/Devices",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Water Treatment",
-    tier3: "Water Filter/Devices",
-    keywords: "water filter/devices",
+    "id": "1250",
+    "label": "Water Filter/Devices",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Water Treatment",
+    "tier3": "Water Filter/Devices",
+    "keywords": "water filter/devices"
   },
   {
-    id: "1251",
-    label: "Water Softeners/Treatment",
-    tier1: "Consumer Packaged Goods",
-    tier2: "Water Treatment",
-    tier3: "Water Softeners/Treatment",
-    keywords: "water softeners/treatment",
+    "id": "1251",
+    "label": "Water Softeners/Treatment",
+    "tier1": "Consumer Packaged Goods",
+    "tier2": "Water Treatment",
+    "tier3": "Water Softeners/Treatment",
+    "keywords": "water softeners/treatment"
   },
   {
-    id: "1252",
-    label: "Durable Goods",
-    tier1: "Durable Goods",
-    tier2: "",
-    tier3: "",
-    keywords: "durable goods",
+    "id": "1252",
+    "label": "Durable Goods",
+    "tier1": "Durable Goods",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "durable goods"
   },
   {
-    id: "1253",
-    label: "Electronics/Photography",
-    tier1: "Durable Goods",
-    tier2: "Electronics/Photography",
-    tier3: "",
-    keywords: "electronics/photography",
+    "id": "1253",
+    "label": "Electronics/Photography",
+    "tier1": "Durable Goods",
+    "tier2": "Electronics/Photography",
+    "tier3": "",
+    "keywords": "electronics/photography"
   },
   {
-    id: "1254",
-    label: "Batteries",
-    tier1: "Durable Goods",
-    tier2: "Electronics/Photography",
-    tier3: "Batteries",
-    keywords: "batteries",
+    "id": "1254",
+    "label": "Batteries",
+    "tier1": "Durable Goods",
+    "tier2": "Electronics/Photography",
+    "tier3": "Batteries",
+    "keywords": "batteries"
   },
   {
-    id: "1255",
-    label: "Blank Audio/Video Media",
-    tier1: "Durable Goods",
-    tier2: "Electronics/Photography",
-    tier3: "Blank Audio/Video Media",
-    keywords: "blank audio/video media",
+    "id": "1255",
+    "label": "Blank Audio/Video Media",
+    "tier1": "Durable Goods",
+    "tier2": "Electronics/Photography",
+    "tier3": "Blank Audio/Video Media",
+    "keywords": "blank audio/video media"
   },
   {
-    id: "1256",
-    label: "Photography Supplies",
-    tier1: "Durable Goods",
-    tier2: "Electronics/Photography",
-    tier3: "Photography Supplies",
-    keywords: "photography supplies",
+    "id": "1256",
+    "label": "Photography Supplies",
+    "tier1": "Durable Goods",
+    "tier2": "Electronics/Photography",
+    "tier3": "Photography Supplies",
+    "keywords": "photography supplies"
   },
   {
-    id: "1257",
-    label: "Furniture",
-    tier1: "Durable Goods",
-    tier2: "Furniture",
-    tier3: "",
-    keywords: "furniture",
+    "id": "1257",
+    "label": "Furniture",
+    "tier1": "Durable Goods",
+    "tier2": "Furniture",
+    "tier3": "",
+    "keywords": "furniture"
   },
   {
-    id: "1258",
-    label: "Indoor Furniture",
-    tier1: "Durable Goods",
-    tier2: "Furniture",
-    tier3: "Indoor Furniture",
-    keywords: "indoor furniture",
+    "id": "1258",
+    "label": "Indoor Furniture",
+    "tier1": "Durable Goods",
+    "tier2": "Furniture",
+    "tier3": "Indoor Furniture",
+    "keywords": "indoor furniture"
   },
   {
-    id: "1259",
-    label: "Outdoor Furniture",
-    tier1: "Durable Goods",
-    tier2: "Furniture",
-    tier3: "Outdoor Furniture",
-    keywords: "outdoor furniture",
+    "id": "1259",
+    "label": "Outdoor Furniture",
+    "tier1": "Durable Goods",
+    "tier2": "Furniture",
+    "tier3": "Outdoor Furniture",
+    "keywords": "outdoor furniture"
   },
   {
-    id: "1260",
-    label: "Grooming Supplies",
-    tier1: "Durable Goods",
-    tier2: "Grooming Supplies",
-    tier3: "",
-    keywords: "grooming supplies",
+    "id": "1260",
+    "label": "Grooming Supplies",
+    "tier1": "Durable Goods",
+    "tier2": "Grooming Supplies",
+    "tier3": "",
+    "keywords": "grooming supplies"
   },
   {
-    id: "1262",
-    label: "Hair Appliances",
-    tier1: "Durable Goods",
-    tier2: "Grooming Supplies",
-    tier3: "Hair Appliances",
-    keywords: "hair appliances",
+    "id": "1262",
+    "label": "Hair Appliances",
+    "tier1": "Durable Goods",
+    "tier2": "Grooming Supplies",
+    "tier3": "Hair Appliances",
+    "keywords": "hair appliances"
   },
   {
-    id: "1264",
-    label: "Consumer Hardware Supplies",
-    tier1: "Durable Goods",
-    tier2: "Tools and Hardware",
-    tier3: "Consumer Hardware Supplies",
-    keywords: "consumer hardware supplies",
+    "id": "1264",
+    "label": "Consumer Hardware Supplies",
+    "tier1": "Durable Goods",
+    "tier2": "Tools and Hardware",
+    "tier3": "Consumer Hardware Supplies",
+    "keywords": "consumer hardware supplies"
   },
   {
-    id: "1265",
-    label: "Industrial Hardware Supplies",
-    tier1: "Durable Goods",
-    tier2: "Tools and Hardware",
-    tier3: "Industrial Hardware Supplies",
-    keywords: "industrial hardware supplies",
+    "id": "1265",
+    "label": "Industrial Hardware Supplies",
+    "tier1": "Durable Goods",
+    "tier2": "Tools and Hardware",
+    "tier3": "Industrial Hardware Supplies",
+    "keywords": "industrial hardware supplies"
   },
   {
-    id: "1261",
-    label: "Electric Shaver Groomer",
-    tier1: "Durable Goods",
-    tier2: "Grooming Supplies",
-    tier3: "Electric Shaver Groomer",
-    keywords: "electric shaver groomer",
+    "id": "1261",
+    "label": "Electric Shaver Groomer",
+    "tier1": "Durable Goods",
+    "tier2": "Grooming Supplies",
+    "tier3": "Electric Shaver Groomer",
+    "keywords": "electric shaver groomer"
   },
   {
-    id: "1263",
-    label: "Tools and Hardware",
-    tier1: "Durable Goods",
-    tier2: "Tools and Hardware",
-    tier3: "",
-    keywords: "tools and hardware",
+    "id": "1263",
+    "label": "Tools and Hardware",
+    "tier1": "Durable Goods",
+    "tier2": "Tools and Hardware",
+    "tier3": "",
+    "keywords": "tools and hardware"
   },
   {
-    id: "1266",
-    label: "Home and Garden Products",
-    tier1: "Durable Goods",
-    tier2: "Home and Garden Products",
-    tier3: "",
-    keywords: "home and garden products",
+    "id": "1266",
+    "label": "Home and Garden Products",
+    "tier1": "Durable Goods",
+    "tier2": "Home and Garden Products",
+    "tier3": "",
+    "keywords": "home and garden products"
   },
   {
-    id: "1267",
-    label: "Bathroom Accessories",
-    tier1: "Durable Goods",
-    tier2: "Home and Garden Products",
-    tier3: "Bathroom Accessories",
-    keywords: "bathroom accessories",
+    "id": "1267",
+    "label": "Bathroom Accessories",
+    "tier1": "Durable Goods",
+    "tier2": "Home and Garden Products",
+    "tier3": "Bathroom Accessories",
+    "keywords": "bathroom accessories"
   },
   {
-    id: "1268",
-    label: "Bedroom Furniture and Accessories",
-    tier1: "Durable Goods",
-    tier2: "Home and Garden Products",
-    tier3: "Bedroom Furniture and Accessories",
-    keywords: "bedroom furniture and accessories",
+    "id": "1268",
+    "label": "Bedroom Furniture and Accessories",
+    "tier1": "Durable Goods",
+    "tier2": "Home and Garden Products",
+    "tier3": "Bedroom Furniture and Accessories",
+    "keywords": "bedroom furniture and accessories"
   },
   {
-    id: "1269",
-    label: "Carpets and Rugs",
-    tier1: "Durable Goods",
-    tier2: "Home and Garden Products",
-    tier3: "Carpets and Rugs",
-    keywords: "carpets and rugs",
+    "id": "1269",
+    "label": "Carpets and Rugs",
+    "tier1": "Durable Goods",
+    "tier2": "Home and Garden Products",
+    "tier3": "Carpets and Rugs",
+    "keywords": "carpets and rugs"
   },
   {
-    id: "1270",
-    label: "Fireplaces",
-    tier1: "Durable Goods",
-    tier2: "Home and Garden Products",
-    tier3: "Fireplaces",
-    keywords: "fireplaces",
+    "id": "1270",
+    "label": "Fireplaces",
+    "tier1": "Durable Goods",
+    "tier2": "Home and Garden Products",
+    "tier3": "Fireplaces",
+    "keywords": "fireplaces"
   },
   {
-    id: "1271",
-    label: "Home Decor",
-    tier1: "Durable Goods",
-    tier2: "Home and Garden Products",
-    tier3: "Home Decor",
-    keywords: "home decor",
+    "id": "1271",
+    "label": "Home Decor",
+    "tier1": "Durable Goods",
+    "tier2": "Home and Garden Products",
+    "tier3": "Home Decor",
+    "keywords": "home decor"
   },
   {
-    id: "1272",
-    label: "Housewares",
-    tier1: "Durable Goods",
-    tier2: "Home and Garden Products",
-    tier3: "Housewares",
-    keywords: "housewares",
+    "id": "1272",
+    "label": "Housewares",
+    "tier1": "Durable Goods",
+    "tier2": "Home and Garden Products",
+    "tier3": "Housewares",
+    "keywords": "housewares"
   },
   {
-    id: "1273",
-    label: "Kitchen and Dining Products",
-    tier1: "Durable Goods",
-    tier2: "Home and Garden Products",
-    tier3: "Kitchen and Dining Products",
-    keywords: "kitchen and dining products",
+    "id": "1273",
+    "label": "Kitchen and Dining Products",
+    "tier1": "Durable Goods",
+    "tier2": "Home and Garden Products",
+    "tier3": "Kitchen and Dining Products",
+    "keywords": "kitchen and dining products"
   },
   {
-    id: "1274",
-    label: "Lawn and Garden Products",
-    tier1: "Durable Goods",
-    tier2: "Home and Garden Products",
-    tier3: "Lawn and Garden Products",
-    keywords: "lawn and garden products",
+    "id": "1274",
+    "label": "Lawn and Garden Products",
+    "tier1": "Durable Goods",
+    "tier2": "Home and Garden Products",
+    "tier3": "Lawn and Garden Products",
+    "keywords": "lawn and garden products"
   },
   {
-    id: "1275",
-    label: "Lighting",
-    tier1: "Durable Goods",
-    tier2: "Home and Garden Products",
-    tier3: "Lighting",
-    keywords: "lighting",
+    "id": "1275",
+    "label": "Lighting",
+    "tier1": "Durable Goods",
+    "tier2": "Home and Garden Products",
+    "tier3": "Lighting",
+    "keywords": "lighting"
   },
   {
-    id: "1276",
-    label: "Linens and Bedding",
-    tier1: "Durable Goods",
-    tier2: "Home and Garden Products",
-    tier3: "Linens and Bedding",
-    keywords: "linens and bedding",
+    "id": "1276",
+    "label": "Linens and Bedding",
+    "tier1": "Durable Goods",
+    "tier2": "Home and Garden Products",
+    "tier3": "Linens and Bedding",
+    "keywords": "linens and bedding"
   },
   {
-    id: "1277",
-    label: "Plants",
-    tier1: "Durable Goods",
-    tier2: "Home and Garden Products",
-    tier3: "Plants",
-    keywords: "plants",
+    "id": "1277",
+    "label": "Plants",
+    "tier1": "Durable Goods",
+    "tier2": "Home and Garden Products",
+    "tier3": "Plants",
+    "keywords": "plants"
   },
   {
-    id: "1278",
-    label: "Household Appliances",
-    tier1: "Durable Goods",
-    tier2: "Household Appliances",
-    tier3: "",
-    keywords: "household appliances",
+    "id": "1278",
+    "label": "Household Appliances",
+    "tier1": "Durable Goods",
+    "tier2": "Household Appliances",
+    "tier3": "",
+    "keywords": "household appliances"
   },
   {
-    id: "1279",
-    label: "Luggage and Bags",
-    tier1: "Durable Goods",
-    tier2: "Luggage and Bags",
-    tier3: "",
-    keywords: "luggage and bags",
+    "id": "1279",
+    "label": "Luggage and Bags",
+    "tier1": "Durable Goods",
+    "tier2": "Luggage and Bags",
+    "tier3": "",
+    "keywords": "luggage and bags"
   },
   {
-    id: "1280",
-    label: "Dieting and Weightloss",
-    tier1: "Dieting and Weightloss",
-    tier2: "",
-    tier3: "",
-    keywords: "dieting and weightloss",
+    "id": "1280",
+    "label": "Dieting and Weightloss",
+    "tier1": "Dieting and Weightloss",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "dieting and weightloss"
   },
   {
-    id: "1281",
-    label: "Food Logging",
-    tier1: "Dieting and Weightloss",
-    tier2: "Food Logging",
-    tier3: "",
-    keywords: "food logging",
+    "id": "1281",
+    "label": "Food Logging",
+    "tier1": "Dieting and Weightloss",
+    "tier2": "Food Logging",
+    "tier3": "",
+    "keywords": "food logging"
   },
   {
-    id: "1282",
-    label: "Weightloss Services",
-    tier1: "Dieting and Weightloss",
-    tier2: "Weightloss Servies",
-    tier3: "",
-    keywords: "weightloss servies",
+    "id": "1282",
+    "label": "Weightloss Services",
+    "tier1": "Dieting and Weightloss",
+    "tier2": "Weightloss Servies",
+    "tier3": "",
+    "keywords": "weightloss servies"
   },
   {
-    id: "1283",
-    label: "Workout and Step Tracking Applications",
-    tier1: "Dieting and Weightloss",
-    tier2: "Workout and Step Tracking Applications",
-    tier3: "",
-    keywords: "workout and step tracking applications",
+    "id": "1283",
+    "label": "Workout and Step Tracking Applications",
+    "tier1": "Dieting and Weightloss",
+    "tier2": "Workout and Step Tracking Applications",
+    "tier3": "",
+    "keywords": "workout and step tracking applications"
   },
   {
-    id: "1284",
-    label: "Education and Careers",
-    tier1: "Education and Careers",
-    tier2: "",
-    tier3: "",
-    keywords: "education and careers",
+    "id": "1284",
+    "label": "Education and Careers",
+    "tier1": "Education and Careers",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "education and careers"
   },
   {
-    id: "1285",
-    label: "Adult Education",
-    tier1: "Education and Careers",
-    tier2: "Adult Education",
-    tier3: "",
-    keywords: "adult education",
+    "id": "1285",
+    "label": "Adult Education",
+    "tier1": "Education and Careers",
+    "tier2": "Adult Education",
+    "tier3": "",
+    "keywords": "adult education"
   },
   {
-    id: "1286",
-    label: "Certificaiton Programs",
-    tier1: "Education and Careers",
-    tier2: "Certificaiton Programs",
-    tier3: "",
-    keywords: "certificaiton programs",
+    "id": "1286",
+    "label": "Certificaiton Programs",
+    "tier1": "Education and Careers",
+    "tier2": "Certificaiton Programs",
+    "tier3": "",
+    "keywords": "certificaiton programs"
   },
   {
-    id: "1287",
-    label: "Colleges and Universities",
-    tier1: "Education and Careers",
-    tier2: "Colleges and Universities",
-    tier3: "",
-    keywords: "colleges and universities",
+    "id": "1287",
+    "label": "Colleges and Universities",
+    "tier1": "Education and Careers",
+    "tier2": "Colleges and Universities",
+    "tier3": "",
+    "keywords": "colleges and universities"
   },
   {
-    id: "1288",
-    label: "Post-Graduate Education",
-    tier1: "Education and Careers",
-    tier2: "Colleges and Universities",
-    tier3: "Post-Graduate Education",
-    keywords: "post-graduate education",
+    "id": "1288",
+    "label": "Post-Graduate Education",
+    "tier1": "Education and Careers",
+    "tier2": "Colleges and Universities",
+    "tier3": "Post-Graduate Education",
+    "keywords": "post-graduate education"
   },
   {
-    id: "1289",
-    label: "Education Applications",
-    tier1: "Education and Careers",
-    tier2: "Education Applications",
-    tier3: "",
-    keywords: "education applications",
+    "id": "1289",
+    "label": "Education Applications",
+    "tier1": "Education and Careers",
+    "tier2": "Education Applications",
+    "tier3": "",
+    "keywords": "education applications"
   },
   {
-    id: "1290",
-    label: "Employment Agencies",
-    tier1: "Education and Careers",
-    tier2: "Employment Agencies",
-    tier3: "",
-    keywords: "employment agencies",
+    "id": "1290",
+    "label": "Employment Agencies",
+    "tier1": "Education and Careers",
+    "tier2": "Employment Agencies",
+    "tier3": "",
+    "keywords": "employment agencies"
   },
   {
-    id: "1291",
-    label: "Higher Education",
-    tier1: "Education and Careers",
-    tier2: "Higher Education",
-    tier3: "",
-    keywords: "higher education",
+    "id": "1291",
+    "label": "Higher Education",
+    "tier1": "Education and Careers",
+    "tier2": "Higher Education",
+    "tier3": "",
+    "keywords": "higher education"
   },
   {
-    id: "1292",
-    label: "Language Learning",
-    tier1: "Education and Careers",
-    tier2: "Language Learning",
-    tier3: "",
-    keywords: "language learning",
+    "id": "1292",
+    "label": "Language Learning",
+    "tier1": "Education and Careers",
+    "tier2": "Language Learning",
+    "tier3": "",
+    "keywords": "language learning"
   },
   {
-    id: "1293",
-    label: "Online Education",
-    tier1: "Education and Careers",
-    tier2: "Online Education",
-    tier3: "",
-    keywords: "online education",
+    "id": "1293",
+    "label": "Online Education",
+    "tier1": "Education and Careers",
+    "tier2": "Online Education",
+    "tier3": "",
+    "keywords": "online education"
   },
   {
-    id: "1294",
-    label: "Primary Education",
-    tier1: "Education and Careers",
-    tier2: "Primary Education",
-    tier3: "",
-    keywords: "primary education",
+    "id": "1294",
+    "label": "Primary Education",
+    "tier1": "Education and Careers",
+    "tier2": "Primary Education",
+    "tier3": "",
+    "keywords": "primary education"
   },
   {
-    id: "1295",
-    label: "Remote work and school",
-    tier1: "Education and Careers",
-    tier2: "Remote work and school",
-    tier3: "",
-    keywords: "remote work and school",
+    "id": "1295",
+    "label": "Remote work and school",
+    "tier1": "Education and Careers",
+    "tier2": "Remote work and school",
+    "tier3": "",
+    "keywords": "remote work and school"
   },
   {
-    id: "1296",
-    label: "Distance learning",
-    tier1: "Education and Careers",
-    tier2: "Remote work and school",
-    tier3: "Distance learning",
-    keywords: "distance learning",
+    "id": "1296",
+    "label": "Distance learning",
+    "tier1": "Education and Careers",
+    "tier2": "Remote work and school",
+    "tier3": "Distance learning",
+    "keywords": "distance learning"
   },
   {
-    id: "1297",
-    label: "Homeschooling",
-    tier1: "Education and Careers",
-    tier2: "Remote work and school",
-    tier3: "Homeschooling",
-    keywords: "homeschooling",
+    "id": "1297",
+    "label": "Homeschooling",
+    "tier1": "Education and Careers",
+    "tier2": "Remote work and school",
+    "tier3": "Homeschooling",
+    "keywords": "homeschooling"
   },
   {
-    id: "1298",
-    label: "Telecommuting",
-    tier1: "Education and Careers",
-    tier2: "Remote work and school",
-    tier3: "Telecommuting",
-    keywords: "telecommuting",
+    "id": "1298",
+    "label": "Telecommuting",
+    "tier1": "Education and Careers",
+    "tier2": "Remote work and school",
+    "tier3": "Telecommuting",
+    "keywords": "telecommuting"
   },
   {
-    id: "1299",
-    label: "Study Skills",
-    tier1: "Education and Careers",
-    tier2: "Study Skills",
-    tier3: "",
-    keywords: "study skills",
+    "id": "1299",
+    "label": "Study Skills",
+    "tier1": "Education and Careers",
+    "tier2": "Study Skills",
+    "tier3": "",
+    "keywords": "study skills"
   },
   {
-    id: "1300",
-    label: "Teaching Resources",
-    tier1: "Education and Careers",
-    tier2: "Teaching Resources",
-    tier3: "",
-    keywords: "teaching resources",
+    "id": "1300",
+    "label": "Teaching Resources",
+    "tier1": "Education and Careers",
+    "tier2": "Teaching Resources",
+    "tier3": "",
+    "keywords": "teaching resources"
   },
   {
-    id: "1301",
-    label: "Trade Schools",
-    tier1: "Education and Careers",
-    tier2: "Trade Schools",
-    tier3: "",
-    keywords: "trade schools",
+    "id": "1301",
+    "label": "Trade Schools",
+    "tier1": "Education and Careers",
+    "tier2": "Trade Schools",
+    "tier3": "",
+    "keywords": "trade schools"
   },
   {
-    id: "1302",
-    label: "Events and Performances",
-    tier1: "Events and Performances",
-    tier2: "",
-    tier3: "",
-    keywords: "events and performances, funeral, cremation",
+    "id": "1302",
+    "label": "Events and Performances",
+    "tier1": "Events and Performances",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "events and performances, funeral, cremation"
   },
   {
-    id: "1303",
-    label: "Auctions",
-    tier1: "Events and Performances",
-    tier2: "Auctions",
-    tier3: "",
-    keywords: "auctions",
+    "id": "1303",
+    "label": "Auctions",
+    "tier1": "Events and Performances",
+    "tier2": "Auctions",
+    "tier3": "",
+    "keywords": "auctions"
   },
   {
-    id: "1304",
-    label: "Cinemas and Movie Events",
-    tier1: "Events and Performances",
-    tier2: "Cinemas and Movie Events",
-    tier3: "",
-    keywords: "cinemas and movie events",
+    "id": "1304",
+    "label": "Cinemas and Movie Events",
+    "tier1": "Events and Performances",
+    "tier2": "Cinemas and Movie Events",
+    "tier3": "",
+    "keywords": "cinemas and movie events"
   },
   {
-    id: "1305",
-    label: "Comedy Events",
-    tier1: "Events and Performances",
-    tier2: "Comedy Events",
-    tier3: "",
-    keywords: "comedy events, stand up comedy",
+    "id": "1305",
+    "label": "Comedy Events",
+    "tier1": "Events and Performances",
+    "tier2": "Comedy Events",
+    "tier3": "",
+    "keywords": "comedy events, stand up comedy"
   },
   {
-    id: "1306",
-    label: "Concerts",
-    tier1: "Events and Performances",
-    tier2: "Concerts",
-    tier3: "",
-    keywords: "concerts",
+    "id": "1306",
+    "label": "Concerts",
+    "tier1": "Events and Performances",
+    "tier2": "Concerts",
+    "tier3": "",
+    "keywords": "concerts"
   },
   {
-    id: "1307",
-    label: "Conferences, Lectures and Workshops",
-    tier1: "Events and Performances",
-    tier2: "Conferences, Lectures and Workshops",
-    tier3: "",
-    keywords: "conferences, lectures and workshops",
+    "id": "1307",
+    "label": "Conferences, Lectures and Workshops",
+    "tier1": "Events and Performances",
+    "tier2": "Conferences, Lectures and Workshops",
+    "tier3": "",
+    "keywords": "conferences, lectures and workshops"
   },
   {
-    id: "1308",
-    label: "Exhibitions",
-    tier1: "Events and Performances",
-    tier2: "Exhibitions",
-    tier3: "",
-    keywords: "exhibitions",
+    "id": "1308",
+    "label": "Exhibitions",
+    "tier1": "Events and Performances",
+    "tier2": "Exhibitions",
+    "tier3": "",
+    "keywords": "exhibitions"
   },
   {
-    id: "1309",
-    label: "Fan Conventions",
-    tier1: "Events and Performances",
-    tier2: "Fan Conventions",
-    tier3: "",
-    keywords: "fan conventions",
+    "id": "1309",
+    "label": "Fan Conventions",
+    "tier1": "Events and Performances",
+    "tier2": "Fan Conventions",
+    "tier3": "",
+    "keywords": "fan conventions"
   },
   {
-    id: "1310",
-    label: "Fashion Events",
-    tier1: "Events and Performances",
-    tier2: "Fashion Events",
-    tier3: "",
-    keywords: "fashion events",
+    "id": "1310",
+    "label": "Fashion Events",
+    "tier1": "Events and Performances",
+    "tier2": "Fashion Events",
+    "tier3": "",
+    "keywords": "fashion events"
   },
   {
-    id: "1311",
-    label: "Nightlife Experiences",
-    tier1: "Events and Performances",
-    tier2: "Nightlife Experiences",
-    tier3: "",
-    keywords: "nightlife experiences",
+    "id": "1311",
+    "label": "Nightlife Experiences",
+    "tier1": "Events and Performances",
+    "tier2": "Nightlife Experiences",
+    "tier3": "",
+    "keywords": "nightlife experiences"
   },
   {
-    id: "1312",
-    label: "Sporting Events",
-    tier1: "Events and Performances",
-    tier2: "Sporting Events",
-    tier3: "",
-    keywords: "sporting events",
+    "id": "1312",
+    "label": "Sporting Events",
+    "tier1": "Events and Performances",
+    "tier2": "Sporting Events",
+    "tier3": "",
+    "keywords": "sporting events"
   },
   {
-    id: "1313",
-    label: "Seasonal and Holiday Events",
-    tier1: "Events and Performances",
-    tier2: "Seasonal and Holiday Events",
-    tier3: "",
-    keywords: "seasonal and holiday events, amusement parks",
+    "id": "1313",
+    "label": "Seasonal and Holiday Events",
+    "tier1": "Events and Performances",
+    "tier2": "Seasonal and Holiday Events",
+    "tier3": "",
+    "keywords": "seasonal and holiday events, amusement parks"
   },
   {
-    id: "1314",
-    label: "Theatre and Musicals",
-    tier1: "Events and Performances",
-    tier2: "Theatre and Musicals",
-    tier3: "",
-    keywords: "theatre and musicals",
+    "id": "1314",
+    "label": "Theatre and Musicals",
+    "tier1": "Events and Performances",
+    "tier2": "Theatre and Musicals",
+    "tier3": "",
+    "keywords": "theatre and musicals"
   },
   {
-    id: "1315",
-    label: "Family and Parenting",
-    tier1: "Family and Parenting",
-    tier2: "",
-    tier3: "",
-    keywords: "family and parenting",
+    "id": "1315",
+    "label": "Family and Parenting",
+    "tier1": "Family and Parenting",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "family and parenting"
   },
   {
-    id: "1316",
-    label: "Childcare",
-    tier1: "Family and Parenting",
-    tier2: "Childcare",
-    tier3: "",
-    keywords: "childcare",
+    "id": "1316",
+    "label": "Childcare",
+    "tier1": "Family and Parenting",
+    "tier2": "Childcare",
+    "tier3": "",
+    "keywords": "childcare"
   },
   {
-    id: "1317",
-    label: "Day Care Centers",
-    tier1: "Family and Parenting",
-    tier2: "Childcare",
-    tier3: "Day Care Centers",
-    keywords: "day care centers",
+    "id": "1317",
+    "label": "Day Care Centers",
+    "tier1": "Family and Parenting",
+    "tier2": "Childcare",
+    "tier3": "Day Care Centers",
+    "keywords": "day care centers"
   },
   {
-    id: "1318",
-    label: "Nanny Services",
-    tier1: "Family and Parenting",
-    tier2: "Childcare",
-    tier3: "Nanny Services",
-    keywords: "nanny services",
+    "id": "1318",
+    "label": "Nanny Services",
+    "tier1": "Family and Parenting",
+    "tier2": "Childcare",
+    "tier3": "Nanny Services",
+    "keywords": "nanny services"
   },
   {
-    id: "1319",
-    label: "Genealogy and Family Trees",
-    tier1: "Family and Parenting",
-    tier2: "Genealogy and Family Trees",
-    tier3: "",
-    keywords: "genealogy and family trees",
+    "id": "1319",
+    "label": "Genealogy and Family Trees",
+    "tier1": "Family and Parenting",
+    "tier2": "Genealogy and Family Trees",
+    "tier3": "",
+    "keywords": "genealogy and family trees"
   },
   {
-    id: "1320",
-    label: "Kids Activities",
-    tier1: "Family and Parenting",
-    tier2: "Kids Activities",
-    tier3: "",
-    keywords: "kids activities",
+    "id": "1320",
+    "label": "Kids Activities",
+    "tier1": "Family and Parenting",
+    "tier2": "Kids Activities",
+    "tier3": "",
+    "keywords": "kids activities"
   },
   {
-    id: "1321",
-    label: "Senior Living",
-    tier1: "Family and Parenting",
-    tier2: "Senior Living",
-    tier3: "",
-    keywords: "senior living",
+    "id": "1321",
+    "label": "Senior Living",
+    "tier1": "Family and Parenting",
+    "tier2": "Senior Living",
+    "tier3": "",
+    "keywords": "senior living"
   },
   {
-    id: "1322",
-    label: "Finance and Insurance",
-    tier1: "Finance and Insurance",
-    tier2: "",
-    tier3: "",
-    keywords: "finance and insurance",
+    "id": "1322",
+    "label": "Finance and Insurance",
+    "tier1": "Finance and Insurance",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "finance and insurance"
   },
   {
-    id: "1323",
-    label: "Accountants and Bookkeepers",
-    tier1: "Finance and Insurance",
-    tier2: "Accountants and Bookkeepers",
-    tier3: "",
-    keywords: "accountants and bookkeepers",
+    "id": "1323",
+    "label": "Accountants and Bookkeepers",
+    "tier1": "Finance and Insurance",
+    "tier2": "Accountants and Bookkeepers",
+    "tier3": "",
+    "keywords": "accountants and bookkeepers"
   },
   {
-    id: "1324",
-    label: "Banking",
-    tier1: "Finance and Insurance",
-    tier2: "Banking",
-    tier3: "",
-    keywords: "banking",
+    "id": "1324",
+    "label": "Banking",
+    "tier1": "Finance and Insurance",
+    "tier2": "Banking",
+    "tier3": "",
+    "keywords": "banking"
   },
   {
-    id: "1325",
-    label: "Credit and Debt Repair/Credit Reporting",
-    tier1: "Finance and Insurance",
-    tier2: "Credit and Debt Repair/Credit Reporting",
-    tier3: "",
-    keywords: "credit and debt repair/credit reporting",
+    "id": "1325",
+    "label": "Credit and Debt Repair/Credit Reporting",
+    "tier1": "Finance and Insurance",
+    "tier2": "Credit and Debt Repair/Credit Reporting",
+    "tier3": "",
+    "keywords": "credit and debt repair/credit reporting"
   },
   {
-    id: "1326",
-    label: "Credit Cards",
-    tier1: "Finance and Insurance",
-    tier2: "Credit Cards",
-    tier3: "",
-    keywords: "credit cards",
+    "id": "1326",
+    "label": "Credit Cards",
+    "tier1": "Finance and Insurance",
+    "tier2": "Credit Cards",
+    "tier3": "",
+    "keywords": "credit cards"
   },
   {
-    id: "1327",
-    label: "Insurance",
-    tier1: "Finance and Insurance",
-    tier2: "Insurance",
-    tier3: "",
-    keywords: "insurance",
+    "id": "1327",
+    "label": "Insurance",
+    "tier1": "Finance and Insurance",
+    "tier2": "Insurance",
+    "tier3": "",
+    "keywords": "insurance"
   },
   {
-    id: "1328",
-    label: "Auto Insurance",
-    tier1: "Finance and Insurance",
-    tier2: "Insurance",
-    tier3: "Auto Insurance",
-    keywords: "auto insurance",
+    "id": "1328",
+    "label": "Auto Insurance",
+    "tier1": "Finance and Insurance",
+    "tier2": "Insurance",
+    "tier3": "Auto Insurance",
+    "keywords": "auto insurance"
   },
   {
-    id: "1329",
-    label: "Home Insurance",
-    tier1: "Finance and Insurance",
-    tier2: "Insurance",
-    tier3: "Home Insurance",
-    keywords: "home insurance",
+    "id": "1329",
+    "label": "Home Insurance",
+    "tier1": "Finance and Insurance",
+    "tier2": "Insurance",
+    "tier3": "Home Insurance",
+    "keywords": "home insurance"
   },
   {
-    id: "1330",
-    label: "Life Insurance",
-    tier1: "Finance and Insurance",
-    tier2: "Insurance",
-    tier3: "Life Insurance",
-    keywords: "life insurance",
+    "id": "1330",
+    "label": "Life Insurance",
+    "tier1": "Finance and Insurance",
+    "tier2": "Insurance",
+    "tier3": "Life Insurance",
+    "keywords": "life insurance"
   },
   {
-    id: "1331",
-    label: "Medical Insurance",
-    tier1: "Finance and Insurance",
-    tier2: "Insurance",
-    tier3: "Medical Insurance",
-    keywords: "medical insurance",
+    "id": "1331",
+    "label": "Medical Insurance",
+    "tier1": "Finance and Insurance",
+    "tier2": "Insurance",
+    "tier3": "Medical Insurance",
+    "keywords": "medical insurance"
   },
   {
-    id: "1332",
-    label: "Pet Insurance",
-    tier1: "Finance and Insurance",
-    tier2: "Insurance",
-    tier3: "Pet Insurance",
-    keywords: "pet insurance",
+    "id": "1332",
+    "label": "Pet Insurance",
+    "tier1": "Finance and Insurance",
+    "tier2": "Insurance",
+    "tier3": "Pet Insurance",
+    "keywords": "pet insurance"
   },
   {
-    id: "1333",
-    label: "Travel Insurance",
-    tier1: "Finance and Insurance",
-    tier2: "Insurance",
-    tier3: "Travel Insurance",
-    keywords: "travel insurance",
+    "id": "1333",
+    "label": "Travel Insurance",
+    "tier1": "Finance and Insurance",
+    "tier2": "Insurance",
+    "tier3": "Travel Insurance",
+    "keywords": "travel insurance"
   },
   {
-    id: "1334",
-    label: "Insurance Coverage Apps",
-    tier1: "Finance and Insurance",
-    tier2: "Insurance Coverage Apps",
-    tier3: "",
-    keywords: "insurance coverage apps",
+    "id": "1334",
+    "label": "Insurance Coverage Apps",
+    "tier1": "Finance and Insurance",
+    "tier2": "Insurance Coverage Apps",
+    "tier3": "",
+    "keywords": "insurance coverage apps"
   },
   {
-    id: "1335",
-    label: "Mortgage Lenders and Brokers",
-    tier1: "Finance and Insurance",
-    tier2: "Mortgage Lenders and Brokers",
-    tier3: "",
-    keywords: "mortgage lenders and brokers",
+    "id": "1335",
+    "label": "Mortgage Lenders and Brokers",
+    "tier1": "Finance and Insurance",
+    "tier2": "Mortgage Lenders and Brokers",
+    "tier3": "",
+    "keywords": "mortgage lenders and brokers"
   },
   {
-    id: "1336",
-    label: "Payday and Emergency Loans",
-    tier1: "Finance and Insurance",
-    tier2: "Payday and Emergency Loans",
-    tier3: "",
-    keywords: "payday and emergency loans",
+    "id": "1336",
+    "label": "Payday and Emergency Loans",
+    "tier1": "Finance and Insurance",
+    "tier2": "Payday and Emergency Loans",
+    "tier3": "",
+    "keywords": "payday and emergency loans"
   },
   {
-    id: "1337",
-    label: "Retirement Planning",
-    tier1: "Finance and Insurance",
-    tier2: "Retirement Planning",
-    tier3: "",
-    keywords: "retirement planning",
+    "id": "1337",
+    "label": "Retirement Planning",
+    "tier1": "Finance and Insurance",
+    "tier2": "Retirement Planning",
+    "tier3": "",
+    "keywords": "retirement planning"
   },
   {
-    id: "1338",
-    label: "Stocks and Investments",
-    tier1: "Finance and Insurance",
-    tier2: "Stocks and Investments",
-    tier3: "",
-    keywords: "stocks and investments",
+    "id": "1338",
+    "label": "Stocks and Investments",
+    "tier1": "Finance and Insurance",
+    "tier2": "Stocks and Investments",
+    "tier3": "",
+    "keywords": "stocks and investments"
   },
   {
-    id: "1339",
-    label: "Financial Investment and Management Applications",
-    tier1: "Finance and Insurance",
-    tier2: "Financial Investment and Management Applications",
-    tier3: "",
-    keywords: "financial investment and management applications",
+    "id": "1339",
+    "label": "Financial Investment and Management Applications",
+    "tier1": "Finance and Insurance",
+    "tier2": "Financial Investment and Management Applications",
+    "tier3": "",
+    "keywords": "financial investment and management applications"
   },
   {
-    id: "1340",
-    label: "Student Financial Aid",
-    tier1: "Finance and Insurance",
-    tier2: "Student Financial Aid",
-    tier3: "",
-    keywords: "student financial aid",
+    "id": "1340",
+    "label": "Student Financial Aid",
+    "tier1": "Finance and Insurance",
+    "tier2": "Student Financial Aid",
+    "tier3": "",
+    "keywords": "student financial aid"
   },
   {
-    id: "1341",
-    label: "Tax Preparation Services",
-    tier1: "Finance and Insurance",
-    tier2: "Tax Preparation Services",
-    tier3: "",
-    keywords: "tax preparation services",
+    "id": "1341",
+    "label": "Tax Preparation Services",
+    "tier1": "Finance and Insurance",
+    "tier2": "Tax Preparation Services",
+    "tier3": "",
+    "keywords": "tax preparation services"
   },
   {
-    id: "1342",
-    label: "Food and Beverage Services",
-    tier1: "Food and Beverage Services",
-    tier2: "",
-    tier3: "",
-    keywords: "food and beverage services",
+    "id": "1342",
+    "label": "Food and Beverage Services",
+    "tier1": "Food and Beverage Services",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "food and beverage services"
   },
   {
-    id: "1343",
-    label: "Bakeries",
-    tier1: "Food and Beverage Services",
-    tier2: "Bakeries",
-    tier3: "",
-    keywords: "bakeries",
+    "id": "1343",
+    "label": "Bakeries",
+    "tier1": "Food and Beverage Services",
+    "tier2": "Bakeries",
+    "tier3": "",
+    "keywords": "bakeries"
   },
   {
-    id: "1344",
-    label: "Catering",
-    tier1: "Food and Beverage Services",
-    tier2: "Catering",
-    tier3: "",
-    keywords: "catering",
+    "id": "1344",
+    "label": "Catering",
+    "tier1": "Food and Beverage Services",
+    "tier2": "Catering",
+    "tier3": "",
+    "keywords": "catering"
   },
   {
-    id: "1345",
-    label: "Fast Food",
-    tier1: "Food and Beverage Services",
-    tier2: "Fast Food",
-    tier3: "",
-    keywords: "fast food",
+    "id": "1345",
+    "label": "Fast Food",
+    "tier1": "Food and Beverage Services",
+    "tier2": "Fast Food",
+    "tier3": "",
+    "keywords": "fast food"
   },
   {
-    id: "1346",
-    label: "Food Delivery Services",
-    tier1: "Food and Beverage Services",
-    tier2: "Food Delivery Services",
-    tier3: "",
-    keywords: "food delivery services",
+    "id": "1346",
+    "label": "Food Delivery Services",
+    "tier1": "Food and Beverage Services",
+    "tier2": "Food Delivery Services",
+    "tier3": "",
+    "keywords": "food delivery services"
   },
   {
-    id: "1347",
-    label: "Restaurants",
-    tier1: "Food and Beverage Services",
-    tier2: "Restaurants",
-    tier3: "",
-    keywords: "restaurants",
+    "id": "1347",
+    "label": "Restaurants",
+    "tier1": "Food and Beverage Services",
+    "tier2": "Restaurants",
+    "tier3": "",
+    "keywords": "restaurants"
   },
   {
-    id: "1348",
-    label: "Gambling",
-    tier1: "Gambling",
-    tier2: "",
-    tier3: "",
-    keywords: "gambling",
+    "id": "1348",
+    "label": "Gambling",
+    "tier1": "Gambling",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "gambling"
   },
   {
-    id: "1349",
-    label: "Casinos",
-    tier1: "Gambling",
-    tier2: "Casinos",
-    tier3: "",
-    keywords: "casinos",
+    "id": "1349",
+    "label": "Casinos",
+    "tier1": "Gambling",
+    "tier2": "Casinos",
+    "tier3": "",
+    "keywords": "casinos"
   },
   {
-    id: "1350",
-    label: "Lottery",
-    tier1: "Gambling",
-    tier2: "Lottery",
-    tier3: "",
-    keywords: "lottery",
+    "id": "1350",
+    "label": "Lottery",
+    "tier1": "Gambling",
+    "tier2": "Lottery",
+    "tier3": "",
+    "keywords": "lottery"
   },
   {
-    id: "1351",
-    label: "Sports Betting",
-    tier1: "Gambling",
-    tier2: "Sports Betting",
-    tier3: "",
-    keywords: "sports betting",
+    "id": "1351",
+    "label": "Sports Betting",
+    "tier1": "Gambling",
+    "tier2": "Sports Betting",
+    "tier3": "",
+    "keywords": "sports betting"
   },
   {
-    id: "1352",
-    label: "Green/Eco",
-    tier1: "Green/Eco",
-    tier2: "",
-    tier3: "",
-    keywords: "green/eco",
+    "id": "1352",
+    "label": "Green/Eco",
+    "tier1": "Green/Eco",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "green/eco"
   },
   {
-    id: "1353",
-    label: "Green/Eco Products",
-    tier1: "Green/Eco",
-    tier2: "Green/Eco Products",
-    tier3: "",
-    keywords: "green/eco products",
+    "id": "1353",
+    "label": "Green/Eco Products",
+    "tier1": "Green/Eco",
+    "tier2": "Green/Eco Products",
+    "tier3": "",
+    "keywords": "green/eco products"
   },
   {
-    id: "1354",
-    label: "Green/Eco Services",
-    tier1: "Green/Eco",
-    tier2: "Green/Eco Services",
-    tier3: "",
-    keywords: "green/eco services",
+    "id": "1354",
+    "label": "Green/Eco Services",
+    "tier1": "Green/Eco",
+    "tier2": "Green/Eco Services",
+    "tier3": "",
+    "keywords": "green/eco services"
   },
   {
-    id: "1355",
-    label: "Gifts and Holiday Items",
-    tier1: "Gifts and Holiday Items",
-    tier2: "",
-    tier3: "",
-    keywords: "gifts and holiday items",
+    "id": "1355",
+    "label": "Gifts and Holiday Items",
+    "tier1": "Gifts and Holiday Items",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "gifts and holiday items"
   },
   {
-    id: "1356",
-    label: "Flowers",
-    tier1: "Gifts and Holiday Items",
-    tier2: "Flowers",
-    tier3: "",
-    keywords: "flowers",
+    "id": "1356",
+    "label": "Flowers",
+    "tier1": "Gifts and Holiday Items",
+    "tier2": "Flowers",
+    "tier3": "",
+    "keywords": "flowers"
   },
   {
-    id: "1357",
-    label: "Gift Baskets",
-    tier1: "Gifts and Holiday Items",
-    tier2: "Gift Baskets",
-    tier3: "",
-    keywords: "gift baskets",
+    "id": "1357",
+    "label": "Gift Baskets",
+    "tier1": "Gifts and Holiday Items",
+    "tier2": "Gift Baskets",
+    "tier3": "",
+    "keywords": "gift baskets"
   },
   {
-    id: "1358",
-    label: "Gift Cards and Coupons",
-    tier1: "Gifts and Holiday Items",
-    tier2: "Gift Cards and Coupons",
-    tier3: "",
-    keywords: "gift cards and coupons",
+    "id": "1358",
+    "label": "Gift Cards and Coupons",
+    "tier1": "Gifts and Holiday Items",
+    "tier2": "Gift Cards and Coupons",
+    "tier3": "",
+    "keywords": "gift cards and coupons"
   },
   {
-    id: "1359",
-    label: "Gift Certificates",
-    tier1: "Gifts and Holiday Items",
-    tier2: "Gift Certificates",
-    tier3: "",
-    keywords: "gift certificates",
+    "id": "1359",
+    "label": "Gift Certificates",
+    "tier1": "Gifts and Holiday Items",
+    "tier2": "Gift Certificates",
+    "tier3": "",
+    "keywords": "gift certificates"
   },
   {
-    id: "1360",
-    label: "Greeting Cards",
-    tier1: "Gifts and Holiday Items",
-    tier2: "Greeting Cards",
-    tier3: "",
-    keywords: "greeting cards",
+    "id": "1360",
+    "label": "Greeting Cards",
+    "tier1": "Gifts and Holiday Items",
+    "tier2": "Greeting Cards",
+    "tier3": "",
+    "keywords": "greeting cards"
   },
   {
-    id: "1361",
-    label: "Party Goods",
-    tier1: "Gifts and Holiday Items",
-    tier2: "Party Goods",
-    tier3: "",
-    keywords: "party goods",
+    "id": "1361",
+    "label": "Party Goods",
+    "tier1": "Gifts and Holiday Items",
+    "tier2": "Party Goods",
+    "tier3": "",
+    "keywords": "party goods"
   },
   {
-    id: "1362",
-    label: "Health and Medical Services",
-    tier1: "Health and Medical Services",
-    tier2: "",
-    tier3: "",
-    keywords: "health and medical services",
+    "id": "1362",
+    "label": "Health and Medical Services",
+    "tier1": "Health and Medical Services",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "health and medical services"
   },
   {
-    id: "1363",
-    label: "Alternative and Natural Medicine",
-    tier1: "Health and Medical Services",
-    tier2: "Alternative and Natural Medicine",
-    tier3: "",
-    keywords: "alternative and natural medicine",
+    "id": "1363",
+    "label": "Alternative and Natural Medicine",
+    "tier1": "Health and Medical Services",
+    "tier2": "Alternative and Natural Medicine",
+    "tier3": "",
+    "keywords": "alternative and natural medicine"
   },
   {
-    id: "1364",
-    label: "Assisted Living",
-    tier1: "Health and Medical Services",
-    tier2: "Assisted Living",
-    tier3: "",
-    keywords: "assisted living",
+    "id": "1364",
+    "label": "Assisted Living",
+    "tier1": "Health and Medical Services",
+    "tier2": "Assisted Living",
+    "tier3": "",
+    "keywords": "assisted living"
   },
   {
-    id: "1365",
-    label: "Chiropractors",
-    tier1: "Health and Medical Services",
-    tier2: "Chiropractors",
-    tier3: "",
-    keywords: "chiropractors",
+    "id": "1365",
+    "label": "Chiropractors",
+    "tier1": "Health and Medical Services",
+    "tier2": "Chiropractors",
+    "tier3": "",
+    "keywords": "chiropractors"
   },
   {
-    id: "1366",
-    label: "Clinical Research",
-    tier1: "Health and Medical Services",
-    tier2: "Clinical Research",
-    tier3: "",
-    keywords: "clinical research",
+    "id": "1366",
+    "label": "Clinical Research",
+    "tier1": "Health and Medical Services",
+    "tier2": "Clinical Research",
+    "tier3": "",
+    "keywords": "clinical research"
   },
   {
-    id: "1367",
-    label: "Cosmetic Medical Services",
-    tier1: "Health and Medical Services",
-    tier2: "Cosmetic Medical Services",
-    tier3: "",
-    keywords: "cosmetic medical services",
+    "id": "1367",
+    "label": "Cosmetic Medical Services",
+    "tier1": "Health and Medical Services",
+    "tier2": "Cosmetic Medical Services",
+    "tier3": "",
+    "keywords": "cosmetic medical services"
   },
   {
-    id: "1368",
-    label: "Dental Care",
-    tier1: "Health and Medical Services",
-    tier2: "Dental Care",
-    tier3: "",
-    keywords: "dental care",
+    "id": "1368",
+    "label": "Dental Care",
+    "tier1": "Health and Medical Services",
+    "tier2": "Dental Care",
+    "tier3": "",
+    "keywords": "dental care"
   },
   {
-    id: "1369",
-    label: "Dermatology",
-    tier1: "Health and Medical Services",
-    tier2: "Dermatology",
-    tier3: "",
-    keywords: "dermatology",
+    "id": "1369",
+    "label": "Dermatology",
+    "tier1": "Health and Medical Services",
+    "tier2": "Dermatology",
+    "tier3": "",
+    "keywords": "dermatology"
   },
   {
-    id: "1370",
-    label: "Drugstores and Pharmacies",
-    tier1: "Health and Medical Services",
-    tier2: "Drugstores and Pharmacies",
-    tier3: "",
-    keywords: "drugstores and pharmacies",
+    "id": "1370",
+    "label": "Drugstores and Pharmacies",
+    "tier1": "Health and Medical Services",
+    "tier2": "Drugstores and Pharmacies",
+    "tier3": "",
+    "keywords": "drugstores and pharmacies"
   },
   {
-    id: "1371",
-    label: "Fertility and Family Planning",
-    tier1: "Health and Medical Services",
-    tier2: "Fertility and Family Planning",
-    tier3: "",
-    keywords: "fertility and family planning",
+    "id": "1371",
+    "label": "Fertility and Family Planning",
+    "tier1": "Health and Medical Services",
+    "tier2": "Fertility and Family Planning",
+    "tier3": "",
+    "keywords": "fertility and family planning"
   },
   {
-    id: "1372",
-    label: "General Practitioners",
-    tier1: "Health and Medical Services",
-    tier2: "General Practitioners",
-    tier3: "",
-    keywords: "general practitioners",
+    "id": "1372",
+    "label": "General Practitioners",
+    "tier1": "Health and Medical Services",
+    "tier2": "General Practitioners",
+    "tier3": "",
+    "keywords": "general practitioners"
   },
   {
-    id: "1373",
-    label: "Home Healthcare",
-    tier1: "Health and Medical Services",
-    tier2: "Home Healthcare",
-    tier3: "",
-    keywords: "home healthcare",
+    "id": "1373",
+    "label": "Home Healthcare",
+    "tier1": "Health and Medical Services",
+    "tier2": "Home Healthcare",
+    "tier3": "",
+    "keywords": "home healthcare"
   },
   {
-    id: "1374",
-    label: "Hospitals",
-    tier1: "Health and Medical Services",
-    tier2: "Hospitals",
-    tier3: "",
-    keywords: "hospitals",
+    "id": "1374",
+    "label": "Hospitals",
+    "tier1": "Health and Medical Services",
+    "tier2": "Hospitals",
+    "tier3": "",
+    "keywords": "hospitals"
   },
   {
-    id: "1375",
-    label: "Mental Health",
-    tier1: "Health and Medical Services",
-    tier2: "Mental Health",
-    tier3: "",
-    keywords: "mental health",
+    "id": "1375",
+    "label": "Mental Health",
+    "tier1": "Health and Medical Services",
+    "tier2": "Mental Health",
+    "tier3": "",
+    "keywords": "mental health"
   },
   {
-    id: "1376",
-    label: "Physical Therapists",
-    tier1: "Health and Medical Services",
-    tier2: "Physical Therapists",
-    tier3: "",
-    keywords: "physical therapists",
+    "id": "1376",
+    "label": "Physical Therapists",
+    "tier1": "Health and Medical Services",
+    "tier2": "Physical Therapists",
+    "tier3": "",
+    "keywords": "physical therapists"
   },
   {
-    id: "1377",
-    label: "Service Provider Search and Scheduling",
-    tier1: "Health and Medical Services",
-    tier2: "Service Provider Search and Scheduling",
-    tier3: "",
-    keywords: "service provider search and scheduling",
+    "id": "1377",
+    "label": "Service Provider Search and Scheduling",
+    "tier1": "Health and Medical Services",
+    "tier2": "Service Provider Search and Scheduling",
+    "tier3": "",
+    "keywords": "service provider search and scheduling"
   },
   {
-    id: "1378",
-    label: "Symptom Monitoring Apps",
-    tier1: "Health and Medical Services",
-    tier2: "Symptom Monitoring Apps",
-    tier3: "",
-    keywords: "symptom monitoring apps",
+    "id": "1378",
+    "label": "Symptom Monitoring Apps",
+    "tier1": "Health and Medical Services",
+    "tier2": "Symptom Monitoring Apps",
+    "tier3": "",
+    "keywords": "symptom monitoring apps"
   },
   {
-    id: "1379",
-    label: "Vision Care",
-    tier1: "Health and Medical Services",
-    tier2: "Vision Care",
-    tier3: "",
-    keywords: "vision care, glasses, optics, eyewear",
+    "id": "1379",
+    "label": "Vision Care",
+    "tier1": "Health and Medical Services",
+    "tier2": "Vision Care",
+    "tier3": "",
+    "keywords": "vision care, glasses, optics, eyewear"
   },
   {
-    id: "1380",
-    label: "Home and Garden Services",
-    tier1: "Home and Garden Services",
-    tier2: "",
-    tier3: "",
-    keywords: "home and garden services",
+    "id": "1380",
+    "label": "Home and Garden Services",
+    "tier1": "Home and Garden Services",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "home and garden services"
   },
   {
-    id: "1381",
-    label: "Appliance Repair",
-    tier1: "Home and Garden Services",
-    tier2: "Appliance Repair",
-    tier3: "",
-    keywords: "appliance repair",
+    "id": "1381",
+    "label": "Appliance Repair",
+    "tier1": "Home and Garden Services",
+    "tier2": "Appliance Repair",
+    "tier3": "",
+    "keywords": "appliance repair"
   },
   {
-    id: "1382",
-    label: "Business and Home Security Services",
-    tier1: "Home and Garden Services",
-    tier2: "Business and Home Security Services",
-    tier3: "",
-    keywords: "business and home security services",
+    "id": "1382",
+    "label": "Business and Home Security Services",
+    "tier1": "Home and Garden Services",
+    "tier2": "Business and Home Security Services",
+    "tier3": "",
+    "keywords": "business and home security services"
   },
   {
-    id: "1383",
-    label: "Carpeting and Flooring Services",
-    tier1: "Home and Garden Services",
-    tier2: "Carpeting and Flooring Services",
-    tier3: "",
-    keywords: "carpeting and flooring services",
+    "id": "1383",
+    "label": "Carpeting and Flooring Services",
+    "tier1": "Home and Garden Services",
+    "tier2": "Carpeting and Flooring Services",
+    "tier3": "",
+    "keywords": "carpeting and flooring services"
   },
   {
-    id: "1384",
-    label: "Do It Yourself Applications",
-    tier1: "Home and Garden Services",
-    tier2: "Do It Yourself Applications",
-    tier3: "",
-    keywords: "do it yourself applications",
+    "id": "1384",
+    "label": "Do It Yourself Applications",
+    "tier1": "Home and Garden Services",
+    "tier2": "Do It Yourself Applications",
+    "tier3": "",
+    "keywords": "do it yourself applications"
   },
   {
-    id: "1385",
-    label: "Emergency Preparedness",
-    tier1: "Home and Garden Services",
-    tier2: "Emergency Preparedness",
-    tier3: "",
-    keywords: "emergency preparedness",
+    "id": "1385",
+    "label": "Emergency Preparedness",
+    "tier1": "Home and Garden Services",
+    "tier2": "Emergency Preparedness",
+    "tier3": "",
+    "keywords": "emergency preparedness"
   },
   {
-    id: "1386",
-    label: "Flood, Fire and Gas Safety",
-    tier1: "Home and Garden Services",
-    tier2: "Flood, Fire and Gas Safety",
-    tier3: "",
-    keywords: "flood, fire and gas safety",
+    "id": "1386",
+    "label": "Flood, Fire and Gas Safety",
+    "tier1": "Home and Garden Services",
+    "tier2": "Flood, Fire and Gas Safety",
+    "tier3": "",
+    "keywords": "flood, fire and gas safety"
   },
   {
-    id: "1387",
-    label: "Gas and Electric Services",
-    tier1: "Home and Garden Services",
-    tier2: "Gas and Electric Services",
-    tier3: "",
-    keywords: "gas and electric services",
+    "id": "1387",
+    "label": "Gas and Electric Services",
+    "tier1": "Home and Garden Services",
+    "tier2": "Gas and Electric Services",
+    "tier3": "",
+    "keywords": "gas and electric services"
   },
   {
-    id: "1388",
-    label: "Home Improvement and Repair",
-    tier1: "Home and Garden Services",
-    tier2: "Home Improvement and Repair",
-    tier3: "",
-    keywords: "home improvement and repair",
+    "id": "1388",
+    "label": "Home Improvement and Repair",
+    "tier1": "Home and Garden Services",
+    "tier2": "Home Improvement and Repair",
+    "tier3": "",
+    "keywords": "home improvement and repair"
   },
   {
-    id: "1389",
-    label: "Home Security and Monitoring Applications",
-    tier1: "Home and Garden Services",
-    tier2: "Home Security and Monitoring Applications",
-    tier3: "",
-    keywords: "home security and monitoring applications",
+    "id": "1389",
+    "label": "Home Security and Monitoring Applications",
+    "tier1": "Home and Garden Services",
+    "tier2": "Home Security and Monitoring Applications",
+    "tier3": "",
+    "keywords": "home security and monitoring applications"
   },
   {
-    id: "1390",
-    label: "Home Service Provider Review",
-    tier1: "Home and Garden Services",
-    tier2: "Home Service Provider Review",
-    tier3: "",
-    keywords: "home service provider review",
+    "id": "1390",
+    "label": "Home Service Provider Review",
+    "tier1": "Home and Garden Services",
+    "tier2": "Home Service Provider Review",
+    "tier3": "",
+    "keywords": "home service provider review"
   },
   {
-    id: "1391",
-    label: "Housekeeping Services",
-    tier1: "Home and Garden Services",
-    tier2: "Housekeeping Services",
-    tier3: "",
-    keywords: "housekeeping services",
+    "id": "1391",
+    "label": "Housekeeping Services",
+    "tier1": "Home and Garden Services",
+    "tier2": "Housekeeping Services",
+    "tier3": "",
+    "keywords": "housekeeping services"
   },
   {
-    id: "1392",
-    label: "Landscaping Services",
-    tier1: "Home and Garden Services",
-    tier2: "Landscaping Services",
-    tier3: "",
-    keywords: "landscaping services",
+    "id": "1392",
+    "label": "Landscaping Services",
+    "tier1": "Home and Garden Services",
+    "tier2": "Landscaping Services",
+    "tier3": "",
+    "keywords": "landscaping services"
   },
   {
-    id: "1393",
-    label: "Lawn and Garden Services",
-    tier1: "Home and Garden Services",
-    tier2: "Lawn and Garden Services",
-    tier3: "",
-    keywords: "lawn and garden services",
+    "id": "1393",
+    "label": "Lawn and Garden Services",
+    "tier1": "Home and Garden Services",
+    "tier2": "Lawn and Garden Services",
+    "tier3": "",
+    "keywords": "lawn and garden services"
   },
   {
-    id: "1394",
-    label: "Pest Exterminators",
-    tier1: "Home and Garden Services",
-    tier2: "Pest Exterminators",
-    tier3: "",
-    keywords: "pest exterminators",
+    "id": "1394",
+    "label": "Pest Exterminators",
+    "tier1": "Home and Garden Services",
+    "tier2": "Pest Exterminators",
+    "tier3": "",
+    "keywords": "pest exterminators"
   },
   {
-    id: "1395",
-    label: "Plumbers",
-    tier1: "Home and Garden Services",
-    tier2: "Plumbers",
-    tier3: "",
-    keywords: "plumbers",
+    "id": "1395",
+    "label": "Plumbers",
+    "tier1": "Home and Garden Services",
+    "tier2": "Plumbers",
+    "tier3": "",
+    "keywords": "plumbers"
   },
   {
-    id: "1396",
-    label: "Pool and Spa Installation and Maintenance",
-    tier1: "Home and Garden Services",
-    tier2: "Pool and Spa Installation and Maintenance",
-    tier3: "",
-    keywords: "pool and spa installation and maintenance",
+    "id": "1396",
+    "label": "Pool and Spa Installation and Maintenance",
+    "tier1": "Home and Garden Services",
+    "tier2": "Pool and Spa Installation and Maintenance",
+    "tier3": "",
+    "keywords": "pool and spa installation and maintenance"
   },
   {
-    id: "1397",
-    label: "Remodeling and Construction",
-    tier1: "Home and Garden Services",
-    tier2: "Remodeling and Construction",
-    tier3: "",
-    keywords: "remodeling and construction",
+    "id": "1397",
+    "label": "Remodeling and Construction",
+    "tier1": "Home and Garden Services",
+    "tier2": "Remodeling and Construction",
+    "tier3": "",
+    "keywords": "remodeling and construction"
   },
   {
-    id: "1398",
-    label: "Water Services",
-    tier1: "Home and Garden Services",
-    tier2: "Water Services",
-    tier3: "",
-    keywords: "water services",
+    "id": "1398",
+    "label": "Water Services",
+    "tier1": "Home and Garden Services",
+    "tier2": "Water Services",
+    "tier3": "",
+    "keywords": "water services"
   },
   {
-    id: "1399",
-    label: "Window Installation and Treatments",
-    tier1: "Home and Garden Services",
-    tier2: "Window Installation and Treatments",
-    tier3: "",
-    keywords: "window installation and treatments",
+    "id": "1399",
+    "label": "Window Installation and Treatments",
+    "tier1": "Home and Garden Services",
+    "tier2": "Window Installation and Treatments",
+    "tier3": "",
+    "keywords": "window installation and treatments"
   },
   {
-    id: "1400",
-    label: "Legal Services",
-    tier1: "Legal Services",
-    tier2: "",
-    tier3: "",
-    keywords: "legal services",
+    "id": "1400",
+    "label": "Legal Services",
+    "tier1": "Legal Services",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "legal services"
   },
   {
-    id: "1401",
-    label: "Lawyers",
-    tier1: "Legal Services",
-    tier2: "Lawyers",
-    tier3: "",
-    keywords: "lawyers",
+    "id": "1401",
+    "label": "Lawyers",
+    "tier1": "Legal Services",
+    "tier2": "Lawyers",
+    "tier3": "",
+    "keywords": "lawyers"
   },
   {
-    id: "1402",
-    label: "Bail Bonds",
-    tier1: "Legal Services",
-    tier2: "Bail Bonds",
-    tier3: "",
-    keywords: "bail bonds",
+    "id": "1402",
+    "label": "Bail Bonds",
+    "tier1": "Legal Services",
+    "tier2": "Bail Bonds",
+    "tier3": "",
+    "keywords": "bail bonds"
   },
   {
-    id: "1403",
-    label: "Media",
-    tier1: "Media",
-    tier2: "",
-    tier3: "",
-    keywords: "media",
+    "id": "1403",
+    "label": "Media",
+    "tier1": "Media",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "media"
   },
   {
-    id: "1404",
-    label: "Blogs/Forums/Social Networks",
-    tier1: "Media",
-    tier2: "Blogs/Forums/Social Networks",
-    tier3: "",
-    keywords: "blogs/forums/social networks",
+    "id": "1404",
+    "label": "Blogs/Forums/Social Networks",
+    "tier1": "Media",
+    "tier2": "Blogs/Forums/Social Networks",
+    "tier3": "",
+    "keywords": "blogs/forums/social networks"
   },
   {
-    id: "1405",
-    label: "Book Reading and Review Applications",
-    tier1: "Media",
-    tier2: "Book Reading and Review Applications",
-    tier3: "",
-    keywords: "book reading and review applications",
+    "id": "1405",
+    "label": "Book Reading and Review Applications",
+    "tier1": "Media",
+    "tier2": "Book Reading and Review Applications",
+    "tier3": "",
+    "keywords": "book reading and review applications"
   },
   {
-    id: "1406",
-    label: "Books and Audio Books",
-    tier1: "Media",
-    tier2: "Books and Audio Books",
-    tier3: "",
-    keywords: "books and audio books",
+    "id": "1406",
+    "label": "Books and Audio Books",
+    "tier1": "Media",
+    "tier2": "Books and Audio Books",
+    "tier3": "",
+    "keywords": "books and audio books"
   },
   {
-    id: "1407",
-    label: "Casual Games",
-    tier1: "Media",
-    tier2: "Casual Games",
-    tier3: "",
-    keywords: "casual games",
+    "id": "1407",
+    "label": "Casual Games",
+    "tier1": "Media",
+    "tier2": "Casual Games",
+    "tier3": "",
+    "keywords": "casual games"
   },
   {
-    id: "1408",
-    label: "Casual Games Apps",
-    tier1: "Media",
-    tier2: "Casual Games",
-    tier3: "Casual Games Apps",
-    keywords: "casual games apps, dating app",
+    "id": "1408",
+    "label": "Casual Games Apps",
+    "tier1": "Media",
+    "tier2": "Casual Games",
+    "tier3": "Casual Games Apps",
+    "keywords": "casual games apps, dating app"
   },
   {
-    id: "1410",
-    label: "Core Gaming Apps",
-    tier1: "Media",
-    tier2: "Core Gaming",
-    tier3: "Core Gaming Apps",
-    keywords: "core gaming apps",
+    "id": "1410",
+    "label": "Core Gaming Apps",
+    "tier1": "Media",
+    "tier2": "Core Gaming",
+    "tier3": "Core Gaming Apps",
+    "keywords": "core gaming apps"
   },
   {
-    id: "1409",
-    label: "Core Gaming",
-    tier1: "Media",
-    tier2: "Core Gaming",
-    tier3: "",
-    keywords: "core gaming",
+    "id": "1409",
+    "label": "Core Gaming",
+    "tier1": "Media",
+    "tier2": "Core Gaming",
+    "tier3": "",
+    "keywords": "core gaming"
   },
   {
-    id: "1411",
-    label: "CDs and Vinyl Records",
-    tier1: "Media",
-    tier2: "CDs and Vinyl Records",
-    tier3: "",
-    keywords: "cds and vinyl records",
+    "id": "1411",
+    "label": "CDs and Vinyl Records",
+    "tier1": "Media",
+    "tier2": "CDs and Vinyl Records",
+    "tier3": "",
+    "keywords": "cds and vinyl records"
   },
   {
-    id: "1412",
-    label: "DVDs",
-    tier1: "Media",
-    tier2: "DVDs",
-    tier3: "",
-    keywords: "dvds",
+    "id": "1412",
+    "label": "DVDs",
+    "tier1": "Media",
+    "tier2": "DVDs",
+    "tier3": "",
+    "keywords": "dvds"
   },
   {
-    id: "1413",
-    label: "Live Television",
-    tier1: "Media",
-    tier2: "Live Television",
-    tier3: "",
-    keywords: "live television",
+    "id": "1413",
+    "label": "Live Television",
+    "tier1": "Media",
+    "tier2": "Live Television",
+    "tier3": "",
+    "keywords": "live television"
   },
   {
-    id: "1414",
-    label: "Magazines and Newspapers",
-    tier1: "Media",
-    tier2: "Magazines and Newspapers",
-    tier3: "",
-    keywords: "magazines and newspapers",
+    "id": "1414",
+    "label": "Magazines and Newspapers",
+    "tier1": "Media",
+    "tier2": "Magazines and Newspapers",
+    "tier3": "",
+    "keywords": "magazines and newspapers"
   },
   {
-    id: "1415",
-    label: "Music and Video Streaming Services",
-    tier1: "Media",
-    tier2: "Music and Video Streaming Services",
-    tier3: "",
-    keywords: "music and video streaming services",
+    "id": "1415",
+    "label": "Music and Video Streaming Services",
+    "tier1": "Media",
+    "tier2": "Music and Video Streaming Services",
+    "tier3": "",
+    "keywords": "music and video streaming services"
   },
   {
-    id: "1416",
-    label: "News and Analysis",
-    tier1: "Media",
-    tier2: "News and Analysis",
-    tier3: "",
-    keywords: "news and analysis",
+    "id": "1416",
+    "label": "News and Analysis",
+    "tier1": "Media",
+    "tier2": "News and Analysis",
+    "tier3": "",
+    "keywords": "news and analysis"
   },
   {
-    id: "1417",
-    label: "Radio and Podcasts",
-    tier1: "Media",
-    tier2: "Radio and Podcasts",
-    tier3: "",
-    keywords: "radio and podcasts",
+    "id": "1417",
+    "label": "Radio and Podcasts",
+    "tier1": "Media",
+    "tier2": "Radio and Podcasts",
+    "tier3": "",
+    "keywords": "radio and podcasts"
   },
   {
-    id: "1418",
-    label: "Sports",
-    tier1: "Media",
-    tier2: "Sports",
-    tier3: "",
-    keywords: "sports",
+    "id": "1418",
+    "label": "Sports",
+    "tier1": "Media",
+    "tier2": "Sports",
+    "tier3": "",
+    "keywords": "sports"
   },
   {
-    id: "1419",
-    label: "Fantasy Sports",
-    tier1: "Media",
-    tier2: "Sports",
-    tier3: "Fantasy Sports",
-    keywords: "fantasy sports",
+    "id": "1419",
+    "label": "Fantasy Sports",
+    "tier1": "Media",
+    "tier2": "Sports",
+    "tier3": "Fantasy Sports",
+    "keywords": "fantasy sports"
   },
   {
-    id: "1420",
-    label: "Sports Highlights",
-    tier1: "Media",
-    tier2: "Sports",
-    tier3: "Sports Highlights",
-    keywords: "sports highlights",
+    "id": "1420",
+    "label": "Sports Highlights",
+    "tier1": "Media",
+    "tier2": "Sports",
+    "tier3": "Sports Highlights",
+    "keywords": "sports highlights"
   },
   {
-    id: "1421",
-    label: "Team  News and Analysis",
-    tier1: "Media",
-    tier2: "Sports",
-    tier3: "Team News and Analysis",
-    keywords: "team  news and analysis",
+    "id": "1421",
+    "label": "Team  News and Analysis",
+    "tier1": "Media",
+    "tier2": "Sports",
+    "tier3": "Team News and Analysis",
+    "keywords": "team  news and analysis"
   },
   {
-    id: "1422",
-    label: "Utilities Apps",
-    tier1: "Media",
-    tier2: "Utilities Apps",
-    tier3: "",
-    keywords: "utilities apps",
+    "id": "1422",
+    "label": "Utilities Apps",
+    "tier1": "Media",
+    "tier2": "Utilities Apps",
+    "tier3": "",
+    "keywords": "utilities apps"
   },
   {
-    id: "1423",
-    label: "Productivity Apps",
-    tier1: "Media",
-    tier2: "Utilities Apps",
-    tier3: "Productivity Apps",
-    keywords: "productivity apps",
+    "id": "1423",
+    "label": "Productivity Apps",
+    "tier1": "Media",
+    "tier2": "Utilities Apps",
+    "tier3": "Productivity Apps",
+    "keywords": "productivity apps"
   },
   {
-    id: "1424",
-    label: "Reference Apps",
-    tier1: "Media",
-    tier2: "Utilities Apps",
-    tier3: "Reference Apps",
-    keywords: "reference apps",
+    "id": "1424",
+    "label": "Reference Apps",
+    "tier1": "Media",
+    "tier2": "Utilities Apps",
+    "tier3": "Reference Apps",
+    "keywords": "reference apps"
   },
   {
-    id: "1425",
-    label: "Search Engine Apps",
-    tier1: "Media",
-    tier2: "Utilities Apps",
-    tier3: "Search Engine Apps",
-    keywords: "search engine apps",
+    "id": "1425",
+    "label": "Search Engine Apps",
+    "tier1": "Media",
+    "tier2": "Utilities Apps",
+    "tier3": "Search Engine Apps",
+    "keywords": "search engine apps"
   },
   {
-    id: "1426",
-    label: "Weather Apps",
-    tier1: "Media",
-    tier2: "Utilities Apps",
-    tier3: "Weather Apps",
-    keywords: "weather apps",
+    "id": "1426",
+    "label": "Weather Apps",
+    "tier1": "Media",
+    "tier2": "Utilities Apps",
+    "tier3": "Weather Apps",
+    "keywords": "weather apps"
   },
   {
-    id: "1427",
-    label: "Metals",
-    tier1: "Metals",
-    tier2: "",
-    tier3: "",
-    keywords: "metals",
+    "id": "1427",
+    "label": "Metals",
+    "tier1": "Metals",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "metals"
   },
   {
-    id: "1428",
-    label: "Coin Trade In",
-    tier1: "Metals",
-    tier2: "Coin Trade In",
-    tier3: "",
-    keywords: "coin trade in",
+    "id": "1428",
+    "label": "Coin Trade In",
+    "tier1": "Metals",
+    "tier2": "Coin Trade In",
+    "tier3": "",
+    "keywords": "coin trade in"
   },
   {
-    id: "1429",
-    label: "Gold Trade In",
-    tier1: "Metals",
-    tier2: "Gold Trade In",
-    tier3: "",
-    keywords: "gold trade in",
+    "id": "1429",
+    "label": "Gold Trade In",
+    "tier1": "Metals",
+    "tier2": "Gold Trade In",
+    "tier3": "",
+    "keywords": "gold trade in"
   },
   {
-    id: "1430",
-    label: "Platinum Trade In",
-    tier1: "Metals",
-    tier2: "Platinum Trade In",
-    tier3: "",
-    keywords: "platinum trade in",
+    "id": "1430",
+    "label": "Platinum Trade In",
+    "tier1": "Metals",
+    "tier2": "Platinum Trade In",
+    "tier3": "",
+    "keywords": "platinum trade in"
   },
   {
-    id: "1431",
-    label: "Silver Trade In",
-    tier1: "Metals",
-    tier2: "Silver Trade In",
-    tier3: "",
-    keywords: "silver trade in",
+    "id": "1431",
+    "label": "Silver Trade In",
+    "tier1": "Metals",
+    "tier2": "Silver Trade In",
+    "tier3": "",
+    "keywords": "silver trade in"
   },
   {
-    id: "1432",
-    label: "Non-Fiat Currency",
-    tier1: "Non-Fiat Currency",
-    tier2: "",
-    tier3: "",
-    keywords: "non-fiat currency",
+    "id": "1432",
+    "label": "Non-Fiat Currency",
+    "tier1": "Non-Fiat Currency",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "non-fiat currency"
   },
   {
-    id: "1433",
-    label: "Cryptocurrency Exchanges",
-    tier1: "Non-Fiat Currency",
-    tier2: "Cryptocurrency Exchanges",
-    tier3: "",
-    keywords: "cryptocurrency exchanges",
+    "id": "1433",
+    "label": "Cryptocurrency Exchanges",
+    "tier1": "Non-Fiat Currency",
+    "tier2": "Cryptocurrency Exchanges",
+    "tier3": "",
+    "keywords": "cryptocurrency exchanges"
   },
   {
-    id: "1434",
-    label: "Cryptocurrency Stock",
-    tier1: "Non-Fiat Currency",
-    tier2: "Cryptocurrency Stock",
-    tier3: "",
-    keywords: "cryptocurrency stock",
+    "id": "1434",
+    "label": "Cryptocurrency Stock",
+    "tier1": "Non-Fiat Currency",
+    "tier2": "Cryptocurrency Stock",
+    "tier3": "",
+    "keywords": "cryptocurrency stock"
   },
   {
-    id: "1435",
-    label: "NFTs",
-    tier1: "Non-Fiat Currency",
-    tier2: "NFTs",
-    tier3: "",
-    keywords: "nfts",
+    "id": "1435",
+    "label": "NFTs",
+    "tier1": "Non-Fiat Currency",
+    "tier2": "NFTs",
+    "tier3": "",
+    "keywords": "nfts"
   },
   {
-    id: "1436",
-    label: "Non-Profits",
-    tier1: "Non-Profits",
-    tier2: "",
-    tier3: "",
-    keywords: "non-profits",
+    "id": "1436",
+    "label": "Non-Profits",
+    "tier1": "Non-Profits",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "non-profits"
   },
   {
-    id: "1437",
-    label: "Charities and Donations",
-    tier1: "Non-Profits",
-    tier2: "Charities and Donations",
-    tier3: "",
-    keywords: "charities and donations",
+    "id": "1437",
+    "label": "Charities and Donations",
+    "tier1": "Non-Profits",
+    "tier2": "Charities and Donations",
+    "tier3": "",
+    "keywords": "charities and donations"
   },
   {
-    id: "1438",
-    label: "Civic Organizations",
-    tier1: "Non-Profits",
-    tier2: "Civic Organizations",
-    tier3: "",
-    keywords: "civic organizations",
+    "id": "1438",
+    "label": "Civic Organizations",
+    "tier1": "Non-Profits",
+    "tier2": "Civic Organizations",
+    "tier3": "",
+    "keywords": "civic organizations"
   },
   {
-    id: "1439",
-    label: "Federations and Professional Associations",
-    tier1: "Non-Profits",
-    tier2: "Federations and Professional Associations",
-    tier3: "",
-    keywords: "federations and professional associations",
+    "id": "1439",
+    "label": "Federations and Professional Associations",
+    "tier1": "Non-Profits",
+    "tier2": "Federations and Professional Associations",
+    "tier3": "",
+    "keywords": "federations and professional associations"
   },
   {
-    id: "1440",
-    label: "Military Organizations",
-    tier1: "Non-Profits",
-    tier2: "Military Organizations",
-    tier3: "",
-    keywords: "military organizations",
+    "id": "1440",
+    "label": "Military Organizations",
+    "tier1": "Non-Profits",
+    "tier2": "Military Organizations",
+    "tier3": "",
+    "keywords": "military organizations"
   },
   {
-    id: "1441",
-    label: "Non-Governmental Organizations",
-    tier1: "Non-Profits",
-    tier2: "Non-Governmental Organizations",
-    tier3: "",
-    keywords: "non-governmental organizations",
+    "id": "1441",
+    "label": "Non-Governmental Organizations",
+    "tier1": "Non-Profits",
+    "tier2": "Non-Governmental Organizations",
+    "tier3": "",
+    "keywords": "non-governmental organizations"
   },
   {
-    id: "1442",
-    label: "Public Service Announcements",
-    tier1: "Non-Profits",
-    tier2: "Public Service Announcements",
-    tier3: "",
-    keywords: "public service announcements",
+    "id": "1442",
+    "label": "Public Service Announcements",
+    "tier1": "Non-Profits",
+    "tier2": "Public Service Announcements",
+    "tier3": "",
+    "keywords": "public service announcements"
   },
   {
-    id: "1443",
-    label: "Scholarships",
-    tier1: "Non-Profits",
-    tier2: "Scholarships",
-    tier3: "",
-    keywords: "scholarships",
+    "id": "1443",
+    "label": "Scholarships",
+    "tier1": "Non-Profits",
+    "tier2": "Scholarships",
+    "tier3": "",
+    "keywords": "scholarships"
   },
   {
-    id: "1444",
-    label: "Pet Ownership",
-    tier1: "Pet Ownership",
-    tier2: "",
-    tier3: "",
-    keywords: "pet ownership",
+    "id": "1444",
+    "label": "Pet Ownership",
+    "tier1": "Pet Ownership",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "pet ownership"
   },
   {
-    id: "1445",
-    label: "Pet Adoption",
-    tier1: "Pet Ownership",
-    tier2: "Pet Adoption",
-    tier3: "",
-    keywords: "pet adoption",
+    "id": "1445",
+    "label": "Pet Adoption",
+    "tier1": "Pet Ownership",
+    "tier2": "Pet Adoption",
+    "tier3": "",
+    "keywords": "pet adoption"
   },
   {
-    id: "1446",
-    label: "Pet Breeders",
-    tier1: "Pet Ownership",
-    tier2: "Pet Breeders",
-    tier3: "",
-    keywords: "pet breeders",
+    "id": "1446",
+    "label": "Pet Breeders",
+    "tier1": "Pet Ownership",
+    "tier2": "Pet Breeders",
+    "tier3": "",
+    "keywords": "pet breeders"
   },
   {
-    id: "1447",
-    label: "Pet Care and Supply Applications",
-    tier1: "Pet Ownership",
-    tier2: "Pet Care and Supply Applications",
-    tier3: "",
-    keywords: "pet care and supply applications",
+    "id": "1447",
+    "label": "Pet Care and Supply Applications",
+    "tier1": "Pet Ownership",
+    "tier2": "Pet Care and Supply Applications",
+    "tier3": "",
+    "keywords": "pet care and supply applications"
   },
   {
-    id: "1448",
-    label: "Pet Grooming",
-    tier1: "Pet Ownership",
-    tier2: "Pet Grooming",
-    tier3: "",
-    keywords: "pet grooming",
+    "id": "1448",
+    "label": "Pet Grooming",
+    "tier1": "Pet Ownership",
+    "tier2": "Pet Grooming",
+    "tier3": "",
+    "keywords": "pet grooming"
   },
   {
-    id: "1449",
-    label: "Pet Sitting",
-    tier1: "Pet Ownership",
-    tier2: "Pet Sitting",
-    tier3: "",
-    keywords: "pet sitting",
+    "id": "1449",
+    "label": "Pet Sitting",
+    "tier1": "Pet Ownership",
+    "tier2": "Pet Sitting",
+    "tier3": "",
+    "keywords": "pet sitting"
   },
   {
-    id: "1450",
-    label: "Veterinary Services",
-    tier1: "Pet Ownership",
-    tier2: "Veterinary Services",
-    tier3: "",
-    keywords: "veterinary services",
+    "id": "1450",
+    "label": "Veterinary Services",
+    "tier1": "Pet Ownership",
+    "tier2": "Veterinary Services",
+    "tier3": "",
+    "keywords": "veterinary services"
   },
   {
-    id: "1451",
-    label: "Personal/Consumer Telecom",
-    tier1: "Personal/Consumer Telecom",
-    tier2: "",
-    tier3: "",
-    keywords: "personal/consumer telcom",
+    "id": "1451",
+    "label": "Personal/Consumer Telecom",
+    "tier1": "Personal/Consumer Telecom",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "personal/consumer telcom"
   },
   {
-    id: "1452",
-    label: "Home Internet Services",
-    tier1: "Personal/Consumer Telecom",
-    tier2: "Home Internet Services",
-    tier3: "",
-    keywords: "home internet services",
+    "id": "1452",
+    "label": "Home Internet Services",
+    "tier1": "Personal/Consumer Telecom",
+    "tier2": "Home Internet Services",
+    "tier3": "",
+    "keywords": "home internet services"
   },
   {
-    id: "1453",
-    label: "Home Phone Services",
-    tier1: "Personal/Consumer Telecom",
-    tier2: "Home Phone Services",
-    tier3: "",
-    keywords: "home phone services",
+    "id": "1453",
+    "label": "Home Phone Services",
+    "tier1": "Personal/Consumer Telecom",
+    "tier2": "Home Phone Services",
+    "tier3": "",
+    "keywords": "home phone services"
   },
   {
-    id: "1454",
-    label: "Home Television Services",
-    tier1: "Personal/Consumer Telecom",
-    tier2: "Home Television Services",
-    tier3: "",
-    keywords: "home television services",
+    "id": "1454",
+    "label": "Home Television Services",
+    "tier1": "Personal/Consumer Telecom",
+    "tier2": "Home Television Services",
+    "tier3": "",
+    "keywords": "home television services"
   },
   {
-    id: "1455",
-    label: "Mobile Phone Plans",
-    tier1: "Personal/Consumer Telecom",
-    tier2: "Mobile Phone Plans",
-    tier3: "",
-    keywords: "mobile phone plans",
+    "id": "1455",
+    "label": "Mobile Phone Plans",
+    "tier1": "Personal/Consumer Telecom",
+    "tier2": "Mobile Phone Plans",
+    "tier3": "",
+    "keywords": "mobile phone plans"
   },
   {
-    id: "1456",
-    label: "Prepaid International Phone Services",
-    tier1: "Personal/Consumer Telecom",
-    tier2: "Prepaid International Phone Services",
-    tier3: "",
-    keywords: "prepaid international phone services",
+    "id": "1456",
+    "label": "Prepaid International Phone Services",
+    "tier1": "Personal/Consumer Telecom",
+    "tier2": "Prepaid International Phone Services",
+    "tier3": "",
+    "keywords": "prepaid international phone services"
   },
   {
-    id: "1457",
-    label: "Pharmaceuticals",
-    tier1: "Pharmaceuticals",
-    tier2: "",
-    tier3: "",
-    keywords: "pharmaceuticals; medications; pils; prescription",
+    "id": "1457",
+    "label": "Pharmaceuticals",
+    "tier1": "Pharmaceuticals",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "pharmaceuticals; medications; pils; prescription"
   },
   {
-    id: "1458",
-    label: "Politics",
-    tier1: "Politics",
-    tier2: "",
-    tier3: "",
-    keywords: "politics",
+    "id": "1458",
+    "label": "Politics",
+    "tier1": "Politics",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "politics"
   },
   {
-    id: "1459",
-    label: "Ballot measures",
-    tier1: "Politics",
-    tier2: "Ballot measures",
-    tier3: "",
-    keywords: "ballot measures",
+    "id": "1459",
+    "label": "Ballot measures",
+    "tier1": "Politics",
+    "tier2": "Ballot measures",
+    "tier3": "",
+    "keywords": "ballot measures"
   },
   {
-    id: "1460",
-    label: "Elections",
-    tier1: "Politics",
-    tier2: "Elections",
-    tier3: "",
-    keywords: "elections",
+    "id": "1460",
+    "label": "Elections",
+    "tier1": "Politics",
+    "tier2": "Elections",
+    "tier3": "",
+    "keywords": "elections"
   },
   {
-    id: "1461",
-    label: "Political Action Committees",
-    tier1: "Politics",
-    tier2: "Political Action Committees",
-    tier3: "",
-    keywords: "political action committees",
+    "id": "1461",
+    "label": "Political Action Committees",
+    "tier1": "Politics",
+    "tier2": "Political Action Committees",
+    "tier3": "",
+    "keywords": "political action committees"
   },
   {
-    id: "1462",
-    label: "Political Analysis and Opinion",
-    tier1: "Politics",
-    tier2: "Political Analysis and Opinion",
-    tier3: "",
-    keywords: "political analysis and opinion",
+    "id": "1462",
+    "label": "Political Analysis and Opinion",
+    "tier1": "Politics",
+    "tier2": "Political Analysis and Opinion",
+    "tier3": "",
+    "keywords": "political analysis and opinion"
   },
   {
-    id: "1463",
-    label: "Political candidates",
-    tier1: "Politics",
-    tier2: "Political candidates",
-    tier3: "",
-    keywords: "political candidates",
+    "id": "1463",
+    "label": "Political candidates",
+    "tier1": "Politics",
+    "tier2": "Political candidates",
+    "tier3": "",
+    "keywords": "political candidates"
   },
   {
-    id: "1464",
-    label: "Political Donations",
-    tier1: "Politics",
-    tier2: "Political Donations",
-    tier3: "",
-    keywords: "political donations",
+    "id": "1464",
+    "label": "Political Donations",
+    "tier1": "Politics",
+    "tier2": "Political Donations",
+    "tier3": "",
+    "keywords": "political donations"
   },
   {
-    id: "1465",
-    label: "Referendums or promoting causes;",
-    tier1: "Politics",
-    tier2: "Referendums or promoting causes;",
-    tier3: "",
-    keywords: "referendums or promoting causes;",
+    "id": "1465",
+    "label": "Referendums or promoting causes;",
+    "tier1": "Politics",
+    "tier2": "Referendums or promoting causes;",
+    "tier3": "",
+    "keywords": "referendums or promoting causes;"
   },
   {
-    id: "1466",
-    label: "Real Estate",
-    tier1: "Real Estate",
-    tier2: "",
-    tier3: "",
-    keywords: "real estate",
+    "id": "1466",
+    "label": "Real Estate",
+    "tier1": "Real Estate",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "real estate"
   },
   {
-    id: "1467",
-    label: "Commercial Real Estate",
-    tier1: "Real Estate",
-    tier2: "Commercial Real Estate",
-    tier3: "",
-    keywords: "commercial real estate",
+    "id": "1467",
+    "label": "Commercial Real Estate",
+    "tier1": "Real Estate",
+    "tier2": "Commercial Real Estate",
+    "tier3": "",
+    "keywords": "commercial real estate"
   },
   {
-    id: "1468",
-    label: "Real Estate Rentals",
-    tier1: "Real Estate",
-    tier2: "Real Estate Rentals",
-    tier3: "",
-    keywords: "real estate rentals",
+    "id": "1468",
+    "label": "Real Estate Rentals",
+    "tier1": "Real Estate",
+    "tier2": "Real Estate Rentals",
+    "tier3": "",
+    "keywords": "real estate rentals"
   },
   {
-    id: "1469",
-    label: "Real Estate Sales",
-    tier1: "Real Estate",
-    tier2: "Real Estate Sales",
-    tier3: "",
-    keywords: "real estate sales",
+    "id": "1469",
+    "label": "Real Estate Sales",
+    "tier1": "Real Estate",
+    "tier2": "Real Estate Sales",
+    "tier3": "",
+    "keywords": "real estate sales"
   },
   {
-    id: "1470",
-    label: "Real Estate Services For Owners",
-    tier1: "Real Estate",
-    tier2: "Real Estate Services For Owners",
-    tier3: "",
-    keywords: "real estate services for owners",
+    "id": "1470",
+    "label": "Real Estate Services For Owners",
+    "tier1": "Real Estate",
+    "tier2": "Real Estate Services For Owners",
+    "tier3": "",
+    "keywords": "real estate services for owners"
   },
   {
-    id: "1471",
-    label: "Religion & Spirituality",
-    tier1: "Religion & Spirituality",
-    tier2: "",
-    tier3: "",
-    keywords: "religion & spirituality",
+    "id": "1471",
+    "label": "Religion & Spirituality",
+    "tier1": "Religion & Spirituality",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "religion & spirituality"
   },
   {
-    id: "1472",
-    label: "Prayer and Mindfullness Applications",
-    tier1: "Religion & Spirituality",
-    tier2: "Prayer and Mindfullness Applications",
-    tier3: "",
-    keywords: "prayer and mindfullness applications",
+    "id": "1472",
+    "label": "Prayer and Mindfullness Applications",
+    "tier1": "Religion & Spirituality",
+    "tier2": "Prayer and Mindfullness Applications",
+    "tier3": "",
+    "keywords": "prayer and mindfullness applications"
   },
   {
-    id: "1473",
-    label: "Prayer and worship services",
-    tier1: "Religion & Spirituality",
-    tier2: "Prayer and Worship Services",
-    tier3: "",
-    keywords: "prayer and worship services",
+    "id": "1473",
+    "label": "Prayer and worship services",
+    "tier1": "Religion & Spirituality",
+    "tier2": "Prayer and Worship Services",
+    "tier3": "",
+    "keywords": "prayer and worship services"
   },
   {
-    id: "1474",
-    label: "Religious causes",
-    tier1: "Religion & Spirituality",
-    tier2: "Religious Causes",
-    tier3: "",
-    keywords: "religious causes",
+    "id": "1474",
+    "label": "Religious causes",
+    "tier1": "Religion & Spirituality",
+    "tier2": "Religious Causes",
+    "tier3": "",
+    "keywords": "religious causes"
   },
   {
-    id: "1475",
-    label: "Religious charities",
-    tier1: "Religion & Spirituality",
-    tier2: "Religious Charities",
-    tier3: "",
-    keywords: "religious charities",
+    "id": "1475",
+    "label": "Religious charities",
+    "tier1": "Religion & Spirituality",
+    "tier2": "Religious Charities",
+    "tier3": "",
+    "keywords": "religious charities"
   },
   {
-    id: "1476",
-    label: "Religious organizaitions",
-    tier1: "Religion & Spirituality",
-    tier2: "Religious Organizaitions",
-    tier3: "",
-    keywords: "religious organizaitions",
+    "id": "1476",
+    "label": "Religious organizaitions",
+    "tier1": "Religion & Spirituality",
+    "tier2": "Religious Organizaitions",
+    "tier3": "",
+    "keywords": "religious organizaitions"
   },
   {
-    id: "1477",
-    label: "Retail",
-    tier1: "Retail",
-    tier2: "",
-    tier3: "",
-    keywords: "retail",
+    "id": "1477",
+    "label": "Retail",
+    "tier1": "Retail",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "retail"
   },
   {
-    id: "1478",
-    label: "Arts and Crafts Supplies",
-    tier1: "Retail",
-    tier2: "Arts and Crafts Supplies",
-    tier3: "",
-    keywords: "arts and crafts supplies",
+    "id": "1478",
+    "label": "Arts and Crafts Supplies",
+    "tier1": "Retail",
+    "tier2": "Arts and Crafts Supplies",
+    "tier3": "",
+    "keywords": "arts and crafts supplies"
   },
   {
-    id: "1479",
-    label: "Cell Phone Stores",
-    tier1: "Retail",
-    tier2: "Cell Phone Stores",
-    tier3: "",
-    keywords: "cell phone stores",
+    "id": "1479",
+    "label": "Cell Phone Stores",
+    "tier1": "Retail",
+    "tier2": "Cell Phone Stores",
+    "tier3": "",
+    "keywords": "cell phone stores"
   },
   {
-    id: "1480",
-    label: "Clothing Stores",
-    tier1: "Retail",
-    tier2: "Clothing Stores",
-    tier3: "",
-    keywords: "clothing stores",
+    "id": "1480",
+    "label": "Clothing Stores",
+    "tier1": "Retail",
+    "tier2": "Clothing Stores",
+    "tier3": "",
+    "keywords": "clothing stores"
   },
   {
-    id: "1481",
-    label: "Department Stores",
-    tier1: "Retail",
-    tier2: "Department Stores",
-    tier3: "",
-    keywords: "department stores",
+    "id": "1481",
+    "label": "Department Stores",
+    "tier1": "Retail",
+    "tier2": "Department Stores",
+    "tier3": "",
+    "keywords": "department stores"
   },
   {
-    id: "1482",
-    label: "eCommerce",
-    tier1: "Retail",
-    tier2: "eCommerce",
-    tier3: "",
-    keywords: "ecommerce",
+    "id": "1482",
+    "label": "eCommerce",
+    "tier1": "Retail",
+    "tier2": "eCommerce",
+    "tier3": "",
+    "keywords": "ecommerce"
   },
   {
-    id: "1483",
-    label: "Factory Outlet Stores",
-    tier1: "Retail",
-    tier2: "Factory Outlet Stores",
-    tier3: "",
-    keywords: "factory outlet stores",
+    "id": "1483",
+    "label": "Factory Outlet Stores",
+    "tier1": "Retail",
+    "tier2": "Factory Outlet Stores",
+    "tier3": "",
+    "keywords": "factory outlet stores"
   },
   {
-    id: "1484",
-    label: "Grocery Stores and Supermarkets",
-    tier1: "Retail",
-    tier2: "Grocery Stores and Supermarkets",
-    tier3: "",
-    keywords: "grocery stores and supermarkets",
+    "id": "1484",
+    "label": "Grocery Stores and Supermarkets",
+    "tier1": "Retail",
+    "tier2": "Grocery Stores and Supermarkets",
+    "tier3": "",
+    "keywords": "grocery stores and supermarkets"
   },
   {
-    id: "1485",
-    label: "Hardware Stores",
-    tier1: "Retail",
-    tier2: "Hardware Stores",
-    tier3: "",
-    keywords: "hardware stores",
+    "id": "1485",
+    "label": "Hardware Stores",
+    "tier1": "Retail",
+    "tier2": "Hardware Stores",
+    "tier3": "",
+    "keywords": "hardware stores"
   },
   {
-    id: "1486",
-    label: "Musical Instruments and Record Stores",
-    tier1: "Retail",
-    tier2: "Musical Instruments and Record Stores",
-    tier3: "",
-    keywords: "musical instruments and record stores",
+    "id": "1486",
+    "label": "Musical Instruments and Record Stores",
+    "tier1": "Retail",
+    "tier2": "Musical Instruments and Record Stores",
+    "tier3": "",
+    "keywords": "musical instruments and record stores"
   },
   {
-    id: "1487",
-    label: "Pawn Shops",
-    tier1: "Retail",
-    tier2: "Pawn Shops",
-    tier3: "",
-    keywords: "pawn shops",
+    "id": "1487",
+    "label": "Pawn Shops",
+    "tier1": "Retail",
+    "tier2": "Pawn Shops",
+    "tier3": "",
+    "keywords": "pawn shops"
   },
   {
-    id: "1488",
-    label: "Pet and Pet Supply Stores",
-    tier1: "Retail",
-    tier2: "Pet and Pet Supply Stores",
-    tier3: "",
-    keywords: "pet and pet supply stores",
+    "id": "1488",
+    "label": "Pet and Pet Supply Stores",
+    "tier1": "Retail",
+    "tier2": "Pet and Pet Supply Stores",
+    "tier3": "",
+    "keywords": "pet and pet supply stores"
   },
   {
-    id: "1489",
-    label: "Shopping Malls",
-    tier1: "Retail",
-    tier2: "Shopping Malls",
-    tier3: "",
-    keywords: "shopping malls",
+    "id": "1489",
+    "label": "Shopping Malls",
+    "tier1": "Retail",
+    "tier2": "Shopping Malls",
+    "tier3": "",
+    "keywords": "shopping malls"
   },
   {
-    id: "1490",
-    label: "Specialty Stores",
-    tier1: "Retail",
-    tier2: "Specialty Stores",
-    tier3: "",
-    keywords: "specialty stores",
+    "id": "1490",
+    "label": "Specialty Stores",
+    "tier1": "Retail",
+    "tier2": "Specialty Stores",
+    "tier3": "",
+    "keywords": "specialty stores"
   },
   {
-    id: "1491",
-    label: "Sporting Goods Stores",
-    tier1: "Retail",
-    tier2: "Sporting Goods Stores",
-    tier3: "",
-    keywords: "sporting goods stores",
+    "id": "1491",
+    "label": "Sporting Goods Stores",
+    "tier1": "Retail",
+    "tier2": "Sporting Goods Stores",
+    "tier3": "",
+    "keywords": "sporting goods stores"
   },
   {
-    id: "1492",
-    label: "Ticket Services",
-    tier1: "Retail",
-    tier2: "Ticket Services",
-    tier3: "",
-    keywords: "ticket services",
+    "id": "1492",
+    "label": "Ticket Services",
+    "tier1": "Retail",
+    "tier2": "Ticket Services",
+    "tier3": "",
+    "keywords": "ticket services"
   },
   {
-    id: "1493",
-    label: "Fitness Activities",
-    tier1: "Fitness Activities",
-    tier2: "",
-    tier3: "",
-    keywords: "fitness activities",
+    "id": "1493",
+    "label": "Fitness Activities",
+    "tier1": "Fitness Activities",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "fitness activities"
   },
   {
-    id: "1494",
-    label: "Dance Studios",
-    tier1: "Fitness Activities",
-    tier2: "Dance Studios",
-    tier3: "",
-    keywords: "dance studios",
+    "id": "1494",
+    "label": "Dance Studios",
+    "tier1": "Fitness Activities",
+    "tier2": "Dance Studios",
+    "tier3": "",
+    "keywords": "dance studios"
   },
   {
-    id: "1495",
-    label: "Gyms and Health Clubs",
-    tier1: "Fitness Activities",
-    tier2: "Gyms and Health Clubs",
-    tier3: "",
-    keywords: "gyms and health clubs",
+    "id": "1495",
+    "label": "Gyms and Health Clubs",
+    "tier1": "Fitness Activities",
+    "tier2": "Gyms and Health Clubs",
+    "tier3": "",
+    "keywords": "gyms and health clubs"
   },
   {
-    id: "1496",
-    label: "Participant Sports Leagues",
-    tier1: "Fitness Activities",
-    tier2: "Participant Sports Leagues",
-    tier3: "",
-    keywords: "participant sports leagues",
+    "id": "1496",
+    "label": "Participant Sports Leagues",
+    "tier1": "Fitness Activities",
+    "tier2": "Participant Sports Leagues",
+    "tier3": "",
+    "keywords": "participant sports leagues"
   },
   {
-    id: "1497",
-    label: "Personal Trainers",
-    tier1: "Fitness Activities",
-    tier2: "Personal Trainers",
-    tier3: "",
-    keywords: "personal trainers",
+    "id": "1497",
+    "label": "Personal Trainers",
+    "tier1": "Fitness Activities",
+    "tier2": "Personal Trainers",
+    "tier3": "",
+    "keywords": "personal trainers"
   },
   {
-    id: "1498",
-    label: "Self Defense and Martial Arts Classes",
-    tier1: "Fitness Activities",
-    tier2: "Self Defense and Martial Arts Classes",
-    tier3: "",
-    keywords: "self defense and martial arts classes",
+    "id": "1498",
+    "label": "Self Defense and Martial Arts Classes",
+    "tier1": "Fitness Activities",
+    "tier2": "Self Defense and Martial Arts Classes",
+    "tier3": "",
+    "keywords": "self defense and martial arts classes"
   },
   {
-    id: "1499",
-    label: "Swimming Facilities",
-    tier1: "Fitness Activities",
-    tier2: "Swimming Facilities",
-    tier3: "",
-    keywords: "swimming facilities",
+    "id": "1499",
+    "label": "Swimming Facilities",
+    "tier1": "Fitness Activities",
+    "tier2": "Swimming Facilities",
+    "tier3": "",
+    "keywords": "swimming facilities"
   },
   {
-    id: "1500",
-    label: "Workout and Step Tracking Applications",
-    tier1: "Fitness Activities",
-    tier2: "Workout and Step Tracking Applications",
-    tier3: "",
-    keywords: "workout and step tracking applications",
+    "id": "1500",
+    "label": "Workout and Step Tracking Applications",
+    "tier1": "Fitness Activities",
+    "tier2": "Workout and Step Tracking Applications",
+    "tier3": "",
+    "keywords": "workout and step tracking applications"
   },
   {
-    id: "1501",
-    label: "Yoga Studios",
-    tier1: "Fitness Activities",
-    tier2: "Yoga Studios",
-    tier3: "",
-    keywords: "yoga studios",
+    "id": "1501",
+    "label": "Yoga Studios",
+    "tier1": "Fitness Activities",
+    "tier2": "Yoga Studios",
+    "tier3": "",
+    "keywords": "yoga studios"
   },
   {
-    id: "1502",
-    label: "Sexual Health",
-    tier1: "Sexual Health",
-    tier2: "",
-    tier3: "",
-    keywords: "sexual health",
+    "id": "1502",
+    "label": "Sexual Health",
+    "tier1": "Sexual Health",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "sexual health"
   },
   {
-    id: "1503",
-    label: "Contraceptives",
-    tier1: "Sexual Health",
-    tier2: "Contraceptives",
-    tier3: "",
-    keywords: "contraceptives",
+    "id": "1503",
+    "label": "Contraceptives",
+    "tier1": "Sexual Health",
+    "tier2": "Contraceptives",
+    "tier3": "",
+    "keywords": "contraceptives"
   },
   {
-    id: "1504",
-    label: "Doctor Perscribed Medicines",
-    tier1: "Sexual Health",
-    tier2: "Doctor Perscribed Medicines",
-    tier3: "",
-    keywords: "doctor perscribed medicines",
+    "id": "1504",
+    "label": "Doctor Perscribed Medicines",
+    "tier1": "Sexual Health",
+    "tier2": "Doctor Perscribed Medicines",
+    "tier3": "",
+    "keywords": "doctor perscribed medicines"
   },
   {
-    id: "1505",
-    label: "Fertility Tracking Applications",
-    tier1: "Sexual Health",
-    tier2: "Fertility Tracking Applications",
-    tier3: "",
-    keywords: "fertility tracking applications",
+    "id": "1505",
+    "label": "Fertility Tracking Applications",
+    "tier1": "Sexual Health",
+    "tier2": "Fertility Tracking Applications",
+    "tier3": "",
+    "keywords": "fertility tracking applications"
   },
   {
-    id: "1506",
-    label: "Non-perscribed Performance Enhancers",
-    tier1: "Sexual Health",
-    tier2: "Non-Perscribed Performance Enhancers",
-    tier3: "",
-    keywords: "non-perscribed performance enhancers",
+    "id": "1506",
+    "label": "Non-perscribed Performance Enhancers",
+    "tier1": "Sexual Health",
+    "tier2": "Non-Perscribed Performance Enhancers",
+    "tier3": "",
+    "keywords": "non-perscribed performance enhancers"
   },
   {
-    id: "1507",
-    label: "Sporting Goods",
-    tier1: "Sporting Goods",
-    tier2: "",
-    tier3: "",
-    keywords: "sporting goods",
+    "id": "1507",
+    "label": "Sporting Goods",
+    "tier1": "Sporting Goods",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "sporting goods"
   },
   {
-    id: "1508",
-    label: "Athletics Equipment",
-    tier1: "Sporting Goods",
-    tier2: "Athletics Equipment",
-    tier3: "",
-    keywords: "athletics equipment",
+    "id": "1508",
+    "label": "Athletics Equipment",
+    "tier1": "Sporting Goods",
+    "tier2": "Athletics Equipment",
+    "tier3": "",
+    "keywords": "athletics equipment"
   },
   {
-    id: "1509",
-    label: "Exercise and Fitness Equipment",
-    tier1: "Sporting Goods",
-    tier2: "Exercise and Fitness Equipment",
-    tier3: "",
-    keywords: "exercise and fitness equipment",
+    "id": "1509",
+    "label": "Exercise and Fitness Equipment",
+    "tier1": "Sporting Goods",
+    "tier2": "Exercise and Fitness Equipment",
+    "tier3": "",
+    "keywords": "exercise and fitness equipment"
   },
   {
-    id: "1510",
-    label: "Indoor Games Equipment",
-    tier1: "Sporting Goods",
-    tier2: "Indoor Games Equipment",
-    tier3: "",
-    keywords: "indoor games equipment",
+    "id": "1510",
+    "label": "Indoor Games Equipment",
+    "tier1": "Sporting Goods",
+    "tier2": "Indoor Games Equipment",
+    "tier3": "",
+    "keywords": "indoor games equipment"
   },
   {
-    id: "1511",
-    label: "Outdoor Recreation Equipment",
-    tier1: "Sporting Goods",
-    tier2: "Outdoor Recreation Equipment",
-    tier3: "",
-    keywords: "outdoor recreation equipment",
+    "id": "1511",
+    "label": "Outdoor Recreation Equipment",
+    "tier1": "Sporting Goods",
+    "tier2": "Outdoor Recreation Equipment",
+    "tier3": "",
+    "keywords": "outdoor recreation equipment"
   },
   {
-    id: "1512",
-    label: "Travel and Tourism",
-    tier1: "Travel and Tourism",
-    tier2: "",
-    tier3: "",
-    keywords: "travel and tourism",
+    "id": "1512",
+    "label": "Travel and Tourism",
+    "tier1": "Travel and Tourism",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "travel and tourism"
   },
   {
-    id: "1513",
-    label: "Accomodations",
-    tier1: "Travel and Tourism",
-    tier2: "Accomodations",
-    tier3: "",
-    keywords: "accomodations",
+    "id": "1513",
+    "label": "Accomodations",
+    "tier1": "Travel and Tourism",
+    "tier2": "Accomodations",
+    "tier3": "",
+    "keywords": "accomodations"
   },
   {
-    id: "1514",
-    label: "Bed and Breakfasts",
-    tier1: "Travel and Tourism",
-    tier2: "Accomodations",
-    tier3: "Bed and Breakfasts",
-    keywords: "bed and breakfasts",
+    "id": "1514",
+    "label": "Bed and Breakfasts",
+    "tier1": "Travel and Tourism",
+    "tier2": "Accomodations",
+    "tier3": "Bed and Breakfasts",
+    "keywords": "bed and breakfasts"
   },
   {
-    id: "1515",
-    label: "Camping and Camp Grounds",
-    tier1: "Travel and Tourism",
-    tier2: "Accomodations",
-    tier3: "Camping and Camp Grounds",
-    keywords: "camping and camp grounds",
+    "id": "1515",
+    "label": "Camping and Camp Grounds",
+    "tier1": "Travel and Tourism",
+    "tier2": "Accomodations",
+    "tier3": "Camping and Camp Grounds",
+    "keywords": "camping and camp grounds"
   },
   {
-    id: "1516",
-    label: "Hotels and Resorts",
-    tier1: "Travel and Tourism",
-    tier2: "Accomodations",
-    tier3: "Hotels and Resorts",
-    keywords: "hotels and resorts",
+    "id": "1516",
+    "label": "Hotels and Resorts",
+    "tier1": "Travel and Tourism",
+    "tier2": "Accomodations",
+    "tier3": "Hotels and Resorts",
+    "keywords": "hotels and resorts"
   },
   {
-    id: "1517",
-    label: "Motels",
-    tier1: "Travel and Tourism",
-    tier2: "Accomodations",
-    tier3: "Motels",
-    keywords: "motels",
+    "id": "1517",
+    "label": "Motels",
+    "tier1": "Travel and Tourism",
+    "tier2": "Accomodations",
+    "tier3": "Motels",
+    "keywords": "motels"
   },
   {
-    id: "1518",
-    label: "Timeshares",
-    tier1: "Travel and Tourism",
-    tier2: "Accomodations",
-    tier3: "Timeshares",
-    keywords: "timeshares",
+    "id": "1518",
+    "label": "Timeshares",
+    "tier1": "Travel and Tourism",
+    "tier2": "Accomodations",
+    "tier3": "Timeshares",
+    "keywords": "timeshares"
   },
   {
-    id: "1519",
-    label: "Vacation Rentals",
-    tier1: "Travel and Tourism",
-    tier2: "Accomodations",
-    tier3: "Vacation Rentals",
-    keywords: "vacation rentals",
+    "id": "1519",
+    "label": "Vacation Rentals",
+    "tier1": "Travel and Tourism",
+    "tier2": "Accomodations",
+    "tier3": "Vacation Rentals",
+    "keywords": "vacation rentals"
   },
   {
-    id: "1520",
-    label: "Air Travel",
-    tier1: "Travel and Tourism",
-    tier2: "Air Travel",
-    tier3: "",
-    keywords: "air travel",
+    "id": "1520",
+    "label": "Air Travel",
+    "tier1": "Travel and Tourism",
+    "tier2": "Air Travel",
+    "tier3": "",
+    "keywords": "air travel"
   },
   {
-    id: "1521",
-    label: "Cruises",
-    tier1: "Travel and Tourism",
-    tier2: "Cruises",
-    tier3: "",
-    keywords: "cruises",
+    "id": "1521",
+    "label": "Cruises",
+    "tier1": "Travel and Tourism",
+    "tier2": "Cruises",
+    "tier3": "",
+    "keywords": "cruises"
   },
   {
-    id: "1522",
-    label: "Rail Travel",
-    tier1: "Travel and Tourism",
-    tier2: "Rail Travel",
-    tier3: "",
-    keywords: "rail travel",
+    "id": "1522",
+    "label": "Rail Travel",
+    "tier1": "Travel and Tourism",
+    "tier2": "Rail Travel",
+    "tier3": "",
+    "keywords": "rail travel"
   },
   {
-    id: "1523",
-    label: "Sightseeing Tours and Activities",
-    tier1: "Travel and Tourism",
-    tier2: "Sightseeing Tours and Activities",
-    tier3: "",
-    keywords: "sightseeing tours and activities",
+    "id": "1523",
+    "label": "Sightseeing Tours and Activities",
+    "tier1": "Travel and Tourism",
+    "tier2": "Sightseeing Tours and Activities",
+    "tier3": "",
+    "keywords": "sightseeing tours and activities"
   },
   {
-    id: "1524",
-    label: "Travel Agents and Online Travel Services",
-    tier1: "Travel and Tourism",
-    tier2: "Travel Agents and Online Travel Services",
-    tier3: "",
-    keywords: "travel agents and online travel services",
+    "id": "1524",
+    "label": "Travel Agents and Online Travel Services",
+    "tier1": "Travel and Tourism",
+    "tier2": "Travel Agents and Online Travel Services",
+    "tier3": "",
+    "keywords": "travel agents and online travel services"
   },
   {
-    id: "1525",
-    label: "Travel Packages",
-    tier1: "Travel and Tourism",
-    tier2: "Travel Packages",
-    tier3: "",
-    keywords: "travel packages",
+    "id": "1525",
+    "label": "Travel Packages",
+    "tier1": "Travel and Tourism",
+    "tier2": "Travel Packages",
+    "tier3": "",
+    "keywords": "travel packages"
   },
   {
-    id: "1526",
-    label: "Travel Planning and Itinerary Management Applications",
-    tier1: "Travel and Tourism",
-    tier2: "Travel Planning and Itinerary Management Applications",
-    tier3: "",
-    keywords: "travel planning and itinerary management applications",
+    "id": "1526",
+    "label": "Travel Planning and Itinerary Management Applications",
+    "tier1": "Travel and Tourism",
+    "tier2": "Travel Planning and Itinerary Management Applications",
+    "tier3": "",
+    "keywords": "travel planning and itinerary management applications"
   },
   {
-    id: "1527",
-    label: "Tobacco",
-    tier1: "Tobacco",
-    tier2: "",
-    tier3: "",
-    keywords: "tobacco",
+    "id": "1527",
+    "label": "Tobacco",
+    "tier1": "Tobacco",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "tobacco"
   },
   {
-    id: "1528",
-    label: "Cigars",
-    tier1: "Tobacco",
-    tier2: "Cigars",
-    tier3: "",
-    keywords: "cigars",
+    "id": "1528",
+    "label": "Cigars",
+    "tier1": "Tobacco",
+    "tier2": "Cigars",
+    "tier3": "",
+    "keywords": "cigars"
   },
   {
-    id: "1529",
-    label: "Smokeless Tobacco",
-    tier1: "Tobacco",
-    tier2: "Smokeless Tobacco",
-    tier3: "",
-    keywords: "smokeless tobacco",
+    "id": "1529",
+    "label": "Smokeless Tobacco",
+    "tier1": "Tobacco",
+    "tier2": "Smokeless Tobacco",
+    "tier3": "",
+    "keywords": "smokeless tobacco"
   },
   {
-    id: "1530",
-    label: "Vaping",
-    tier1: "Tobacco",
-    tier2: "Vaping",
-    tier3: "",
-    keywords: "vaping",
+    "id": "1530",
+    "label": "Vaping",
+    "tier1": "Tobacco",
+    "tier2": "Vaping",
+    "tier3": "",
+    "keywords": "vaping"
   },
   {
-    id: "1531",
-    label: "Vaping Cartridges",
-    tier1: "Tobacco",
-    tier2: "Vaping Cartridges",
-    tier3: "",
-    keywords: "vaping cartridges",
+    "id": "1531",
+    "label": "Vaping Cartridges",
+    "tier1": "Tobacco",
+    "tier2": "Vaping Cartridges",
+    "tier3": "",
+    "keywords": "vaping cartridges"
   },
   {
-    id: "1532",
-    label: "Vaporizors",
-    tier1: "Tobacco",
-    tier2: "Vaporizors",
-    tier3: "",
-    keywords: "vaporizors",
+    "id": "1532",
+    "label": "Vaporizors",
+    "tier1": "Tobacco",
+    "tier2": "Vaporizors",
+    "tier3": "",
+    "keywords": "vaporizors"
   },
   {
-    id: "1533",
-    label: "Vehicles",
-    tier1: "Vehicles",
-    tier2: "",
-    tier3: "",
-    keywords: "vehicles; motorvehicles; cars;",
+    "id": "1533",
+    "label": "Vehicles",
+    "tier1": "Vehicles",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "vehicles; motorvehicles; cars;"
   },
   {
-    id: "1534",
-    label: "Automotive Leasing",
-    tier1: "Vehicles",
-    tier2: "Automotive Leasing",
-    tier3: "",
-    keywords: "automotive leasing; car leasing; automobile leasing;",
+    "id": "1534",
+    "label": "Automotive Leasing",
+    "tier1": "Vehicles",
+    "tier2": "Automotive Leasing",
+    "tier3": "",
+    "keywords": "automotive leasing; car leasing; automobile leasing;"
   },
   {
-    id: "1535",
-    label: "Automotive Ownership",
-    tier1: "Vehicles",
-    tier2: "Automotive Ownership",
-    tier3: "",
-    keywords: "automotive ownership; car ownership; vehicle ownership",
+    "id": "1535",
+    "label": "Automotive Ownership",
+    "tier1": "Vehicles",
+    "tier2": "Automotive Ownership",
+    "tier3": "",
+    "keywords": "automotive ownership; car ownership; vehicle ownership"
   },
   {
-    id: "1536",
-    label: "New vehicle Ownership",
-    tier1: "Vehicles",
-    tier2: "Automotive Ownership",
-    tier3: "New Vehicle Ownership",
-    keywords: "new vehicle ownership; new car ownership;",
+    "id": "1536",
+    "label": "New vehicle Ownership",
+    "tier1": "Vehicles",
+    "tier2": "Automotive Ownership",
+    "tier3": "New Vehicle Ownership",
+    "keywords": "new vehicle ownership; new car ownership;"
   },
   {
-    id: "1537",
-    label: "Pre-owned Automotive Ownership",
-    tier1: "Vehicles",
-    tier2: "Automotive Ownership",
-    tier3: "Pre-owned Automotive Ownership",
-    keywords:
-      "pre-owned automotive ownership; pre-owned car ownership; used car ownership;",
+    "id": "1537",
+    "label": "Pre-owned Automotive Ownership",
+    "tier1": "Vehicles",
+    "tier2": "Automotive Ownership",
+    "tier3": "Pre-owned Automotive Ownership",
+    "keywords": "pre-owned automotive ownership; pre-owned car ownership; used car ownership;"
   },
   {
-    id: "1538",
-    label: "Automotive Products",
-    tier1: "Vehicles",
-    tier2: "Automotive Products",
-    tier3: "",
-    keywords: "automotive products; car products",
+    "id": "1538",
+    "label": "Automotive Products",
+    "tier1": "Vehicles",
+    "tier2": "Automotive Products",
+    "tier3": "",
+    "keywords": "automotive products; car products"
   },
   {
-    id: "1539",
-    label: "Automotive Care Products",
-    tier1: "Vehicles",
-    tier2: "Automotive Products",
-    tier3: "Automotive Care Products",
-    keywords: "automotive care products; car care; automobile care;",
+    "id": "1539",
+    "label": "Automotive Care Products",
+    "tier1": "Vehicles",
+    "tier2": "Automotive Products",
+    "tier3": "Automotive Care Products",
+    "keywords": "automotive care products; car care; automobile care;"
   },
   {
-    id: "1540",
-    label: "Automotive Parts and Accessories",
-    tier1: "Vehicles",
-    tier2: "Automotive Products",
-    tier3: "Automotive Parts and Accessories",
-    keywords:
-      "automotive parts and accessories; car parts and accessories; automobile parts and accessories;",
+    "id": "1540",
+    "label": "Automotive Parts and Accessories",
+    "tier1": "Vehicles",
+    "tier2": "Automotive Products",
+    "tier3": "Automotive Parts and Accessories",
+    "keywords": "automotive parts and accessories; car parts and accessories; automobile parts and accessories;"
   },
-  {
-    id: "1541",
-    label: "Aftermarket Parts and Accessories",
-    tier1: "Vehicles",
-    tier2: "Automotive Products",
-    tier3: "Aftermarket Parts and Accessories",
-    keywords: "aftermarket parts and accessories",
-  },
-  {
-    id: "1542",
-    label: "Automotive Services",
-    tier1: "Vehicles",
-    tier2: "Automotive Services",
-    tier3: "",
-    keywords: "automotive services; car services;",
+  {
+    "id": "1541",
+    "label": "Aftermarket Parts and Accessories",
+    "tier1": "Vehicles",
+    "tier2": "Automotive Products",
+    "tier3": "Aftermarket Parts and Accessories",
+    "keywords": "aftermarket parts and accessories"
   },
-  {
-    id: "1543",
-    label: "Auto Towing",
-    tier1: "Vehicles",
-    tier2: "Automotive Services",
-    tier3: "Auto Towing",
-    keywords: "auto towing; car towing;",
+  {
+    "id": "1542",
+    "label": "Automotive Services",
+    "tier1": "Vehicles",
+    "tier2": "Automotive Services",
+    "tier3": "",
+    "keywords": "automotive services; car services;"
   },
-  {
-    id: "1544",
-    label: "Auto Repair",
-    tier1: "Vehicles",
-    tier2: "Automotive Services",
-    tier3: "Auto Repair",
-    keywords: "auto repair; car repair;",
+  {
+    "id": "1543",
+    "label": "Auto Towing",
+    "tier1": "Vehicles",
+    "tier2": "Automotive Services",
+    "tier3": "Auto Towing",
+    "keywords": "auto towing; car towing;"
   },
-  {
-    id: "1545",
-    label: "Car Wash",
-    tier1: "Vehicles",
-    tier2: "Automotive Services",
-    tier3: "Car Wash",
-    keywords: "car wash",
+  {
+    "id": "1544",
+    "label": "Auto Repair",
+    "tier1": "Vehicles",
+    "tier2": "Automotive Services",
+    "tier3": "Auto Repair",
+    "keywords": "auto repair; car repair;"
   },
-  {
-    id: "1546",
-    label: "Automotive Sales Applications",
-    tier1: "Vehicles",
-    tier2: "Automotive Sales Applications",
-    tier3: "",
-    keywords: "automotive sales applications; car sales applications;",
+  {
+    "id": "1545",
+    "label": "Car Wash",
+    "tier1": "Vehicles",
+    "tier2": "Automotive Services",
+    "tier3": "Car Wash",
+    "keywords": "car wash"
   },
-  {
-    id: "1547",
-    label: "Ride-sharing Services",
-    tier1: "Vehicles",
-    tier2: "Ride-sharing Services",
-    tier3: "",
-    keywords: "ride-sharing services",
+  {
+    "id": "1546",
+    "label": "Automotive Sales Applications",
+    "tier1": "Vehicles",
+    "tier2": "Automotive Sales Applications",
+    "tier3": "",
+    "keywords": "automotive sales applications; car sales applications;"
   },
-  {
-    id: "1548",
-    label: "Taxi Services",
-    tier1: "Vehicles",
-    tier2: "Taxi Services",
-    tier3: "",
-    keywords: "taxi services",
+  {
+    "id": "1547",
+    "label": "Ride-sharing Services",
+    "tier1": "Vehicles",
+    "tier2": "Ride-sharing Services",
+    "tier3": "",
+    "keywords": "ride-sharing services"
   },
-  {
-    id: "1549",
-    label: "Vehicle Rental",
-    tier1: "Vehicles",
-    tier2: "Vehicle Rental",
-    tier3: "",
-    keywords: "vehicle rental; car rental; motorhome rental;",
+  {
+    "id": "1548",
+    "label": "Taxi Services",
+    "tier1": "Vehicles",
+    "tier2": "Taxi Services",
+    "tier3": "",
+    "keywords": "taxi services"
   },
-  {
-    id: "1550",
-    label: "Vehicle Type",
-    tier1: "Vehicles",
-    tier2: "Vehicle Type",
-    tier3: "",
-    keywords: "vehicle type",
+  {
+    "id": "1549",
+    "label": "Vehicle Rental",
+    "tier1": "Vehicles",
+    "tier2": "Vehicle Rental",
+    "tier3": "",
+    "keywords": "vehicle rental; car rental; motorhome rental;"
   },
-  {
-    id: "1551",
-    label: "Boats",
-    tier1: "Vehicles",
-    tier2: "Vehicle Type",
-    tier3: "Boats",
-    keywords: "boats",
+  {
+    "id": "1550",
+    "label": "Vehicle Type",
+    "tier1": "Vehicles",
+    "tier2": "Vehicle Type",
+    "tier3": "",
+    "keywords": "vehicle type"
   },
-  {
-    id: "1552",
-    label: "Diesel Vehicles",
-    tier1: "Vehicles",
-    tier2: "Vehicle Type",
-    tier3: "Diesel Vehicles",
-    keywords: "diesel vehicles; diesel cars",
-  },
-  {
-    id: "1553",
-    label: "Electric Vehicles",
-    tier1: "Vehicles",
-    tier2: "Vehicle Type",
-    tier3: "Electric Vehicles",
-    keywords: "electric vehicles; electric cars",
-  },
-  {
-    id: "1554",
-    label: "Gas Vehicles",
-    tier1: "Vehicles",
-    tier2: "Vehicle Type",
-    tier3: "Gas Vehicles",
-    keywords: "gas vehicles; gas cars",
-  },
-  {
-    id: "1555",
-    label: "Hybrid Vehicles",
-    tier1: "Vehicles",
-    tier2: "Vehicle Type",
-    tier3: "Hybrid Vehicles",
-    keywords: "hybrid vehicles; hybrid cars",
-  },
-  {
-    id: "1556",
-    label: "Recreational Vehicles",
-    tier1: "Vehicles",
-    tier2: "Vehicle Type",
-    tier3: "Recreational Vehicles",
-    keywords: "recreational vehicles",
-  },
-  {
-    id: "1557",
-    label: "Scooters, Motorbikes, and E-bikes",
-    tier1: "Vehicles",
-    tier2: "Vehicle Type",
-    tier3: "Scooters, Motorbikes, and E-bikes",
-    keywords: "scooters, motorbikes, and e-bikes",
-  },
-  {
-    id: "1558",
-    label: "Weapons & Ammunition",
-    tier1: "Weapons and Ammunition",
-    tier2: "",
-    tier3: "",
-    keywords: "weapons & ammunition",
-  },
-  {
-    id: "1559",
-    label: "Ammunition",
-    tier1: "Weapons and Ammunition",
-    tier2: "Ammunition",
-    tier3: "",
-    keywords: "ammunition",
-  },
-  {
-    id: "1560",
-    label: "Guns",
-    tier1: "Weapons and Ammunition",
-    tier2: "Guns",
-    tier3: "",
-    keywords: "guns",
-  },
-  {
-    id: "1561",
-    label: "Gun Accessories",
-    tier1: "Weapons and Ammunition",
-    tier2: "Gun Accessories",
-    tier3: "",
-    keywords: "gun accessories",
-  },
-  {
-    id: "1562",
-    label: "Gun Shows and Auctions",
-    tier1: "Weapons and Ammunition",
-    tier2: "Gun Shows and Auctions",
-    tier3: "",
-    keywords: "gun shows and auctions",
-  },
-  {
-    id: "1563",
-    label: "Non-Projectile Weapons",
-    tier1: "Weapons and Ammunition",
-    tier2: "Non-Projectile Weapons",
-    tier3: "",
-    keywords: "non-projectile weapons",
-  },
-  {
-    id: "1564",
-    label: "Taser and Stun Guns",
-    tier1: "Weapons and Ammunition",
-    tier2: "Taser and Stun Guns",
-    tier3: "",
-    keywords: "taser and stun guns",
+  {
+    "id": "1551",
+    "label": "Boats",
+    "tier1": "Vehicles",
+    "tier2": "Vehicle Type",
+    "tier3": "Boats",
+    "keywords": "boats"
   },
+  {
+    "id": "1552",
+    "label": "Diesel Vehicles",
+    "tier1": "Vehicles",
+    "tier2": "Vehicle Type",
+    "tier3": "Diesel Vehicles",
+    "keywords": "diesel vehicles; diesel cars"
+  },
+  {
+    "id": "1553",
+    "label": "Electric Vehicles",
+    "tier1": "Vehicles",
+    "tier2": "Vehicle Type",
+    "tier3": "Electric Vehicles",
+    "keywords": "electric vehicles; electric cars"
+  },
+  {
+    "id": "1554",
+    "label": "Gas Vehicles",
+    "tier1": "Vehicles",
+    "tier2": "Vehicle Type",
+    "tier3": "Gas Vehicles",
+    "keywords": "gas vehicles; gas cars"
+  },
+  {
+    "id": "1555",
+    "label": "Hybrid Vehicles",
+    "tier1": "Vehicles",
+    "tier2": "Vehicle Type",
+    "tier3": "Hybrid Vehicles",
+    "keywords": "hybrid vehicles; hybrid cars"
+  },
+  {
+    "id": "1556",
+    "label": "Recreational Vehicles",
+    "tier1": "Vehicles",
+    "tier2": "Vehicle Type",
+    "tier3": "Recreational Vehicles",
+    "keywords": "recreational vehicles"
+  },
+  {
+    "id": "1557",
+    "label": "Scooters, Motorbikes, and E-bikes",
+    "tier1": "Vehicles",
+    "tier2": "Vehicle Type",
+    "tier3": "Scooters, Motorbikes, and E-bikes",
+    "keywords": "scooters, motorbikes, and e-bikes"
+  },
+  {
+    "id": "1558",
+    "label": "Weapons & Ammunition",
+    "tier1": "Weapons and Ammunition",
+    "tier2": "",
+    "tier3": "",
+    "keywords": "weapons & ammunition"
+  },
+  {
+    "id": "1559",
+    "label": "Ammunition",
+    "tier1": "Weapons and Ammunition",
+    "tier2": "Ammunition",
+    "tier3": "",
+    "keywords": "ammunition"
+  },
+  {
+    "id": "1560",
+    "label": "Guns",
+    "tier1": "Weapons and Ammunition",
+    "tier2": "Guns",
+    "tier3": "",
+    "keywords": "guns"
+  },
+  {
+    "id": "1561",
+    "label": "Gun Accessories",
+    "tier1": "Weapons and Ammunition",
+    "tier2": "Gun Accessories",
+    "tier3": "",
+    "keywords": "gun accessories"
+  },
+  {
+    "id": "1562",
+    "label": "Gun Shows and Auctions",
+    "tier1": "Weapons and Ammunition",
+    "tier2": "Gun Shows and Auctions",
+    "tier3": "",
+    "keywords": "gun shows and auctions"
+  },
+  {
+    "id": "1563",
+    "label": "Non-Projectile Weapons",
+    "tier1": "Weapons and Ammunition",
+    "tier2": "Non-Projectile Weapons",
+    "tier3": "",
+    "keywords": "non-projectile weapons"
+  },
+  {
+    "id": "1564",
+    "label": "Taser and Stun Guns",
+    "tier1": "Weapons and Ammunition",
+    "tier2": "Taser and Stun Guns",
+    "tier3": "",
+    "keywords": "taser and stun guns"
+  }
 ];
 
 const IAB_BRAND_HINTS: Record<string, string[]> = {
-  toyota: [
-    "vehicles",
-    "cars",
-    "automotive ownership",
-    "hybrid vehicles",
-    "electric vehicles",
-  ],
-  ford: [
-    "vehicles",
-    "cars",
-    "automotive ownership",
-    "gas vehicles",
-    "electric vehicles",
-  ],
+  toyota: ["vehicles", "cars", "automotive ownership", "hybrid vehicles", "electric vehicles"],
+  ford: ["vehicles", "cars", "automotive ownership", "gas vehicles", "electric vehicles"],
   jeep: ["vehicles", "cars", "automotive ownership", "vehicle type"],
   bmw: ["vehicles", "cars", "automotive ownership"],
   mercedes: ["vehicles", "cars", "automotive ownership"],
-  apple: [
-    "consumer electronics",
-    "mobile phones and accessories",
-    "computers",
-    "tablets",
-  ],
-  samsung: [
-    "consumer electronics",
-    "mobile phones and accessories",
-    "televisions",
-  ],
-  playstation: [
-    "video games and consoles",
-    "video game consoles",
-    "core gaming",
-  ],
+  apple: ["consumer electronics", "mobile phones and accessories", "computers", "tablets"],
+  samsung: ["consumer electronics", "mobile phones and accessories", "televisions"],
+  playstation: ["video games and consoles", "video game consoles", "core gaming"],
   xbox: ["video games and consoles", "video game consoles", "core gaming"],
   nintendo: ["video games and consoles", "video game consoles", "core gaming"],
   netflix: ["music and video streaming services", "media"],
@@ -4617,11 +4600,7 @@ const IAB_BRAND_HINTS: Record<string, string[]> = {
   kfc: ["fast food", "restaurants", "food and beverage services"],
   gucci: ["clothing and accessories", "clothing", "handbags and wallets"],
   chanel: ["clothing and accessories", "cosmetics", "fragrance"],
-  louisvuitton: [
-    "clothing and accessories",
-    "handbags and wallets",
-    "clothing",
-  ],
+  louisvuitton: ["clothing and accessories", "handbags and wallets", "clothing"],
 };
 
 function normalizeMatchText(value: string) {
@@ -4637,6 +4616,7 @@ function normalizeMatchText(value: string) {
 function compactKey(value: string) {
   return normalizeMatchText(value).replace(/\s+/g, "");
 }
+
 
 const BRAND_ALIAS_MAP: Record<string, string> = {
   jeep: "Jeep",
@@ -4680,8 +4660,8 @@ function canonicalBrandName(value: string) {
   if (!key) return "Unassigned Brand";
   if (BRAND_ALIAS_MAP[key]) return BRAND_ALIAS_MAP[key];
 
-  const fuzzyMatch = Object.entries(BRAND_ALIAS_MAP).find(
-    ([alias]) => key === alias || key.startsWith(alias) || key.includes(alias),
+  const fuzzyMatch = Object.entries(BRAND_ALIAS_MAP).find(([alias]) =>
+    key === alias || key.startsWith(alias) || key.includes(alias)
   );
 
   if (fuzzyMatch) return fuzzyMatch[1];
@@ -4695,8 +4675,8 @@ function splitAndCanonicalizeProducts(value: string, brandName = "") {
       (value || "")
         .split(/[,;|]/)
         .map((item) => getCanonicalProductName(item, brandName))
-        .filter(Boolean),
-    ),
+        .filter(Boolean)
+    )
   );
 }
 
@@ -4728,7 +4708,7 @@ function inferIabClassification(fields: string[]) {
     .flatMap(([, hints]) => hints);
 
   const enrichedSearchText = normalizeMatchText(
-    [searchableText, ...brandHints].join(" "),
+    [searchableText, ...brandHints].join(" ")
   );
 
   const scored = IAB_TAXONOMY.map((row) => {
@@ -4747,8 +4727,8 @@ function inferIabClassification(fields: string[]) {
         candidates.filter((candidate) => {
           if (candidate.length < 3) return false;
           return enrichedSearchText.includes(candidate);
-        }),
-      ),
+        })
+      )
     );
 
     const score = matchedKeywords.reduce((total, keyword) => {
@@ -4777,7 +4757,8 @@ function inferIabClassification(fields: string[]) {
     label: best.row.label,
     path: getIabPath(best.row) || best.row.label,
     source: "Inferred from uploaded IAB taxonomy keywords",
-    confidence: best.score >= 8 ? "High" : best.score >= 4 ? "Medium" : "Low",
+    confidence:
+      best.score >= 8 ? "High" : best.score >= 4 ? "Medium" : "Low",
     matchedKeywords: best.matchedKeywords.slice(0, 5),
   };
 }
@@ -4815,10 +4796,11 @@ function enrichFallbackSignal(signal: any) {
     classificationSource: importedIabClass
       ? signal.classificationSource
       : inferredIab
-        ? inferredIab.source
-        : signal.classificationSource || "No IAB taxonomy match found",
+      ? inferredIab.source
+      : signal.classificationSource || "No IAB taxonomy match found",
   };
 }
+
 
 function getTitle(item: any) {
   const combined = [item.advertiser, item.brand, item.product]
@@ -4846,6 +4828,52 @@ function getIabClass(item: any) {
 
 function dedupe(values: any[]) {
   return Array.from(new Set(values.filter(Boolean)));
+}
+
+function buildPageHistoryProfile(monitoringFeed: any[], stats: ArgusStats | null) {
+  const totalSignals = monitoringFeed.length;
+  const uniqueBrands = new Set(monitoringFeed.map((item) => item.brand).filter(Boolean)).size;
+  const uniqueProducts = new Set(
+    monitoringFeed.flatMap((item) => item.canonicalProduct || item.product).filter(Boolean)
+  ).size;
+  const uniqueCampaigns = new Set(
+    monitoringFeed.map((item) => item.campaignObject || item.title).filter(Boolean)
+  ).size;
+
+  const sources = dedupe(
+    monitoringFeed
+      .map((item) => item.source || item.source_system || item.sourceSystem || "ARGUS / imported feed")
+      .filter(Boolean)
+  );
+
+  const topBrand = stats?.by_brand?.[0]?.value || monitoringFeed[0]?.brand || "No dominant brand yet";
+  const topCategory = stats?.by_category?.[0]?.value || monitoringFeed[0]?.iabClass || "No dominant category yet";
+
+  return {
+    totalSignals,
+    uniqueBrands,
+    uniqueProducts,
+    uniqueCampaigns,
+    sources,
+    topBrand,
+    topCategory,
+    story: [
+      "Monitoring started as a live advertising signal page.",
+      "It now works as the operational command layer for the platform: incoming ads are normalized into brands, products, campaigns, audiences and IAB intelligence.",
+      "The page connects ARGUS, CSV/Nielsen imports and Brand Galaxy graph logic, so the same entities can later appear in Monitoring, Top Brands, Search and Relationship Graph.",
+      "The goal from here is full clickability: every visible card, metric, brand and signal should open useful context instead of staying static.",
+    ],
+  };
+}
+
+function buildPlatformInfo(
+  title: string,
+  label: string,
+  summary: string,
+  points: string[],
+  source?: string
+): PlatformInfo {
+  return { title, label, summary, points, source };
 }
 
 function InfoTooltip({ text }: { text: string }) {
@@ -4879,10 +4907,10 @@ function MetricCard({
     tone === "pink"
       ? "text-fuchsia-200"
       : tone === "indigo"
-        ? "text-indigo-200"
-        : tone === "green"
-          ? "text-green-200"
-          : "text-cyan-200";
+      ? "text-indigo-200"
+      : tone === "green"
+      ? "text-green-200"
+      : "text-cyan-200";
 
   return (
     <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-xl transition duration-300 hover:-translate-y-0.5 hover:border-white/20">
@@ -4900,23 +4928,38 @@ function MetricCard({
 function ExplanationCard({
   title,
   children,
+  onClick,
 }: {
   title: string;
   children: ReactNode;
+  onClick?: () => void;
 }) {
+  const Wrapper: any = onClick ? "button" : "div";
+
   return (
-    <div className="rounded-[2rem] border border-white/10 bg-black/24 p-5 backdrop-blur-xl">
+    <Wrapper
+      onClick={onClick}
+      className={`w-full rounded-[2rem] border border-white/10 bg-black/24 p-5 text-left backdrop-blur-xl transition ${
+        onClick ? "hover:border-cyan-300/35 hover:bg-cyan-500/10" : ""
+      }`}
+    >
       <div className="mb-3 flex items-center justify-between gap-3">
         <h3 className="text-sm font-bold text-cyan-100">{title}</h3>
-        <InfoTooltip text="This explanatory panel is part of the clarity layer. It explains what the numbers and labels mean before any deeper AI inference is applied." />
+        <div className="flex items-center gap-2">
+          {onClick && (
+            <span className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-cyan-100">
+              Click
+            </span>
+          )}
+          <InfoTooltip text="This explanatory panel explains what this part of the intelligence page does. Clickable panels can open a deeper explanation." />
+        </div>
       </div>
 
-      <div className="space-y-2 text-sm leading-6 text-gray-300">
-        {children}
-      </div>
-    </div>
+      <div className="space-y-2 text-sm leading-6 text-gray-300">{children}</div>
+    </Wrapper>
   );
 }
+
 
 function getCanonicalProductName(value: string, brandName = "") {
   const raw = (value || "").replace(/[®™©]/g, "").replace(/\s+/g, " ").trim();
@@ -4929,17 +4972,8 @@ function getCanonicalProductName(value: string, brandName = "") {
 
   if (normalizedBrand && normalizedBrand !== "unassigned brand") {
     cleaned = cleaned
-      .replace(
-        new RegExp(`^${brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s+`, "i"),
-        "",
-      )
-      .replace(
-        new RegExp(
-          `\\s+by\\s+${brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
-          "i",
-        ),
-        "",
-      )
+      .replace(new RegExp(`^${brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s+`, "i"), "")
+      .replace(new RegExp(`\\s+by\\s+${brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i"), "")
       .trim();
   }
 
@@ -4992,6 +5026,7 @@ function getCampaignObjectName(item: any) {
   );
 }
 
+
 function isPlaceholderBrand(value: string) {
   const normalized = normalizeMatchText(value);
 
@@ -5008,7 +5043,11 @@ function isPlaceholderBrand(value: string) {
 
 function getDisplayBrandName(item: any) {
   const directBrand =
-    item.brand || item.brand_name || item.brandName || item.advertiser || "";
+    item.brand ||
+    item.brand_name ||
+    item.brandName ||
+    item.advertiser ||
+    "";
 
   if (!isPlaceholderBrand(directBrand)) {
     return directBrand;
@@ -5023,8 +5062,7 @@ function getDisplayBrandName(item: any) {
   if (normalizedTitle.includes("nike")) return "Nike";
   if (normalizedTitle.includes("adidas")) return "Adidas";
   if (normalizedTitle.includes("puma")) return "Puma";
-  if (normalizedTitle.includes("coca cola") || normalizedTitle.includes("coke"))
-    return "Coca-Cola";
+  if (normalizedTitle.includes("coca cola") || normalizedTitle.includes("coke")) return "Coca-Cola";
   if (normalizedTitle.includes("pepsi")) return "Pepsi";
   if (normalizedTitle.includes("mcdonald")) return "McDonald's";
   if (normalizedTitle.includes("burger king")) return "Burger King";
@@ -5056,10 +5094,7 @@ function getDataQualityFlags(signal: any) {
     flags.push("Product needs normalization");
   }
 
-  if (
-    !signal.campaignObject ||
-    signal.campaignObject === "Unassigned Campaign"
-  ) {
+  if (!signal.campaignObject || signal.campaignObject === "Unassigned Campaign") {
     flags.push("Campaign needs assignment");
   }
 
@@ -5089,7 +5124,8 @@ function normalizeMonitoringSpot(item: any) {
     "ARGUS Advertising Intelligence";
 
   const brand = canonicalBrandName(
-    item.brand_name || getDisplayBrandName(item),
+    item.brand_name ||
+      getDisplayBrandName(item)
   );
 
   const rawProduct =
@@ -5103,9 +5139,7 @@ function normalizeMonitoringSpot(item: any) {
 
   const description =
     [
-      item.primary_category
-        ? `Primary category: ${item.primary_category}`
-        : null,
+      item.primary_category ? `Primary category: ${item.primary_category}` : null,
       item.subcategory ? `Subcategory: ${item.subcategory}` : null,
       item.promotion_name ? `Promotion: ${item.promotion_name}` : null,
       item.risk_labels?.length
@@ -5142,8 +5176,7 @@ function normalizeMonitoringSpot(item: any) {
     advertiser,
     brand,
     product,
-    canonicalProduct:
-      canonicalProducts.length === 1 ? canonicalProducts[0] : product,
+    canonicalProduct: canonicalProducts.length === 1 ? canonicalProducts[0] : product,
     campaignObject:
       item.promotion_name ||
       item.campaign_name ||
@@ -5166,14 +5199,12 @@ function normalizeMonitoringSpot(item: any) {
     iabConfidence:
       item.iab_confidence ||
       (importedIabClass ? "Imported" : inferredIab?.confidence || "None"),
-    iabMatchedKeywords: importedIabClass
-      ? []
-      : inferredIab?.matchedKeywords || [],
+    iabMatchedKeywords: importedIabClass ? [] : inferredIab?.matchedKeywords || [],
     classificationSource: importedIabClass
       ? "IAB classification imported from ARGUS API"
       : inferredIab
-        ? inferredIab.source
-        : "No ARGUS IAB class found and no taxonomy keyword match was strong enough",
+      ? inferredIab.source
+      : "No ARGUS IAB class found and no taxonomy keyword match was strong enough",
     description,
     transcript:
       item.transcript ||
@@ -5186,6 +5217,7 @@ function normalizeMonitoringSpot(item: any) {
     ingestedAt: item.ingested_at,
   };
 }
+
 
 const BRAND_PROFILE_REGISTRY: Record<
   string,
@@ -5203,8 +5235,7 @@ const BRAND_PROFILE_REGISTRY: Record<
     slogan: "Go Anywhere. Do Anything.",
     website: "https://www.jeep.com",
     ownership: "Stellantis",
-    history:
-      "SUV and off-road automotive brand inside the Stellantis portfolio.",
+    history: "SUV and off-road automotive brand inside the Stellantis portfolio.",
     aliases: ["JEEP", "Jeep®", "Wrangler by Jeep"],
   },
   libertymutual: {
@@ -5212,8 +5243,7 @@ const BRAND_PROFILE_REGISTRY: Record<
     slogan: "Only pay for what you need.",
     website: "https://www.libertymutual.com",
     ownership: "Liberty Mutual Insurance",
-    history:
-      "Insurance brand commonly associated with direct-response auto and home insurance advertising.",
+    history: "Insurance brand commonly associated with direct-response auto and home insurance advertising.",
     aliases: ["Liberty Mutual Insurance"],
   },
   progressive: {
@@ -5221,8 +5251,7 @@ const BRAND_PROFILE_REGISTRY: Record<
     slogan: "Name your price.",
     website: "https://www.progressive.com",
     ownership: "Progressive",
-    history:
-      "Insurance brand focused on auto, home and bundle insurance campaigns.",
+    history: "Insurance brand focused on auto, home and bundle insurance campaigns.",
     aliases: ["Progressive Insurance"],
   },
   carshield: {
@@ -5230,8 +5259,7 @@ const BRAND_PROFILE_REGISTRY: Record<
     slogan: "Protection plans for vehicle repairs.",
     website: "https://www.carshield.com",
     ownership: "Car Shield",
-    history:
-      "Direct-response automotive protection / vehicle service contract advertiser.",
+    history: "Direct-response automotive protection / vehicle service contract advertiser.",
     aliases: ["CarShield", "Car Shield"],
   },
   netflix: {
@@ -5239,8 +5267,7 @@ const BRAND_PROFILE_REGISTRY: Record<
     slogan: "Watch anywhere.",
     website: "https://www.netflix.com",
     ownership: "Netflix",
-    history:
-      "Streaming entertainment platform with subscription and original content campaigns.",
+    history: "Streaming entertainment platform with subscription and original content campaigns.",
     aliases: ["Netflix Premium"],
   },
   paramountplus: {
@@ -5248,8 +5275,7 @@ const BRAND_PROFILE_REGISTRY: Record<
     slogan: "A mountain of entertainment.",
     website: "https://www.paramountplus.com",
     ownership: "Paramount",
-    history:
-      "Streaming entertainment service in the Paramount media portfolio.",
+    history: "Streaming entertainment service in the Paramount media portfolio.",
     aliases: ["Paramount Plus", "Paramount+"],
   },
   spotify: {
@@ -5257,8 +5283,7 @@ const BRAND_PROFILE_REGISTRY: Record<
     slogan: "Music for everyone.",
     website: "https://www.spotify.com",
     ownership: "Spotify",
-    history:
-      "Audio streaming platform focused on music, podcasts and audiobooks.",
+    history: "Audio streaming platform focused on music, podcasts and audiobooks.",
     aliases: ["Spotify Premium"],
   },
   apple: {
@@ -5266,8 +5291,7 @@ const BRAND_PROFILE_REGISTRY: Record<
     slogan: "Think different.",
     website: "https://www.apple.com",
     ownership: "Apple",
-    history:
-      "Consumer technology brand focused on hardware, software and services.",
+    history: "Consumer technology brand focused on hardware, software and services.",
     aliases: ["Apple Inc.", "iPhone", "MacBook"],
   },
   samsung: {
@@ -5275,8 +5299,7 @@ const BRAND_PROFILE_REGISTRY: Record<
     slogan: "Do what you can't.",
     website: "https://www.samsung.com",
     ownership: "Samsung",
-    history:
-      "Consumer technology and electronics brand focused on mobile and connected ecosystems.",
+    history: "Consumer technology and electronics brand focused on mobile and connected ecosystems.",
     aliases: ["Samsung Galaxy", "Galaxy AI"],
   },
 };
@@ -5295,29 +5318,27 @@ function getBrandRegistryProfile(brandName: string) {
   const key = normalizeProfileKey(brandName);
   if (BRAND_PROFILE_REGISTRY[key]) return BRAND_PROFILE_REGISTRY[key];
 
-  const match = Object.entries(BRAND_PROFILE_REGISTRY).find(
-    ([registryKey, data]) => {
-      const aliasKeys = data.aliases.map(normalizeProfileKey);
-      return (
-        key === registryKey ||
-        key.includes(registryKey) ||
-        registryKey.includes(key) ||
-        aliasKeys.includes(key)
-      );
-    },
-  );
+  const match = Object.entries(BRAND_PROFILE_REGISTRY).find(([registryKey, data]) => {
+    const aliasKeys = data.aliases.map(normalizeProfileKey);
+    return (
+      key === registryKey ||
+      key.includes(registryKey) ||
+      registryKey.includes(key) ||
+      aliasKeys.includes(key)
+    );
+  });
 
   return match?.[1] || null;
 }
 
 function buildBrandIntelligenceProfile(
   brandName: string,
-  feed: any[],
+  feed: any[]
 ): BrandIntelligenceProfile {
   const signals = feed.filter(
     (item) =>
       normalizeProfileKey(item.brand) === normalizeProfileKey(brandName) ||
-      normalizeProfileKey(item.advertiser) === normalizeProfileKey(brandName),
+      normalizeProfileKey(item.advertiser) === normalizeProfileKey(brandName)
   );
 
   const registry = getBrandRegistryProfile(brandName);
@@ -5325,16 +5346,16 @@ function buildBrandIntelligenceProfile(
   const products = dedupe(
     signals.flatMap((item) => [
       item.canonicalProduct,
-      ...String(item.product || "")
+      ...(String(item.product || "")
         .split(/[,;|]/)
-        .map((product) => product.trim()),
-    ]),
+        .map((product) => product.trim())),
+    ])
   )
     .filter(Boolean)
     .slice(0, 12);
 
   const campaigns = dedupe(
-    signals.map((item) => item.campaignObject || item.title).filter(Boolean),
+    signals.map((item) => item.campaignObject || item.title).filter(Boolean)
   ).slice(0, 12);
 
   const audiences = dedupe(
@@ -5345,29 +5366,29 @@ function buildBrandIntelligenceProfile(
         item.iabClass,
         ...(item.riskLabels || []),
       ])
-      .filter(Boolean),
+      .filter(Boolean)
   ).slice(0, 12);
 
   const iabFootprint = dedupe(
-    signals.map((item) => item.iabClass).filter(Boolean),
+    signals.map((item) => item.iabClass).filter(Boolean)
   ).slice(0, 10);
 
   const categories = dedupe(
-    signals.flatMap((item) => [item.network, item.program]).filter(Boolean),
+    signals.flatMap((item) => [item.network, item.program]).filter(Boolean)
   ).slice(0, 10);
 
   const sources = dedupe(signals.map((item) => item.source).filter(Boolean));
   const riskLabels = dedupe(signals.flatMap((item) => item.riskLabels || []));
 
   const companies = dedupe(
-    signals.map((item) => item.advertiser).filter(Boolean),
+    signals.map((item) => item.advertiser).filter(Boolean)
   );
 
   const classifiedCount = signals.filter(
     (item) =>
       item.iabClass &&
       !String(item.iabClass).includes("Unclassified") &&
-      !String(item.iabClass).includes("pending"),
+      !String(item.iabClass).includes("pending")
   ).length;
 
   return {
@@ -5376,11 +5397,7 @@ function buildBrandIntelligenceProfile(
     slogan: registry?.slogan || "Brand intelligence profile pending.",
     website: registry?.website || "",
     company: registry?.ownership || companies[0] || brandName,
-    aliases: dedupe([
-      brandName,
-      ...(registry?.aliases || []),
-      ...companies,
-    ]).slice(0, 10),
+    aliases: dedupe([brandName, ...(registry?.aliases || []), ...companies]).slice(0, 10),
     products,
     campaigns,
     audiences,
@@ -5394,40 +5411,8 @@ function buildBrandIntelligenceProfile(
     ownership: registry?.ownership || companies[0] || "Ownership data pending",
     history:
       registry?.history ||
-      "This profile was generated from live monitoring, ARGUS and imported advertising signals. Add verified ownership/history data later for a richer Brand Intelligence panel.",
+      "This profile was generated from live monitoring, ARGUS and imported advertising signals. Add verified ownership/history data later for a richer F2 card.",
   };
-}
-
-type InfoPanel = {
-  title: string;
-  eyebrow?: string;
-  tone?: "cyan" | "pink" | "indigo" | "green" | "amber" | "red";
-  body: ReactNode;
-};
-
-function toneClasses(tone: InfoPanel["tone"] = "cyan") {
-  if (tone === "pink")
-    return "border-fuchsia-300/25 bg-fuchsia-500/10 text-fuchsia-200";
-  if (tone === "indigo")
-    return "border-indigo-300/25 bg-indigo-500/10 text-indigo-200";
-  if (tone === "green")
-    return "border-green-300/25 bg-green-500/10 text-green-200";
-  if (tone === "amber")
-    return "border-amber-300/25 bg-amber-500/10 text-amber-200";
-  if (tone === "red") return "border-red-300/25 bg-red-500/10 text-red-200";
-  return "border-cyan-300/25 bg-cyan-500/10 text-cyan-200";
-}
-
-function Pill({ children }: { children: ReactNode; key?: any }) {
-  return (
-    <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-gray-200">
-      {children}
-    </span>
-  );
-}
-
-function EmptyState({ label }: { label: string }) {
-  return <div className="text-sm text-gray-500">{label}</div>;
 }
 
 export default function MonitoringPage() {
@@ -5442,11 +5427,10 @@ export default function MonitoringPage() {
   const [iabFilter, setIabFilter] = useState("all");
   const [alphaFilter, setAlphaFilter] = useState("all");
   const [rankingMode, setRankingMode] = useState<RankingMode>("now");
-  const [selectedBrandName, setSelectedBrandName] = useState<string | null>(
-    null,
-  );
+  const [selectedBrandName, setSelectedBrandName] = useState<string | null>(null);
+  const [brandProfileMode, setBrandProfileMode] = useState<BrandProfileMode>("f2");
   const [selectedSignal, setSelectedSignal] = useState<any | null>(null);
-  const [infoPanel, setInfoPanel] = useState<InfoPanel | null>(null);
+  const [selectedPlatformInfo, setSelectedPlatformInfo] = useState<PlatformInfo | null>(null);
 
   useEffect(() => {
     async function loadMonitoring() {
@@ -5481,59 +5465,68 @@ export default function MonitoringPage() {
     loadMonitoring();
   }, []);
 
-  const monitoringFeed = useMemo(
-    () => spots.map(normalizeMonitoringSpot),
-    [spots],
-  );
+
+  const fallbackSignals = useMemo(() => {
+    return [];
+  }, []);
+
+  const monitoringFeed = useMemo(() => {
+    return spots.map(normalizeMonitoringSpot);
+  }, [spots]);
+
 
   const selectedBrandProfile = useMemo(() => {
     if (!selectedBrandName) return null;
     return buildBrandIntelligenceProfile(selectedBrandName, monitoringFeed);
   }, [selectedBrandName, monitoringFeed]);
 
+  const pageHistoryProfile = useMemo(() => {
+    return buildPageHistoryProfile(monitoringFeed, argusStats);
+  }, [monitoringFeed, argusStats]);
+
+  const featuredSignal = monitoringFeed[0];
+
+  const uniqueAdvertisers = useMemo(() => {
+    return new Set(monitoringFeed.map((item) => item.advertiser).filter(Boolean))
+      .size;
+  }, [monitoringFeed]);
+
   const uniqueFeedProducts = useMemo(() => {
+    return new Set(monitoringFeed.flatMap((item) => item.canonicalProduct || item.product).filter(Boolean))
+      .size;
+  }, [monitoringFeed]);
+
+  const uniqueBrands = useMemo(() => {
+    return new Set(monitoringFeed.map((item) => item.brand).filter(Boolean)).size;
+  }, [monitoringFeed]);
+
+  const uniqueCampaigns = useMemo(() => {
     return new Set(
-      monitoringFeed
-        .flatMap((item) =>
-          String(item.canonicalProduct || item.product || "").split(/[,;|]/),
-        )
-        .map((item) => item.trim())
-        .filter(Boolean),
+      monitoringFeed.map((item) => item.campaignObject).filter(Boolean)
     ).size;
   }, [monitoringFeed]);
 
-  const uniqueBrands = useMemo(
-    () =>
-      new Set(monitoringFeed.map((item) => item.brand).filter(Boolean)).size,
-    [monitoringFeed],
-  );
-  const uniqueCampaigns = useMemo(
-    () =>
-      new Set(monitoringFeed.map((item) => item.campaignObject).filter(Boolean))
-        .size,
-    [monitoringFeed],
-  );
-  const classifiedSignals = useMemo(
-    () =>
-      monitoringFeed.filter(
-        (item) =>
-          item.iabClass &&
-          !String(item.iabClass).includes("Unclassified") &&
-          !String(item.iabClass).includes("pending"),
-      ).length,
-    [monitoringFeed],
-  );
-  const riskSignalCount = useMemo(
-    () => monitoringFeed.filter((item) => item.riskLabels?.length > 0).length,
-    [monitoringFeed],
-  );
+  const classifiedSignals = useMemo(() => {
+    return monitoringFeed.filter(
+      (item) =>
+        item.iabClass &&
+        !String(item.iabClass).includes("Unclassified") &&
+        !String(item.iabClass).includes("pending")
+    ).length;
+  }, [monitoringFeed]);
+
+  const riskSignalCount = useMemo(() => {
+    return monitoringFeed.filter((item) => item.riskLabels?.length > 0).length;
+  }, [monitoringFeed]);
 
   const topBrands = useMemo(() => {
     const counts: Record<string, number> = {};
+
     monitoringFeed.forEach((item) => {
       if (!item.brand) return;
       counts[item.brand] = (counts[item.brand] || 0) + 1;
     });
+
     return Object.entries(counts)
       .map(([value, count]) => ({ value, count }))
       .sort((a, b) => b.count - a.count)
@@ -5542,37 +5535,47 @@ export default function MonitoringPage() {
 
   const topCategories = useMemo(() => {
     const counts: Record<string, number> = {};
+
     monitoringFeed.forEach((item) => {
       const category = item.network || item.program || "Uncategorized";
       counts[category] = (counts[category] || 0) + 1;
     });
+
     return Object.entries(counts)
       .map(([value, count]) => ({ value, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 6);
   }, [monitoringFeed]);
 
-  const brandOptions = useMemo(
-    () => dedupe(monitoringFeed.map((item) => item.brand)).sort(),
-    [monitoringFeed],
-  );
-  const categoryOptions = useMemo(
-    () =>
-      dedupe(
-        monitoringFeed.map(
-          (item) => item.network || item.program || "Uncategorized",
-        ),
-      ).sort(),
-    [monitoringFeed],
-  );
-  const iabOptions = useMemo(
-    () => dedupe(monitoringFeed.map((item) => item.iabClass)).sort(),
-    [monitoringFeed],
-  );
+  const latestArgusAds = useMemo(() => {
+    return [...monitoringFeed]
+      .sort((a, b) => {
+        const aTime = a.ingestedAt ? new Date(a.ingestedAt).getTime() : 0;
+        const bTime = b.ingestedAt ? new Date(b.ingestedAt).getTime() : 0;
+        return bTime - aTime;
+      })
+      .slice(0, 5);
+  }, [monitoringFeed]);
+
+  const brandOptions = useMemo(() => {
+    return dedupe(monitoringFeed.map((item) => item.brand)).sort();
+  }, [monitoringFeed]);
+
+  const categoryOptions = useMemo(() => {
+    return dedupe(
+      monitoringFeed.map((item) => item.network || item.program || "Uncategorized")
+    ).sort();
+  }, [monitoringFeed]);
+
+  const iabOptions = useMemo(() => {
+    return dedupe(monitoringFeed.map((item) => item.iabClass)).sort();
+  }, [monitoringFeed]);
+
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
   const filteredMonitoringFeed = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
+
     return monitoringFeed.filter((item) => {
       const haystack = [
         item.title,
@@ -5591,24 +5594,26 @@ export default function MonitoringPage() {
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
+
+      const searchMatch = !query || haystack.includes(query);
+      const brandMatch = brandFilter === "all" || item.brand === brandFilter;
+      const categoryValue = item.network || item.program || "Uncategorized";
+      const categoryMatch =
+        categoryFilter === "all" || categoryValue === categoryFilter;
+      const iabMatch = iabFilter === "all" || item.iabClass === iabFilter;
       const alphaTarget =
         groupMode === "product"
           ? item.canonicalProduct || item.product
           : groupMode === "campaign"
-            ? item.campaignObject || item.title
-            : item.brand;
-      return (
-        (!query || haystack.includes(query)) &&
-        (brandFilter === "all" || item.brand === brandFilter) &&
-        (categoryFilter === "all" ||
-          (item.network || item.program || "Uncategorized") ===
-            categoryFilter) &&
-        (iabFilter === "all" || item.iabClass === iabFilter) &&
-        (alphaFilter === "all" ||
-          String(alphaTarget || "")
-            .toUpperCase()
-            .startsWith(alphaFilter))
-      );
+          ? item.campaignObject || item.title
+          : item.brand;
+      const alphaMatch =
+        alphaFilter === "all" ||
+        String(alphaTarget || "")
+          .toUpperCase()
+          .startsWith(alphaFilter);
+
+      return searchMatch && brandMatch && categoryMatch && iabMatch && alphaMatch;
     });
   }, [
     monitoringFeed,
@@ -5621,13 +5626,14 @@ export default function MonitoringPage() {
   ]);
 
   const rankedBrands = useMemo(() => {
-    const source =
-      rankingMode === "now" ? filteredMonitoringFeed : monitoringFeed;
+    const source = rankingMode === "now" ? filteredMonitoringFeed : monitoringFeed;
     const counts: Record<string, number> = {};
+
     source.forEach((item) => {
       if (!item.brand) return;
       counts[item.brand] = (counts[item.brand] || 0) + 1;
     });
+
     return Object.entries(counts)
       .map(([value, count]) => ({ value, count }))
       .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value))
@@ -5635,32 +5641,56 @@ export default function MonitoringPage() {
   }, [filteredMonitoringFeed, monitoringFeed, rankingMode]);
 
   const rankedProducts = useMemo(() => {
-    const source =
-      rankingMode === "now" ? filteredMonitoringFeed : monitoringFeed;
+    const source = rankingMode === "now" ? filteredMonitoringFeed : monitoringFeed;
     const counts: Record<string, number> = {};
+
     source.forEach((item) => {
       const product = item.canonicalProduct || item.product;
       if (!product) return;
       counts[product] = (counts[product] || 0) + 1;
     });
+
     return Object.entries(counts)
       .map(([value, count]) => ({ value, count }))
       .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value))
       .slice(0, 8);
   }, [filteredMonitoringFeed, monitoringFeed, rankingMode]);
 
+  const setQualitySummary = useMemo(() => {
+    const duplicatedBrands = rankedBrands.filter((item) => item.count > 1).length;
+    const missingIab = monitoringFeed.filter(
+      (item) => !item.iabClass || String(item.iabClass).includes("Unclassified")
+    ).length;
+    const missingProducts = monitoringFeed.filter(
+      (item) => !item.product || item.product === "Advertising Signal"
+    ).length;
+
+    return {
+      duplicatedBrands,
+      missingIab,
+      missingProducts,
+      filteredCount: filteredMonitoringFeed.length,
+      totalCount: monitoringFeed.length,
+    };
+  }, [monitoringFeed, filteredMonitoringFeed, rankedBrands]);
+
+
+
   const groupedSignals = useMemo(() => {
     const groups: Record<string, any[]> = {};
+
     filteredMonitoringFeed.forEach((item) => {
       const key =
         groupMode === "campaign"
           ? item.campaignObject || item.title || "Unknown Campaign"
           : groupMode === "product"
-            ? item.canonicalProduct || item.product || "Unknown Product"
-            : item.brand || "Unknown Brand";
+          ? item.canonicalProduct || item.product || "Unknown Product"
+          : item.brand || "Unknown Brand";
+
       if (!groups[key]) groups[key] = [];
       groups[key].push(item);
     });
+
     return Object.entries(groups)
       .map(([key, signals]) => ({
         key,
@@ -5668,1002 +5698,1250 @@ export default function MonitoringPage() {
         count: signals.length,
         brands: dedupe(signals.map((signal) => signal.brand)),
         products: dedupe(
-          signals.map((signal) => signal.canonicalProduct || signal.product),
+          signals.map((signal) => signal.canonicalProduct || signal.product)
         ),
+        rawProducts: dedupe(signals.map((signal) => signal.product)),
         campaigns: dedupe(
-          signals.map((signal) => signal.campaignObject || signal.title),
+          signals.map((signal) => signal.campaignObject || signal.title)
         ),
+        advertisers: dedupe(signals.map((signal) => signal.advertiser)),
         iabClasses: dedupe(signals.map((signal) => signal.iabClass)),
-        sources: dedupe(signals.map((signal) => signal.source)),
-        dataQualityFlags: dedupe(
-          signals.flatMap((signal) => getDataQualityFlags(signal)),
+        iabConfidence: dedupe(signals.map((signal) => signal.iabConfidence)),
+        iabMatchedKeywords: dedupe(
+          signals.flatMap((signal) => signal.iabMatchedKeywords || [])
         ),
+        dataQualityFlags: dedupe(
+          signals.flatMap((signal) => getDataQualityFlags(signal))
+        ),
+        sources: dedupe(signals.map((signal) => signal.source)),
       }))
       .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
   }, [filteredMonitoringFeed, groupMode]);
 
-  const pageHistoryPanel = (
-    profile?: BrandIntelligenceProfile | null,
-  ): InfoPanel => ({
-    title: "F1 / Page History",
-    eyebrow: "Monitoring Page Story",
-    tone: "cyan",
-    body: (
-      <div className="space-y-4">
-        <p>
-          Monitoring is the live signal layer of Brand Galaxy. It collects ARGUS
-          advertising records, normalizes them into brands, products, campaigns,
-          sources and IAB categories, then prepares those entities for
-          relationship exploration.
-        </p>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-            <div className="text-2xl font-black text-white">
-              {monitoringFeed.length}
-            </div>
-            <div className="text-xs text-gray-400">loaded signals</div>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-            <div className="text-2xl font-black text-white">{uniqueBrands}</div>
-            <div className="text-xs text-gray-400">brands</div>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-            <div className="text-2xl font-black text-white">
-              {uniqueFeedProducts}
-            </div>
-            <div className="text-xs text-gray-400">products</div>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-            <div className="text-2xl font-black text-white">
-              {uniqueCampaigns}
-            </div>
-            <div className="text-xs text-gray-400">campaigns</div>
-          </div>
-        </div>
-        <p>
-          Current feed state:{" "}
-          {loading
-            ? "loading live ARGUS feed"
-            : argusError
-              ? "ARGUS route returned an error"
-              : "live feed loaded"}
-          . Signals are grouped by {groupMode}, filtered by user controls, and
-          enriched with IAB taxonomy matching when imported classification is
-          missing.
-        </p>
-        {profile && (
-          <p>
-            Selected brand context: {profile.name} has {profile.signalCount}{" "}
-            visible monitoring signals, {profile.products.length} products,{" "}
-            {profile.campaigns.length} campaigns and {profile.sources.length}{" "}
-            data source(s).
-          </p>
-        )}
-      </div>
-    ),
-  });
-
-  const openBrandProfile = (brandName: string) => {
-    setSelectedBrandName(brandName);
-  };
-
-  const openInfo = (panel: InfoPanel) => setInfoPanel(panel);
+  const groupModeDescription =
+    groupMode === "campaign"
+      ? "Grouping by campaign/promotion shows which products, brands, IAB classes and ARGUS ad signals appear inside each campaign object."
+      : groupMode === "product"
+      ? "Grouping by product shows all ARGUS campaigns and brands where each detected product appears."
+      : "Grouping by brand shows all ARGUS products, campaigns, IAB classes and signals connected to each brand.";
 
   return (
     <>
       <NavBar />
+
       <main className="relative min-h-screen overflow-hidden bg-[#020617] px-4 py-8 text-white sm:px-6 lg:p-10">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(217,70,239,0.22),transparent_28%),radial-gradient(circle_at_80%_10%,rgba(34,211,238,0.18),transparent_25%),radial-gradient(circle_at_50%_80%,rgba(99,102,241,0.18),transparent_30%)]" />
         <div className="pointer-events-none absolute inset-0 opacity-40 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:80px_80px]" />
 
         <div className="relative z-10">
           <div className="mb-10">
-            <button
-              onClick={() =>
-                openInfo({
-                  title: "Signal Command View",
-                  eyebrow: "Clickable Monitoring Header",
-                  tone: "cyan",
-                  body: (
-                    <p>
-                      This command view is the control surface for live ad
-                      intelligence. It lets you inspect the data pipeline, open
-                      the page story, launch brand cards and drill into every
-                      signal group.
-                    </p>
-                  ),
-                })
-              }
-              className="mb-4 inline-flex rounded-full border border-cyan-300/30 bg-cyan-500/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-cyan-200 transition hover:border-cyan-200 hover:bg-cyan-500/20"
-            >
-              Signal Command View
-            </button>
-            <h1 className="mb-4 text-5xl font-black tracking-tight sm:text-7xl">
-              Monitoring Center
-            </h1>
-            <button
-              onClick={() =>
-                openInfo({
-                  title: "AI-Powered Advertising Intelligence",
-                  eyebrow: "Page Mission",
-                  tone: "pink",
-                  body: (
-                    <p>
-                      Monitoring turns raw advertising rows into usable
-                      intelligence: brand identity, product hints, campaign
-                      objects, audience/category context, IAB classification and
-                      source/risk evidence. The goal is to feed Brand Galaxy
-                      with clean relationship-ready entities.
-                    </p>
-                  ),
-                })
-              }
-              className="max-w-3xl text-left text-lg leading-8 text-gray-300 transition hover:text-white"
-            >
-              AI-Powered Advertising Intelligence for Brand Galaxy: advertising
-              signals transformed into brand, product, campaign and audience
-              intelligence.
-            </button>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <button
-                onClick={() => openInfo(pageHistoryPanel())}
-                className="rounded-2xl border border-cyan-300/35 bg-cyan-500/15 px-5 py-3 text-left text-sm font-black uppercase tracking-[0.22em] text-cyan-100 shadow-[0_0_30px_rgba(34,211,238,0.12)] transition hover:-translate-y-0.5 hover:border-cyan-200 hover:bg-cyan-500/25"
-              >
-                F1 Page History
-              </button>
-              <button
-                onClick={() =>
-                  openInfo({
-                    title: "Clickable Monitoring Map",
-                    eyebrow: "Interaction Layer",
-                    tone: "indigo",
-                    body: (
-                      <p>
-                        Most Monitoring elements now act as explainable
-                        controls: header labels, dataset cards, method cards,
-                        feed scope, top brands, ranking controls and signal
-                        groups all open contextual information instead of being
-                        passive UI.
-                      </p>
-                    ),
-                  })
-                }
-                className="rounded-2xl border border-indigo-300/25 bg-indigo-500/10 px-5 py-3 text-left text-sm font-bold uppercase tracking-[0.2em] text-indigo-100 transition hover:-translate-y-0.5 hover:border-indigo-200 hover:bg-indigo-500/20"
-              >
-                Interaction Map
-              </button>
+            <div className="mb-4 inline-flex rounded-full border border-cyan-300/30 bg-cyan-500/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-cyan-200">
+              Signal Observatory
             </div>
+
+            <button
+              onClick={() =>
+                setSelectedPlatformInfo(
+                  buildPlatformInfo(
+                    "AI-Powered Advertising Intelligence",
+                    "Platform overview",
+                    "Monitoring Center turns raw ad signals into usable brand, product, campaign, audience and IAB intelligence.",
+                    [
+                      "Reads live ARGUS data and imported CSV/Nielsen signals.",
+                      "Normalizes entities so the same brand can power Monitoring, Search and Relationship Graph.",
+                      "Highlights top live brands, categories, campaigns and risk/observation labels.",
+                      "Every major visual block is being converted into a clickable intelligence object."
+                    ],
+                    "Monitoring page header"
+                  )
+                )
+              }
+              className="mb-4 block text-left text-5xl font-black tracking-tight text-white transition hover:text-cyan-100 sm:text-7xl"
+            >
+              Monitoring Center
+            </button>
+
+            <p className="max-w-3xl text-lg leading-8 text-gray-300">
+              Advertising signals transformed into brand, product, campaign and
+              audience intelligence for the Brand Galaxy graph.
+            </p>
           </div>
 
           <div className="mb-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {[
-              {
-                value: argusStats?.total_ads || spots.length,
-                label: "ARGUS Ads",
-                tone: "cyan" as const,
-                body: "Total ads returned by the ARGUS stats/feed endpoints. This card reflects the loaded monitoring source rather than a static demo table.",
-              },
-              {
-                value: uniqueBrands,
-                label: "Detected Brands",
-                tone: "pink" as const,
-                body: "Unique canonical brand names extracted from ARGUS advertiser/brand fields and fallback title matching.",
-              },
-              {
-                value: uniqueFeedProducts,
-                label: "Detected Products",
-                tone: "indigo" as const,
-                body: "Unique product strings normalized from ARGUS product text. These become product/satellite nodes for Brand Galaxy.",
-              },
-              {
-                value: classifiedSignals,
-                label: "IAB Classified",
-                tone: "green" as const,
-                body: "Signals with imported or inferred IAB classification. Missing classes are kept visible for review.",
-              },
-            ].map((card) => (
-              <button
-                key={card.label}
-                onClick={() =>
-                  openInfo({
-                    title: card.label,
-                    eyebrow: "Dataset Context",
-                    tone: card.tone,
-                    body: <p>{card.body}</p>,
-                  })
-                }
-                className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 text-left backdrop-blur-xl transition duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.09]"
-              >
-                <div
-                  className={`mb-3 text-4xl font-black ${card.tone === "pink" ? "text-fuchsia-200" : card.tone === "indigo" ? "text-indigo-200" : card.tone === "green" ? "text-green-200" : "text-cyan-200"}`}
-                >
-                  {card.value}
-                </div>
-                <div className="text-sm font-semibold text-gray-200">
-                  {card.label}
-                </div>
-                <div className="mt-2 text-xs leading-5 text-gray-500">
-                  Click for explanation
-                </div>
-              </button>
-            ))}
-          </div>
+            <MetricCard
+              value={argusStats?.total_ads || spots.length}
+              label="ARGUS Ads"
+              tone="cyan"
+              source="Source: ARGUS Public API"
+              tooltip="Total classified ads returned by the ARGUS public API stats endpoint. The feed below loads live ARGUS ad records through the secure backend route."
+            />
 
-          {argusError && (
-            <div className="mb-6 rounded-3xl border border-red-300/20 bg-red-500/10 p-5 text-sm text-red-100">
-              {argusError}
-            </div>
-          )}
+            <MetricCard
+              value={uniqueBrands}
+              label="Detected Brands"
+              tone="pink"
+              source="Source: ARGUS brand_name"
+              tooltip="Unique brands detected in the currently loaded ARGUS ad feed. This is based on live classified ad records, not the old demo brands table."
+            />
 
-          <div className="mb-6 grid grid-cols-1 gap-5 xl:grid-cols-3">
-            <button
-              onClick={() =>
-                openInfo({
-                  title: "Dataset Context",
-                  eyebrow: "Live Feed",
-                  tone: "cyan",
-                  body: (
-                    <p>
-                      The current dataset is loaded from /api/argus/ads and
-                      /api/argus/stats. It is then normalized client-side into
-                      consistent brands, products, campaigns, sources and
-                      classification metadata.
-                    </p>
-                  ),
-                })
-              }
-              className="rounded-[2rem] border border-white/10 bg-black/25 p-5 text-left transition hover:border-cyan-300/30 hover:bg-cyan-500/10"
-            >
-              <div className="mb-2 text-xs uppercase tracking-[0.25em] text-cyan-300">
-                Dataset Context
-              </div>
-              <div className="text-sm leading-6 text-gray-300">
-                ARGUS Public API → normalized Monitoring Feed → Brand Galaxy
-                entities.
-              </div>
-            </button>
-            <button
-              onClick={() =>
-                openInfo({
-                  title: "Classification Method",
-                  eyebrow: "IAB Logic",
-                  tone: "green",
-                  body: (
-                    <p>
-                      Classification prefers imported ARGUS IAB fields. If they
-                      are missing, the page compares title, advertiser, brand,
-                      product and category text against the bundled IAB taxonomy
-                      keywords.
-                    </p>
-                  ),
-                })
-              }
-              className="rounded-[2rem] border border-white/10 bg-black/25 p-5 text-left transition hover:border-green-300/30 hover:bg-green-500/10"
-            >
-              <div className="mb-2 text-xs uppercase tracking-[0.25em] text-green-300">
-                Classification Method
-              </div>
-              <div className="text-sm leading-6 text-gray-300">
-                Imported IAB first, taxonomy keyword inference second, manual
-                review visible.
-              </div>
-            </button>
-            <button
-              onClick={() =>
-                openInfo({
-                  title: "Current Feed Scope",
-                  eyebrow: "Feed State",
-                  tone: "amber",
-                  body: (
-                    <p>
-                      The page currently shows {filteredMonitoringFeed.length}{" "}
-                      filtered signals from {monitoringFeed.length} loaded
-                      records, with {riskSignalCount} risk/observation-labelled
-                      signals.
-                    </p>
-                  ),
-                })
-              }
-              className="rounded-[2rem] border border-white/10 bg-black/25 p-5 text-left transition hover:border-amber-300/30 hover:bg-amber-500/10"
-            >
-              <div className="mb-2 text-xs uppercase tracking-[0.25em] text-amber-300">
-                Current Feed Scope
-              </div>
-              <div className="text-sm leading-6 text-gray-300">
-                {filteredMonitoringFeed.length}/{monitoringFeed.length} signals
-                visible · {riskSignalCount} risk labels.
-              </div>
-            </button>
+            <MetricCard
+              value={uniqueFeedProducts}
+              label="Detected Products"
+              tone="indigo"
+              source="Source: ARGUS products_text"
+              tooltip="Unique product strings detected from ARGUS products_text. Product normalization groups similar labels into canonical product objects where possible."
+            />
+
+            <MetricCard
+              value={uniqueCampaigns}
+              label="Campaign Signals"
+              tone="green"
+              source="Source: ARGUS promotion_name"
+              tooltip="Unique ARGUS promotion/campaign names detected in the current feed. Multiple ads can belong to the same campaign or promotion."
+            />
           </div>
 
           <div className="mb-8 grid grid-cols-1 gap-5 xl:grid-cols-3">
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5 xl:col-span-2">
-              <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <button
-                  onClick={() => openInfo(pageHistoryPanel())}
-                  className="text-left"
-                >
-                  <div className="text-xs uppercase tracking-[0.25em] text-cyan-300">
-                    F1 / Page Story
-                  </div>
-                  <h2 className="mt-1 text-2xl font-black text-white">
-                    History / Page Story
-                  </h2>
-                </button>
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={() =>
-                      openInfo({
-                        title: "Grouping Controls",
-                        eyebrow: "Campaign / Product / Brand",
-                        tone: "cyan",
-                        body: (
-                          <p>
-                            These controls change how the same monitoring feed
-                            is clustered. Campaign groups highlight messaging
-                            objects, product groups highlight offer/product
-                            satellites, and brand groups highlight
-                            advertiser-level activity.
-                          </p>
-                        ),
-                      })
-                    }
-                    className="rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-cyan-100 transition hover:border-cyan-200"
-                  >
-                    Explain
-                  </button>
-                  {(["campaign", "product", "brand"] as GroupMode[]).map(
-                    (mode) => (
-                      <button
-                        key={mode}
-                        onClick={() => setGroupMode(mode)}
-                        className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] transition ${groupMode === mode ? "border-cyan-300/40 bg-cyan-500/15 text-cyan-100" : "border-white/10 bg-white/[0.04] text-gray-400 hover:text-white"}`}
+            <ExplanationCard
+              title="Dataset Context"
+              onClick={() =>
+                setSelectedPlatformInfo(
+                  buildPlatformInfo(
+                    "Dataset Context",
+                    "How to read the numbers",
+                    "This explains why the counts for ads, brands, products, campaigns and IAB categories do not have to match one-to-one.",
+                    [
+                      "One ad can contain one brand but multiple products.",
+                      "One campaign can appear in several ad signals.",
+                      "One brand can be classified across multiple IAB contexts.",
+                      "The dashboard separates raw signal volume from enriched entity counts."
+                    ],
+                    "Dataset Context"
+                  )
+                )
+              }
+            >
+              <p>
+                The metrics above now come from the live ARGUS public API.
+                Ads are classified records, while brands, products, IAB labels
+                and campaigns are extracted intelligence fields from those ads.
+              </p>
+              <p>
+                The numbers are not expected to match one-to-one: one ad can
+                contain one brand, several products, one promotion, multiple IAB
+                content categories and observation/risk labels.
+              </p>
+            </ExplanationCard>
+
+            <ExplanationCard
+              title="Classification Method"
+              onClick={() =>
+                setSelectedPlatformInfo(
+                  buildPlatformInfo(
+                    "Classification Method",
+                    "IAB and enrichment logic",
+                    "This explains how imported taxonomy fields and local fallback matching create the classification layer.",
+                    [
+                      "ARGUS-provided IAB fields are prioritized when present.",
+                      "Local taxonomy matching is used as a fallback.",
+                      "Unclassified means the signal needs richer source data or manual review.",
+                      "This layer powers filtering, category intelligence and graph context."
+                    ],
+                    "Classification Method"
+                  )
+                )
+              }
+            >
+              <p>
+                ARGUS provides IAB product and content taxonomy fields directly.
+                Imported ARGUS IAB values are shown first; local taxonomy inference
+                is only used as a fallback when an ARGUS field is missing.
+              </p>
+              <p>
+                If an item is still marked as unclassified, it means the ARGUS
+                record did not include a usable IAB value and the local fallback
+                matcher did not produce a strong enough match.
+              </p>
+            </ExplanationCard>
+
+            <ExplanationCard
+              title="Current Feed Scope"
+              onClick={() =>
+                setSelectedPlatformInfo(
+                  buildPlatformInfo(
+                    "Current Feed Scope",
+                    "Live feed health",
+                    "This summarizes what is currently loaded into Monitoring.",
+                    [
+                      `Total loaded signals: ${monitoringFeed.length}`,
+                      `Unique advertisers: ${uniqueAdvertisers}`,
+                      `Unique products: ${uniqueFeedProducts}`,
+                      `Classified signals: ${classifiedSignals}`,
+                      `Risk / observation signals: ${riskSignalCount}`
+                    ],
+                    "Current Feed Scope"
+                  )
+                )
+              }
+            >
+              <p>
+                The feed loads live classified ads from{" "}
+                <span className="text-cyan-100">ARGUS Public API</span> through
+                your secure Next.js API route, so the API key stays server-side.
+              </p>
+              <p>
+                Feed-level unique advertisers: {uniqueAdvertisers}. Feed-level
+                unique products: {uniqueFeedProducts}. Classified signals:{" "}
+                {classifiedSignals}. Risk/observation signals: {riskSignalCount}.
+              </p>
+            </ExplanationCard>
+          </div>
+
+          <div className="mb-8 overflow-hidden rounded-[2rem] border border-cyan-300/25 bg-cyan-500/10 shadow-[0_0_70px_rgba(34,211,238,0.12)] backdrop-blur-xl">
+            <div className="border-b border-white/10 bg-black/25 p-6">
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-green-300/30 bg-green-500/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.25em] text-green-200">
+                <span className="h-2 w-2 rounded-full bg-green-300 shadow-[0_0_14px_rgba(134,239,172,0.8)]" />
+                ARGUS LIVE API CONNECTED
+              </div>
+
+              <button
+                onClick={() =>
+                  setSelectedPlatformInfo(
+                    buildPlatformInfo(
+                      "Live Advertising Intelligence Feed",
+                      "Clickable feed layer",
+                      "This is the bridge between raw ad data and the rest of Brand Galaxy.",
+                      [
+                        "Latest ads show what just entered the intelligence layer.",
+                        "Top brands show which brands are most active.",
+                        "Top categories summarize the current IAB footprint.",
+                        "Risk and observation labels show signals that may need attention."
+                      ],
+                      "/api/argus/ads"
+                    )
+                  )
+                }
+                className="text-left text-4xl font-black tracking-tight text-white transition hover:text-cyan-100"
+              >
+                Live Advertising Intelligence Feed
+              </button>
+
+              <p className="mt-3 max-w-4xl text-sm leading-6 text-gray-300">
+                This dashboard is now reading classified ads directly from the
+                ARGUS Public API through <span className="text-cyan-100">/api/argus/ads</span>.
+                Brand, product, campaign, IAB, confidence and observation fields
+                below are coming from the live API response.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-0 xl:grid-cols-[1.1fr_0.9fr_0.9fr]">
+              <div className="border-b border-white/10 p-6 xl:border-b-0 xl:border-r">
+                <div className="mb-4 text-xs uppercase tracking-[0.25em] text-cyan-200">
+                  Latest ARGUS Ads
+                </div>
+
+                <div className="space-y-3">
+                  {latestArgusAds.length > 0 ? (
+                    latestArgusAds.map((ad) => (
+                      <div
+                        key={ad.id}
+                        className="rounded-2xl border border-white/10 bg-black/25 p-4"
                       >
-                        {mode}
-                      </button>
-                    ),
+                        <div className="mb-2 flex flex-wrap items-center gap-2">
+                          <span className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-100">
+                            {ad.spotCode}
+                          </span>
+                          <span className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
+                            {ad.brand}
+                          </span>
+                          <span className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-gray-300">
+                            {ad.duration}s
+                          </span>
+                        </div>
+
+                        <div className="font-bold text-white">{ad.title}</div>
+                        <div className="mt-1 text-xs text-gray-400">
+                          {ad.product}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-gray-400">
+                      Waiting for ARGUS ads...
+                    </div>
                   )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <input
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Search signal, brand, product..."
-                  className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none transition placeholder:text-gray-600 focus:border-cyan-300/40"
-                />
-                <select
-                  value={brandFilter}
-                  onChange={(event) => setBrandFilter(event.target.value)}
-                  className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/40"
-                >
-                  <option value="all">All brands</option>
-                  {brandOptions.map((brand) => (
-                    <option key={brand} value={brand}>
-                      {brand}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={categoryFilter}
-                  onChange={(event) => setCategoryFilter(event.target.value)}
-                  className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/40"
-                >
-                  <option value="all">All categories</option>
-                  {categoryOptions.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={iabFilter}
-                  onChange={(event) => setIabFilter(event.target.value)}
-                  className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300/40"
-                >
-                  <option value="all">All IAB</option>
-                  {iabOptions.map((iab) => (
-                    <option key={iab} value={iab}>
-                      {iab}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button
-                  onClick={() => setAlphaFilter("all")}
-                  className={`rounded-full border px-3 py-1 text-xs ${alphaFilter === "all" ? "border-cyan-300/40 bg-cyan-500/15 text-cyan-100" : "border-white/10 bg-white/[0.04] text-gray-500"}`}
-                >
-                  All
-                </button>
-                {alphabet.map((letter) => (
-                  <button
-                    key={letter}
-                    onClick={() => setAlphaFilter(letter)}
-                    className={`rounded-full border px-3 py-1 text-xs ${alphaFilter === letter ? "border-cyan-300/40 bg-cyan-500/15 text-cyan-100" : "border-white/10 bg-white/[0.04] text-gray-500 hover:text-white"}`}
-                  >
-                    {letter}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-              <button
-                onClick={() =>
-                  openInfo({
-                    title: "Top Live Brands",
-                    eyebrow: "Brand Intelligence Entry",
-                    tone: "pink",
-                    body: (
-                      <p>
-                        These are the strongest brands in the currently loaded
-                        monitoring feed. Each row opens a compact Brand
-                        Intelligence panel with profile, products, campaigns,
-                        audiences, IAB footprint, sources and risk labels. Page
-                        history now lives only in F1.
-                      </p>
-                    ),
-                  })
-                }
-                className="mb-4 text-left"
-              >
-                <div className="text-xs uppercase tracking-[0.25em] text-fuchsia-300">
+              <div className="border-b border-white/10 p-6 xl:border-b-0 xl:border-r">
+                <div className="mb-4 text-xs uppercase tracking-[0.25em] text-fuchsia-200">
                   Top Live Brands
                 </div>
-                <h2 className="mt-1 text-2xl font-black text-white">
-                  Brand Intelligence
-                </h2>
-              </button>
-              <div className="space-y-3">
-                {topBrands.length ? (
-                  topBrands.map((brand) => (
-                    <button
-                      key={brand.value}
-                      onClick={() => openBrandProfile(brand.value)}
-                      className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-black/25 p-4 text-left transition hover:border-fuchsia-300/40 hover:bg-fuchsia-500/10"
-                    >
-                      <span className="font-bold text-white">
-                        {brand.value}
-                      </span>
-                      <span className="text-sm text-fuchsia-200">
-                        {brand.count} signals →
-                      </span>
-                    </button>
-                  ))
+
+                <div className="space-y-3">
+                  {(topBrands.length > 0 ? topBrands : argusStats?.by_brand || [])
+                    .slice(0, 6)
+                    .map((brand) => (
+                      <button
+                        key={brand.value}
+                        onClick={() => {
+                          setSelectedBrandName(brand.value);
+                          setBrandProfileMode("f2");
+                        }}
+                        className="flex w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3 text-left transition hover:border-fuchsia-300/40 hover:bg-fuchsia-500/10"
+                      >
+                        <span className="truncate text-sm font-semibold text-white">
+                          {brand.value}
+                        </span>
+                        <span className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
+                          {brand.count}
+                        </span>
+                      </button>
+                    ))}
+                </div>
+              </div>
+
+              <div className="p-6">
+                <div className="mb-4 text-xs uppercase tracking-[0.25em] text-amber-200">
+                  Top Categories / Risk
+                </div>
+
+                <div className="mb-4 grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
+                    <div className="text-3xl font-black text-cyan-100">
+                      {classifiedSignals}
+                    </div>
+                    <div className="mt-1 text-xs text-gray-400">
+                      Classified in feed
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
+                    <div className="text-3xl font-black text-red-100">
+                      {riskSignalCount}
+                    </div>
+                    <div className="mt-1 text-xs text-gray-400">
+                      Observation signals
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {(topCategories.length > 0
+                    ? topCategories
+                    : argusStats?.by_category || []
+                  )
+                    .slice(0, 5)
+                    .map((category) => (
+                      <div
+                        key={category.value}
+                        className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3"
+                      >
+                        <span className="truncate text-sm font-semibold text-white">
+                          {category.value}
+                        </span>
+                        <span className="rounded-full border border-amber-300/20 bg-amber-500/10 px-3 py-1 text-xs text-amber-100">
+                          {category.count}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {argusError && (
+            <div className="mb-6 rounded-[2rem] border border-red-300/20 bg-red-500/10 p-5 text-sm text-red-100">
+              ARGUS API error: {argusError}
+            </div>
+          )}
+
+          {loading ? (
+            <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-10 text-gray-300 backdrop-blur-xl">
+              Loading live ARGUS monitoring intelligence...
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_1fr]">
+              <aside className="rounded-[2rem] border border-cyan-300/20 bg-cyan-500/10 p-6 backdrop-blur-xl shadow-[0_0_60px_rgba(34,211,238,0.08)]">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="text-xs uppercase tracking-[0.3em] text-cyan-200">
+                    Intelligence Snapshot
+                  </div>
+                  <InfoTooltip text="This panel highlights the first available signal in the monitoring feed. It is a snapshot, not a total count." />
+                </div>
+
+                <button
+                  onClick={() =>
+                    setSelectedPlatformInfo(
+                      buildPlatformInfo(
+                        "Signal Command View",
+                        "Operational snapshot",
+                        "This panel explains one active monitoring signal in detail. It is a command snapshot, not a total dataset summary.",
+                        [
+                          "Shows brand, product, network, IAB and confidence for one signal.",
+                          "Useful for quick QA of the current feed.",
+                          "Can open the brand profile or signal detail from connected cards.",
+                          "Future version can rotate through high-risk signals, alerts and top movers."
+                        ],
+                        "Signal Command View"
+                      )
+                    )
+                  }
+                  className="mb-6 block text-left text-3xl font-black text-white transition hover:text-cyan-100"
+                >
+                  Signal Command View
+                </button>
+
+                {featuredSignal ? (
+                  <div className="rounded-3xl border border-white/10 bg-black/30 p-5">
+                    <div className="mb-3 inline-flex rounded-full border border-fuchsia-300/30 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
+                      {featuredSignal.type}
+                    </div>
+
+                    <h3 className="mb-4 text-2xl font-black">
+                      {featuredSignal.title}
+                    </h3>
+
+                    <div className="space-y-3 text-sm text-gray-300">
+                      <div>
+                        Brand:
+                        <span className="ml-2 font-semibold text-white">
+                          {featuredSignal.brand}
+                        </span>
+                      </div>
+
+                      <div>
+                        Product:
+                        <span className="ml-2 break-words font-semibold text-white">
+                          {featuredSignal.product}
+                        </span>
+                      </div>
+
+                      <div>
+                        Network:
+                        <span className="ml-2 font-semibold text-white">
+                          {featuredSignal.network}
+                        </span>
+                      </div>
+
+                      <div>
+                        IAB:
+                        <span className="ml-2 font-semibold text-white">
+                          {featuredSignal.iabClass}
+                        </span>
+                      </div>
+
+                      <div>
+                        Confidence:
+                        <span className="ml-2 font-semibold text-white">
+                          {featuredSignal.confidence ?? featuredSignal.iabConfidence ?? "N/A"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 ) : (
-                  <EmptyState label="No brand signals loaded yet." />
+                  <div className="rounded-3xl border border-white/10 bg-black/30 p-5 text-sm text-gray-400">
+                    No monitoring signals found yet.
+                  </div>
                 )}
-              </div>
-            </div>
-          </div>
 
-          <div className="mb-8 grid grid-cols-1 gap-5 xl:grid-cols-2">
-            <div className="rounded-[2rem] border border-white/10 bg-black/25 p-5">
-              <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-lg font-black text-white">
-                  Live categories
-                </h3>
-                <button
-                  onClick={() =>
-                    openInfo({
-                      title: "Category Distribution",
-                      tone: "green",
-                      body: (
-                        <p>
-                          Categories come from ARGUS primary_category,
-                          subcategory, program or IAB fields. They are used as
-                          audience/context signals for the graph.
-                        </p>
-                      ),
-                    })
-                  }
-                  className="text-xs text-cyan-200"
-                >
-                  Explain
-                </button>
-              </div>
-              <div className="space-y-3">
-                {topCategories.map((item) => (
-                  <div
-                    key={item.value}
-                    className="rounded-2xl border border-white/10 bg-white/[0.04] p-3"
-                  >
-                    <div className="flex justify-between gap-3 text-sm">
-                      <span className="text-gray-200">{item.value}</span>
-                      <span className="font-bold text-green-200">
-                        {item.count}
-                      </span>
+                <div className="mt-5 rounded-3xl border border-white/10 bg-black/24 p-5">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div className="text-sm font-semibold text-cyan-200">
+                      Pipeline Status
                     </div>
+                    <InfoTooltip text="This describes the intended intelligence pipeline: raw monitoring row, entity extraction, graph linking, classification, then Brand Galaxy insight generation." />
                   </div>
-                ))}
-              </div>
-            </div>
-            <div className="rounded-[2rem] border border-white/10 bg-black/25 p-5">
-              <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-lg font-black text-white">Top products</h3>
-                <button
-                  onClick={() =>
-                    openInfo({
-                      title: "Product Ranking",
-                      tone: "indigo",
-                      body: (
-                        <p>
-                          Product ranking shows normalized product objects
-                          visible in the current feed. These can become product
-                          satellites around brands in Brand Galaxy.
-                        </p>
-                      ),
-                    })
-                  }
-                  className="text-xs text-cyan-200"
-                >
-                  Explain
-                </button>
-              </div>
-              <div className="mb-4 flex gap-2">
-                <button
-                  onClick={() => setRankingMode("now")}
-                  className={`rounded-full px-3 py-1 text-xs ${rankingMode === "now" ? "bg-indigo-500/20 text-indigo-100" : "bg-white/[0.05] text-gray-400"}`}
-                >
-                  Filtered
-                </button>
-                <button
-                  onClick={() => setRankingMode("overall")}
-                  className={`rounded-full px-3 py-1 text-xs ${rankingMode === "overall" ? "bg-indigo-500/20 text-indigo-100" : "bg-white/[0.05] text-gray-400"}`}
-                >
-                  Overall
-                </button>
-              </div>
-              <div className="space-y-3">
-                {rankedProducts.map((item) => (
-                  <div
-                    key={item.value}
-                    className="rounded-2xl border border-white/10 bg-white/[0.04] p-3"
-                  >
-                    <div className="flex justify-between gap-3 text-sm">
-                      <span className="text-gray-200">{item.value}</span>
-                      <span className="font-bold text-indigo-200">
-                        {item.count}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
 
-          <section className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5 backdrop-blur-xl">
-            <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-              <div>
-                <button
-                  onClick={() =>
-                    openInfo({
-                      title: "Signal Cards",
-                      eyebrow: "Clickable Signal Groups",
-                      tone: "cyan",
-                      body: (
-                        <p>
-                          Every card below is clickable. Opening a card reveals
-                          signal detail, brand, product, campaign, IAB/category,
-                          risk labels and a human-readable explanation.
-                        </p>
-                      ),
-                    })
-                  }
-                  className="text-left"
-                >
-                  <div className="text-xs uppercase tracking-[0.25em] text-cyan-300">
-                    Signal Cards
+                  <div className="space-y-3 text-sm text-gray-300">
+                    <div>✦ Entity extraction ready</div>
+                    <div>✦ Graph linking active</div>
+                    <div>✦ IAB classification layer prepared</div>
+                    <div>✦ Brand Galaxy insight generation enabled</div>
                   </div>
-                  <h2 className="mt-1 text-3xl font-black text-white">
-                    Grouped Monitoring Signals
-                  </h2>
-                </button>
-                <p className="mt-2 text-sm text-gray-400">
-                  {filteredMonitoringFeed.length} signals grouped by {groupMode}
-                  .
+                </div>
+
+                <div className="mt-5 rounded-3xl border border-white/10 bg-black/24 p-5">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div className="text-sm font-semibold text-fuchsia-200">
+                      Active Grouping
+                    </div>
+                    <InfoTooltip text="Grouping does not change the raw data. It only changes how the monitoring feed is organized for review: by campaign, product or brand." />
+                  </div>
+
+                  <div className="text-sm leading-6 text-gray-300">
+                    {groupModeDescription}
+                  </div>
+                </div>
+              </aside>
+
+              <section className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-xl shadow-[0_0_60px_rgba(34,211,238,0.08)]">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="text-xs uppercase tracking-[0.3em] text-fuchsia-200">
+                    Signal Feed
+                  </div>
+                  <InfoTooltip text="The Monitoring Intelligence Feed shows live classified ad records from the ARGUS public API, grouped by campaign, product or brand." />
+                </div>
+
+                <h2 className="mb-2 text-3xl font-black">
+                  Monitoring Intelligence Feed
+                </h2>
+
+                <p className="mb-6 text-sm leading-6 text-gray-400">
+                  Each card now represents one grouped ARGUS intelligence object. Use
+                  the controls below to review live ad data by campaign,
+                  product, or brand.
                 </p>
-              </div>
-            </div>
 
-            {loading ? (
-              <div className="rounded-3xl border border-white/10 bg-black/25 p-8 text-center text-gray-400">
-                Loading monitoring feed...
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-                {groupedSignals.map((group) => (
-                  <button
-                    key={group.key}
-                    onClick={() => setSelectedSignal(group.signals[0])}
-                    className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:-translate-y-0.5 hover:border-cyan-300/35 hover:bg-cyan-500/10"
-                  >
-                    <div className="mb-3 flex items-start justify-between gap-4">
-                      <div>
-                        <div className="text-xs uppercase tracking-[0.2em] text-cyan-300">
-                          {groupMode} group
-                        </div>
-                        <h3 className="mt-1 text-xl font-black text-white">
-                          {group.key}
-                        </h3>
+
+                <div className="mb-6 rounded-[2rem] border border-white/10 bg-black/25 p-5">
+                  <div className="mb-4 flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
+                    <div>
+                      <div className="text-sm font-semibold text-cyan-200">
+                        Search / Filter / A-Z Control
                       </div>
-                      <div className="rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-1 text-xs font-bold text-cyan-100">
-                        {group.count} signals
+                      <div className="text-xs text-gray-500">
+                        Analyst controls for set checking, dedup review and brand-first navigation.
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+
+                    <button
+                      onClick={() => {
+                        setSearchQuery("");
+                        setBrandFilter("all");
+                        setCategoryFilter("all");
+                        setIabFilter("all");
+                        setAlphaFilter("all");
+                      }}
+                      className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition hover:border-cyan-300/30 hover:text-white"
+                    >
+                      Reset filters
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 xl:grid-cols-[1.6fr_1fr_1fr_1fr]">
+                    <input
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      placeholder="Search brand, product, campaign, IAB, category..."
+                      className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-sm text-white outline-none transition placeholder:text-gray-600 focus:border-cyan-300/40"
+                    />
+
+                    <select
+                      value={brandFilter}
+                      onChange={(event) => setBrandFilter(event.target.value)}
+                      className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-300/40"
+                    >
+                      <option value="all">All brands</option>
+                      {brandOptions.map((brand) => (
+                        <option key={brand} value={brand}>
+                          {brand}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={categoryFilter}
+                      onChange={(event) => setCategoryFilter(event.target.value)}
+                      className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-300/40"
+                    >
+                      <option value="all">All categories</option>
+                      {categoryOptions.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={iabFilter}
+                      onChange={(event) => setIabFilter(event.target.value)}
+                      className="rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-300/40"
+                    >
+                      <option value="all">All IAB classes</option>
+                      {iabOptions.map((iab) => (
+                        <option key={iab} value={iab}>
+                          {iab}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setAlphaFilter("all")}
+                      className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+                        alphaFilter === "all"
+                          ? "border-cyan-300/40 bg-cyan-500/15 text-cyan-100"
+                          : "border-white/10 bg-black/25 text-gray-500 hover:text-white"
+                      }`}
+                    >
+                      ALL
+                    </button>
+
+                    {alphabet.map((letter) => (
+                      <button
+                        key={letter}
+                        onClick={() => setAlphaFilter(letter)}
+                        className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+                          alphaFilter === letter
+                            ? "border-cyan-300/40 bg-cyan-500/15 text-cyan-100"
+                            : "border-white/10 bg-black/25 text-gray-500 hover:text-white"
+                        }`}
+                      >
+                        {letter}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mb-6 flex flex-wrap gap-3">
+                  {[
+                    { key: "campaign", label: "Group by Campaign" },
+                    { key: "product", label: "Group by Product" },
+                    { key: "brand", label: "Group by Brand" },
+                  ].map((mode) => (
+                    <button
+                      key={mode.key}
+                      onClick={() => setGroupMode(mode.key as GroupMode)}
+                      className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition duration-300 ${
+                        groupMode === mode.key
+                          ? "border-cyan-300/40 bg-cyan-500/15 text-cyan-100 shadow-[0_0_22px_rgba(34,211,238,0.1)]"
+                          : "border-white/10 bg-black/25 text-gray-400 hover:border-white/20 hover:text-white"
+                      }`}
+                    >
+                      {mode.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
+                  <div className="rounded-[2rem] border border-cyan-300/20 bg-cyan-500/10 p-5">
+                    <div className="mb-3 flex items-center justify-between gap-3">
                       <div>
-                        <div className="mb-2 text-xs text-gray-500">Brands</div>
-                        <div className="flex flex-wrap gap-2">
-                          {group.brands.slice(0, 4).map((item) => (
-                            <Pill key={item}>{item}</Pill>
-                          ))}
+                        <div className="text-sm font-semibold text-cyan-200">
+                          Top Now / Overall Top
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Now = current filters. Overall = full loaded set.
                         </div>
                       </div>
-                      <div>
-                        <div className="mb-2 text-xs text-gray-500">
-                          Products
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {group.products.slice(0, 4).map((item) => (
-                            <Pill key={item}>{item}</Pill>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="md:col-span-2">
-                        <div className="mb-2 text-xs text-gray-500">
-                          IAB / Source
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {[
-                            ...group.iabClasses.slice(0, 2),
-                            ...group.sources.slice(0, 2),
-                          ].map((item) => (
-                            <Pill key={item}>{item}</Pill>
-                          ))}
-                        </div>
+
+                      <div className="flex rounded-2xl border border-white/10 bg-black/25 p-1">
+                        {[
+                          { key: "now", label: "Now" },
+                          { key: "overall", label: "Overall" },
+                        ].map((mode) => (
+                          <button
+                            key={mode.key}
+                            onClick={() => setRankingMode(mode.key as RankingMode)}
+                            className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
+                              rankingMode === mode.key
+                                ? "bg-cyan-500/20 text-cyan-100"
+                                : "text-gray-500 hover:text-white"
+                            }`}
+                          >
+                            {mode.label}
+                          </button>
+                        ))}
                       </div>
                     </div>
-                  </button>
-                ))}
-                {!groupedSignals.length && (
-                  <div className="rounded-3xl border border-white/10 bg-black/25 p-8 text-center text-gray-400 xl:col-span-2">
-                    No monitoring signals match the current filters.
+
+                    <div className="space-y-2">
+                      {rankedBrands.map((brand, index) => (
+                        <button
+                          key={brand.value}
+                          onClick={() => {
+                            setBrandFilter(brand.value);
+                            setSelectedBrandName(brand.value);
+                            setBrandProfileMode("f2");
+                          }}
+                          className="flex w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3 text-left transition hover:border-cyan-300/30"
+                        >
+                          <span className="truncate text-sm font-semibold text-white">
+                            #{index + 1} {brand.value}
+                          </span>
+                          <span className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-100">
+                            {brand.count}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[2rem] border border-fuchsia-300/20 bg-fuchsia-500/10 p-5">
+                    <div className="mb-3 text-sm font-semibold text-fuchsia-200">
+                      Top Products
+                    </div>
+
+                    <div className="space-y-2">
+                      {rankedProducts.map((product, index) => (
+                        <button
+                          key={product.value}
+                          onClick={() => {
+                            setSearchQuery(product.value);
+                            setGroupMode("product");
+                          }}
+                          className="flex w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3 text-left transition hover:border-fuchsia-300/30"
+                        >
+                          <span className="truncate text-sm font-semibold text-white">
+                            #{index + 1} {product.value}
+                          </span>
+                          <span className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
+                            {product.count}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[2rem] border border-amber-300/20 bg-amber-500/10 p-5">
+                    <div className="mb-3 text-sm font-semibold text-amber-200">
+                      Set Quality Check
+                    </div>
+
+                    <div className="space-y-3 text-sm text-gray-300">
+                      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 p-3">
+                        <span>Visible after filters</span>
+                        <span className="font-bold text-white">
+                          {setQualitySummary.filteredCount}/{setQualitySummary.totalCount}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 p-3">
+                        <span>Repeated brand signals</span>
+                        <span className="font-bold text-white">
+                          {setQualitySummary.duplicatedBrands}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 p-3">
+                        <span>Missing IAB</span>
+                        <span className="font-bold text-white">
+                          {setQualitySummary.missingIab}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 p-3">
+                        <span>Missing products</span>
+                        <span className="font-bold text-white">
+                          {setQualitySummary.missingProducts}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+
+                {groupedSignals.length === 0 ? (
+                  <div className="rounded-[2rem] border border-white/10 bg-black/30 p-8 text-gray-300">
+                    No ARGUS monitoring signals available yet. Check the API route or try again after the ARGUS service has data.
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {groupedSignals.map((group) => {
+                      const primarySignal = group.signals[0];
+
+                      return (
+                        <div
+                          key={group.key}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setSelectedSignal(primarySignal)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") setSelectedSignal(primarySignal);
+                          }}
+                          className="w-full cursor-pointer rounded-[2rem] border border-white/10 bg-black/30 p-6 text-left shadow-[0_0_35px_rgba(255,255,255,0.04)] transition duration-300 hover:-translate-y-0.5 hover:border-cyan-300/30 hover:bg-black/40"
+                        >
+                          <div className="mb-4 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                            <div className="min-w-0">
+                              <div className="mb-3 inline-flex rounded-full border border-green-300/30 bg-green-500/10 px-3 py-1 text-xs text-green-200">
+                                GROUPED BY {groupMode.toUpperCase()}
+                              </div>
+
+                              <h3 className="break-words text-2xl font-black text-white">
+                                {group.key}
+                              </h3>
+
+                              <p className="mt-2 max-w-3xl text-sm leading-6 text-gray-400">
+                                This grouped object contains {group.count} signal
+                                {group.count === 1 ? "" : "s"} connected to{" "}
+                                {group.products.length} product
+                                {group.products.length === 1 ? "" : "s"},{" "}
+                                {group.brands.length} brand
+                                {group.brands.length === 1 ? "" : "s"} and{" "}
+                                {group.campaigns.length} campaign
+                                {group.campaigns.length === 1 ? "" : "s"}.
+                              </p>
+                            </div>
+
+                            <div className="flex flex-wrap gap-3">
+                              <div className="rounded-2xl border border-cyan-300/30 bg-cyan-500/10 px-4 py-3 text-cyan-100">
+                                {group.count} signal
+                                {group.count === 1 ? "" : "s"}
+                              </div>
+
+                              <div className="rounded-2xl border border-fuchsia-300/30 bg-fuchsia-500/10 px-4 py-3 text-fuchsia-100">
+                                {group.products.length} product
+                                {group.products.length === 1 ? "" : "s"}
+                              </div>
+
+                              <div className="rounded-2xl border border-green-300/30 bg-green-500/10 px-4 py-3 text-green-100">
+                                {group.brands.length} brand
+                                {group.brands.length === 1 ? "" : "s"}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="mb-5 grid grid-cols-1 gap-3 xl:grid-cols-3">
+                            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                              <div className="mb-2 flex items-center justify-between gap-2 text-xs uppercase tracking-[0.2em] text-cyan-300">
+                                Related Products
+                                <InfoTooltip text="Products found inside this group. When grouped by product, this usually shows the canonical product object for the group." />
+                              </div>
+
+                              <div className="space-y-2 text-sm text-gray-300">
+                                {group.products.slice(0, 6).map((product) => (
+                                  <div key={product}>{product}</div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                              <div className="mb-2 flex items-center justify-between gap-2 text-xs uppercase tracking-[0.2em] text-fuchsia-300">
+                                Related Campaigns
+                                <InfoTooltip text="Campaigns found inside this group. When grouped by campaign, this shows the campaign object plus any duplicate or related campaign labels." />
+                              </div>
+
+                              <div className="space-y-2 text-sm text-gray-300">
+                                {group.campaigns.slice(0, 6).map((campaign) => (
+                                  <div key={campaign}>{campaign}</div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                              <div className="mb-2 flex items-center justify-between gap-2 text-xs uppercase tracking-[0.2em] text-green-300">
+                                Related Brands
+                                <InfoTooltip text="Brands found inside this group. This helps distinguish commercial brands from legal companies or owners." />
+                              </div>
+
+                              <div className="space-y-2 text-sm text-gray-300">
+                                {group.brands.slice(0, 6).map((brand) => (
+                                  <div key={brand}>{brand}</div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-2 2xl:grid-cols-4">
+                            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                              <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
+                                Primary Advertiser
+                                <InfoTooltip text="The first advertiser detected inside this grouped object. Additional advertisers appear in the grouped hierarchy if present." />
+                              </div>
+                              <div className="break-words font-bold">
+                                {primarySignal.advertiser}
+                              </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                              <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
+                                Primary Brand
+                                <InfoTooltip text="The first brand detected inside this grouped object. Brand grouping is based on normalized display labels from the current monitoring feed." />
+                              </div>
+                              <div className="break-words font-bold">
+                                {primarySignal.brand}
+                              </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                              <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
+                                Primary Product
+                                <InfoTooltip text="The first product detected inside this grouped object. Product-level normalization is the next phase, especially for variants like Zero Sugar / Coke Zero." />
+                              </div>
+                              <div className="break-words font-bold">
+                                {primarySignal.product}
+                              </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                              <div className="mb-1 flex items-center justify-between gap-2 text-sm text-gray-400">
+                                IAB Class
+                                <InfoTooltip text="Classification based on IAB taxonomy when imported. If missing, this field explicitly says that mapping is pending instead of hiding the absence." />
+                              </div>
+                              <div className="break-words font-bold">
+                                {group.iabClasses[0] ||
+                                  "Unclassified / pending IAB mapping"}
+                              </div>
+                              <div className="mt-2 text-xs text-gray-500">
+                                Confidence: {group.iabConfidence[0] || "None"}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            {group.signals.slice(0, 4).map((signal) => (
+                              <button
+                                key={signal.id}
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  setSelectedSignal(signal);
+                                }}
+                                className="w-full rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-left transition hover:border-cyan-300/30"
+                              >
+                                <div className="mb-2 flex flex-wrap items-center gap-2">
+                                  <div className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-100">
+                                    {signal.type}
+                                  </div>
+
+                                  {signal.duration && (
+                                    <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-gray-300">
+                                      {signal.duration} sec
+                                    </div>
+                                  )}
+
+                                  {signal.spotCode && (
+                                    <div className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
+                                      Ad: {signal.spotCode}
+                                    </div>
+                                  )}
+
+                                  {signal.riskLabels?.length > 0 && (
+                                    <div className="rounded-full border border-red-300/20 bg-red-500/10 px-3 py-1 text-xs text-red-100">
+                                      {signal.riskLabels.length} observation tag{signal.riskLabels.length === 1 ? "" : "s"}
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="font-semibold text-white">
+                                  {signal.title}
+                                </div>
+
+                                <div className="mt-2 text-sm leading-6 text-gray-400">
+                                  {signal.description}
+                                </div>
+
+                                <div className="mt-3 text-xs uppercase tracking-[0.2em] text-gray-500">
+                                  Source: {signal.source} · Classification:{" "}
+                                  {signal.classificationSource}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+
+                          <div className="mt-5 rounded-2xl border border-fuchsia-300/20 bg-fuchsia-500/10 p-4 text-sm leading-6 text-fuchsia-100">
+                            Grouping view: this card summarizes multiple
+                            monitoring signals around one{" "}
+                            {groupMode === "campaign"
+                              ? "campaign"
+                              : groupMode === "product"
+                              ? "product"
+                              : "brand"}{" "}
+                            object. Switch the grouping mode above to inspect
+                            the same dataset from another perspective.
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
-              </div>
-            )}
-          </section>
+              </section>
+            </div>
+          )}
         </div>
 
+
         {selectedBrandProfile && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 px-4 backdrop-blur-xl">
-            <div className="max-h-[88vh] w-full max-w-6xl overflow-y-auto rounded-[2rem] border border-fuchsia-300/25 bg-[#020617] p-6 shadow-[0_0_90px_rgba(217,70,239,0.16)]">
-              <div className="mb-6 flex items-start justify-between gap-4">
+          <div className="fixed inset-0 z-[85] flex items-center justify-center bg-black/70 px-4 backdrop-blur-xl">
+            <div className="max-h-[90vh] w-full max-w-6xl overflow-y-auto rounded-[2rem] border border-fuchsia-300/25 bg-[#020617] p-6 shadow-[0_0_100px_rgba(217,70,239,0.16)]">
+              <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-3xl border border-white/10 bg-white/[0.06] text-4xl">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-[1.5rem] border border-fuchsia-300/30 bg-fuchsia-500/10 text-4xl shadow-[0_0_45px_rgba(217,70,239,0.18)]">
                     {selectedBrandProfile.logoEmoji}
                   </div>
+
                   <div>
                     <div className="mb-2 inline-flex rounded-full border border-fuchsia-300/25 bg-fuchsia-500/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-fuchsia-200">
-                      Brand Intelligence
+                      Brand Intelligence Profile
                     </div>
+
                     <h3 className="text-4xl font-black text-white">
                       {selectedBrandProfile.name}
                     </h3>
-                    <p className="mt-2 max-w-3xl text-sm leading-6 text-gray-400">
+
+                    <div className="mt-2 text-sm text-gray-400">
                       {selectedBrandProfile.slogan}
-                    </p>
+                    </div>
+
+                    {selectedBrandProfile.website && (
+                      <a
+                        href={selectedBrandProfile.website}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-2 inline-flex text-sm font-semibold text-cyan-200 hover:text-cyan-100"
+                      >
+                        {selectedBrandProfile.website}
+                      </a>
+                    )}
                   </div>
                 </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex rounded-2xl border border-white/10 bg-black/25 p-1">
+                    {[
+                      { key: "f1", label: "F1 History" },
+                      { key: "f2", label: "Brand Card" },
+                    ].map((mode) => (
+                      <button
+                        key={mode.key}
+                        onClick={() => setBrandProfileMode(mode.key as BrandProfileMode)}
+                        className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+                          brandProfileMode === mode.key
+                            ? "bg-fuchsia-500/20 text-fuchsia-100"
+                            : "text-gray-500 hover:text-white"
+                        }`}
+                      >
+                        {mode.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedBrandName(null)}
+                    className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition hover:border-white/20 hover:text-white"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+
+              <div className="mb-5 grid grid-cols-2 gap-4 md:grid-cols-4">
+                {[
+                  ["Signals", selectedBrandProfile.signalCount],
+                  ["Classified", selectedBrandProfile.classifiedCount],
+                  ["Products", selectedBrandProfile.products.length],
+                  ["Campaigns", selectedBrandProfile.campaigns.length],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="rounded-3xl border border-white/10 bg-black/25 p-5"
+                  >
+                    <div className="text-3xl font-black text-fuchsia-100">
+                      {value}
+                    </div>
+                    <div className="mt-1 text-xs uppercase tracking-[0.2em] text-gray-500">
+                      {label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {brandProfileMode === "f1" ? (
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                  <div className="rounded-3xl border border-cyan-300/20 bg-cyan-500/10 p-5 lg:col-span-2">
+                    <div className="mb-2 text-xs uppercase tracking-[0.2em] text-cyan-300">
+                      F1 · Page History
+                    </div>
+
+                    <h4 className="text-2xl font-black text-white">
+                      Monitoring page story
+                    </h4>
+
+                    <div className="mt-4 space-y-3 text-sm leading-7 text-gray-300">
+                      {pageHistoryProfile.story.map((item) => (
+                        <div
+                          key={item}
+                          className="rounded-2xl border border-white/10 bg-black/25 p-4"
+                        >
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
+                    <div className="mb-2 text-xs uppercase tracking-[0.2em] text-fuchsia-300">
+                      Current page state
+                    </div>
+
+                    <div className="space-y-3 text-sm text-gray-300">
+                      <div>Total signals:<span className="ml-2 font-bold text-white">{pageHistoryProfile.totalSignals}</span></div>
+                      <div>Unique brands:<span className="ml-2 font-bold text-white">{pageHistoryProfile.uniqueBrands}</span></div>
+                      <div>Unique products:<span className="ml-2 font-bold text-white">{pageHistoryProfile.uniqueProducts}</span></div>
+                      <div>Unique campaigns:<span className="ml-2 font-bold text-white">{pageHistoryProfile.uniqueCampaigns}</span></div>
+                      <div>Top brand:<span className="ml-2 font-bold text-white">{pageHistoryProfile.topBrand}</span></div>
+                      <div>Top category:<span className="ml-2 font-bold text-white">{pageHistoryProfile.topCategory}</span></div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5 lg:col-span-3">
+                    <div className="mb-3 text-xs uppercase tracking-[0.2em] text-emerald-300">
+                      Source timeline / platform role
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {(pageHistoryProfile.sources.length
+                        ? pageHistoryProfile.sources
+                        : ["ARGUS / CSV / Nielsen ready"]
+                      ).map((source) => (
+                        <span
+                          key={source}
+                          className="rounded-full border border-emerald-300/20 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-100"
+                        >
+                          {source}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
+                      {[
+                        ["Ingest", "ARGUS and CSV/Nielsen signals enter the system."],
+                        ["Normalize", "Signals become brands, products, campaigns, audiences and IAB context."],
+                        ["Activate", "Entities power Monitoring, Search, Top Brands and Relationship Graph."],
+                      ].map(([title, copy]) => (
+                        <div
+                          key={title}
+                          className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
+                        >
+                          <div className="text-sm font-bold text-white">{title}</div>
+                          <div className="mt-2 text-xs leading-5 text-gray-400">{copy}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>              ) : (
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5 lg:col-span-2">
+                    <div className="mb-2 text-xs uppercase tracking-[0.2em] text-cyan-300">
+                      Brand history / context
+                    </div>
+                    <p className="text-sm leading-7 text-gray-300">
+                      {selectedBrandProfile.history}
+                    </p>
+
+                    <div className="mt-5 text-xs uppercase tracking-[0.2em] text-fuchsia-300">
+                      Aliases
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {selectedBrandProfile.aliases.map((alias) => (
+                        <span
+                          key={alias}
+                          className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-gray-200"
+                        >
+                          {alias}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
+                    <div className="mb-2 text-xs uppercase tracking-[0.2em] text-amber-300">
+                      Audiences / categories
+                    </div>
+                    <div className="space-y-2 text-sm text-gray-300">
+                      {dedupe([
+                        ...selectedBrandProfile.audiences,
+                        ...selectedBrandProfile.categories,
+                      ])
+                        .slice(0, 12)
+                        .map((item) => (
+                          <div key={item}>{item}</div>
+                        ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-white/10 bg-black/25 p-5 lg:col-span-3">
+                    <div className="mb-3 text-xs uppercase tracking-[0.2em] text-green-300">
+                      Latest signals
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                      {selectedBrandProfile.signals.slice(0, 6).map((signal) => (
+                        <button
+                          key={signal.id}
+                          onClick={() => setSelectedSignal(signal)}
+                          className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left transition hover:border-green-300/30 hover:bg-green-500/10"
+                        >
+                          <div className="text-sm font-bold text-white">
+                            {signal.title}
+                          </div>
+                          <div className="mt-1 text-xs text-gray-400">
+                            {signal.campaignObject || signal.product}
+                          </div>
+                          <div className="mt-2 text-xs text-green-200">
+                            {signal.iabClass || "Unclassified"}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedBrandProfile.riskLabels.length > 0 && (
+                <div className="mt-5 rounded-3xl border border-red-300/20 bg-red-500/10 p-5">
+                  <div className="mb-3 text-sm font-semibold text-red-200">
+                    Risk / observation labels
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedBrandProfile.riskLabels.map((label) => (
+                      <span
+                        key={label}
+                        className="rounded-full border border-red-300/20 bg-black/25 px-3 py-1 text-xs text-red-100"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {selectedPlatformInfo && (
+          <div className="fixed inset-0 z-[82] flex items-center justify-center bg-black/70 px-4 backdrop-blur-xl">
+            <div className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-cyan-300/25 bg-[#020617] p-6 shadow-[0_0_90px_rgba(34,211,238,0.16)]">
+              <div className="mb-6 flex items-start justify-between gap-4">
+                <div>
+                  <div className="mb-2 inline-flex rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-cyan-200">
+                    {selectedPlatformInfo.label}
+                  </div>
+
+                  <h3 className="text-3xl font-black text-white">
+                    {selectedPlatformInfo.title}
+                  </h3>
+
+                  {selectedPlatformInfo.source && (
+                    <div className="mt-2 text-xs uppercase tracking-[0.18em] text-gray-500">
+                      Source: {selectedPlatformInfo.source}
+                    </div>
+                  )}
+                </div>
+
                 <button
-                  onClick={() => setSelectedBrandName(null)}
+                  onClick={() => setSelectedPlatformInfo(null)}
                   className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition hover:border-white/20 hover:text-white"
                 >
                   Close
                 </button>
               </div>
 
-              <div className="mb-5 rounded-3xl border border-cyan-300/20 bg-cyan-500/10 p-5">
-                <div className="mb-2 text-xs uppercase tracking-[0.22em] text-cyan-200">
-                  F1 stays page-level only
-                </div>
-                <p className="text-sm leading-7 text-gray-300">
-                  This is not a mode switch. Brand Intelligence
-                  is a clickable detail window for the selected brand. The only
-                  F-key story panel on this page is{" "}
-                  <button
-                    onClick={() => openInfo(pageHistoryPanel())}
-                    className="font-bold text-cyan-100 underline decoration-cyan-300/50 underline-offset-4"
-                  >
-                    F1 Page History
-                  </button>
-                  .
-                </p>
-              </div>
+              <p className="mb-5 text-sm leading-7 text-gray-300">
+                {selectedPlatformInfo.summary}
+              </p>
 
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <button
-                  onClick={() =>
-                    openInfo({
-                      title: "Website / Company",
-                      eyebrow: selectedBrandProfile.name,
-                      tone: "cyan",
-                      body: (
-                        <p>
-                          This block stores the best available company/ownership
-                          context for the selected brand. Website and ownership
-                          may come from the curated registry or from advertiser
-                          fields in the live monitoring feed.
-                        </p>
-                      ),
-                    })
-                  }
-                  className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:border-cyan-300/40 hover:bg-cyan-500/10"
-                >
-                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-cyan-300">
-                    Website / Company
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                {selectedPlatformInfo.points.map((point) => (
+                  <div
+                    key={point}
+                    className="rounded-2xl border border-white/10 bg-black/25 p-4 text-sm leading-6 text-gray-300"
+                  >
+                    {point}
                   </div>
-                  {selectedBrandProfile.website ? (
-                    <a
-                      href={selectedBrandProfile.website}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-cyan-200 hover:text-cyan-100"
-                    >
-                      {selectedBrandProfile.website}
-                    </a>
-                  ) : (
-                    <EmptyState label="Website pending." />
-                  )}
-                  <div className="mt-3 text-lg font-bold text-white">
-                    {selectedBrandProfile.company}
-                  </div>
-                  <div className="mt-1 text-sm text-gray-400">
-                    {selectedBrandProfile.ownership}
-                  </div>
-                </button>
-                <button
-                  onClick={() =>
-                    openInfo({
-                      title: "Aliases",
-                      eyebrow: selectedBrandProfile.name,
-                      tone: "pink",
-                      body: (
-                        <p>
-                          Aliases combine canonical brand names, advertiser
-                          variants and known alternative labels. They help
-                          AdGraph avoid splitting one real brand into duplicate
-                          graph nodes.
-                        </p>
-                      ),
-                    })
-                  }
-                  className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:border-fuchsia-300/40 hover:bg-fuchsia-500/10"
-                >
-                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-fuchsia-300">
-                    Aliases
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedBrandProfile.aliases.length ? (
-                      selectedBrandProfile.aliases.map((alias) => (
-                        <Pill key={alias}>{alias}</Pill>
-                      ))
-                    ) : (
-                      <EmptyState label="No aliases yet." />
-                    )}
-                  </div>
-                </button>
-                <button
-                  onClick={() =>
-                    openInfo({
-                      title: "Risk Labels",
-                      eyebrow: selectedBrandProfile.name,
-                      tone: "red",
-                      body: (
-                        <p>
-                          Risk labels are not final judgments. They are
-                          observation tags from the signal feed that tell you
-                          which records may need review before being used as
-                          clean advertising intelligence.
-                        </p>
-                      ),
-                    })
-                  }
-                  className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:border-red-300/40 hover:bg-red-500/10"
-                >
-                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-red-300">
-                    Risk Labels
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedBrandProfile.riskLabels.length ? (
-                      selectedBrandProfile.riskLabels.map((label) => (
-                        <Pill key={label}>{label}</Pill>
-                      ))
-                    ) : (
-                      <EmptyState label="No risk labels in current feed." />
-                    )}
-                  </div>
-                </button>
-                <button
-                  onClick={() =>
-                    openInfo({
-                      title: "Products",
-                      eyebrow: selectedBrandProfile.name,
-                      tone: "indigo",
-                      body: (
-                        <p>
-                          Products are normalized from imported product fields
-                          and ad text. In Brand Galaxy they can become
-                          satellites around the parent brand.
-                        </p>
-                      ),
-                    })
-                  }
-                  className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:border-indigo-300/40 hover:bg-indigo-500/10"
-                >
-                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-indigo-300">
-                    Products
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedBrandProfile.products.length ? (
-                      selectedBrandProfile.products.map((item) => (
-                        <Pill key={item}>{item}</Pill>
-                      ))
-                    ) : (
-                      <EmptyState label="No products yet." />
-                    )}
-                  </div>
-                </button>
-                <button
-                  onClick={() =>
-                    openInfo({
-                      title: "Campaigns",
-                      eyebrow: selectedBrandProfile.name,
-                      tone: "green",
-                      body: (
-                        <p>
-                          Campaign objects describe what the ad appears to
-                          promote: a launch, offer, product push, awareness
-                          message or other campaign-level object.
-                        </p>
-                      ),
-                    })
-                  }
-                  className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:border-green-300/40 hover:bg-green-500/10"
-                >
-                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-green-300">
-                    Campaigns
-                  </div>
-                  <div className="space-y-2">
-                    {selectedBrandProfile.campaigns.length ? (
-                      selectedBrandProfile.campaigns.map((item) => (
-                        <div key={item} className="text-sm text-gray-300">
-                          {item}
-                        </div>
-                      ))
-                    ) : (
-                      <EmptyState label="No campaigns yet." />
-                    )}
-                  </div>
-                </button>
-                <button
-                  onClick={() =>
-                    openInfo({
-                      title: "Audiences / IAB",
-                      eyebrow: selectedBrandProfile.name,
-                      tone: "amber",
-                      body: (
-                        <p>
-                          Audience and IAB context explain where the signal fits
-                          in advertising taxonomy. Imported classifications are
-                          preferred, and missing values can be inferred from the
-                          bundled taxonomy keywords.
-                        </p>
-                      ),
-                    })
-                  }
-                  className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:border-amber-300/40 hover:bg-amber-500/10"
-                >
-                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-amber-300">
-                    Audiences / IAB
-                  </div>
-                  <div className="space-y-2">
-                    {dedupe([
-                      ...selectedBrandProfile.audiences,
-                      ...selectedBrandProfile.iabFootprint,
-                    ])
-                      .slice(0, 12)
-                      .map((item) => (
-                        <div key={item} className="text-sm text-gray-300">
-                          {item}
-                        </div>
-                      ))}
-                  </div>
-                </button>
-                <button
-                  onClick={() =>
-                    openInfo({
-                      title: "Sources",
-                      eyebrow: selectedBrandProfile.name,
-                      tone: "cyan",
-                      body: (
-                        <p>
-                          Sources show where the selected brand's monitoring
-                          records came from. They are kept visible so Brand
-                          Galaxy can explain why a relationship exists.
-                        </p>
-                      ),
-                    })
-                  }
-                  className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:border-cyan-300/40 hover:bg-cyan-500/10 lg:col-span-3"
-                >
-                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-cyan-300">
-                    Sources
-                  </div>
-                  <div className="mb-4 flex flex-wrap gap-2">
-                    {selectedBrandProfile.sources.length ? (
-                      selectedBrandProfile.sources.map((item) => (
-                        <Pill key={item}>{item}</Pill>
-                      ))
-                    ) : (
-                      <EmptyState label="No source metadata yet." />
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                    <div className="rounded-2xl bg-white/[0.04] p-4">
-                      <div className="text-2xl font-black text-white">
-                        {selectedBrandProfile.signalCount}
-                      </div>
-                      <div className="text-xs text-gray-400">signals</div>
-                    </div>
-                    <div className="rounded-2xl bg-white/[0.04] p-4">
-                      <div className="text-2xl font-black text-white">
-                        {selectedBrandProfile.classifiedCount}
-                      </div>
-                      <div className="text-xs text-gray-400">classified</div>
-                    </div>
-                    <div className="rounded-2xl bg-white/[0.04] p-4">
-                      <div className="text-2xl font-black text-white">
-                        {selectedBrandProfile.products.length}
-                      </div>
-                      <div className="text-xs text-gray-400">products</div>
-                    </div>
-                    <div className="rounded-2xl bg-white/[0.04] p-4">
-                      <div className="text-2xl font-black text-white">
-                        {selectedBrandProfile.campaigns.length}
-                      </div>
-                      <div className="text-xs text-gray-400">campaigns</div>
-                    </div>
-                  </div>
-                </button>
-                <div className="rounded-3xl border border-white/10 bg-black/25 p-5 lg:col-span-3">
-                  <div className="mb-3 text-xs uppercase tracking-[0.2em] text-green-300">
-                    Latest clickable signals
-                  </div>
-                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                    {selectedBrandProfile.signals.slice(0, 6).map((signal) => (
-                      <button
-                        key={signal.id}
-                        onClick={() => setSelectedSignal(signal)}
-                        className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left transition hover:border-green-300/30 hover:bg-green-500/10"
-                      >
-                        <div className="text-sm font-bold text-white">
-                          {signal.title}
-                        </div>
-                        <div className="mt-1 text-xs text-gray-400">
-                          {signal.campaignObject || signal.product}
-                        </div>
-                        <div className="mt-2 text-xs text-green-200">
-                          {signal.iabClass || "Unclassified"}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
@@ -6677,14 +6955,16 @@ export default function MonitoringPage() {
                   <div className="mb-2 inline-flex rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-cyan-200">
                     Clickable Signal Detail
                   </div>
+
                   <h3 className="text-3xl font-black text-white">
                     {selectedSignal.title}
                   </h3>
+
                   <div className="mt-2 text-sm text-gray-400">
-                    {selectedSignal.source} ·{" "}
-                    {selectedSignal.spotCode || selectedSignal.id}
+                    {selectedSignal.source} · {selectedSignal.spotCode || selectedSignal.id}
                   </div>
                 </div>
+
                 <button
                   onClick={() => setSelectedSignal(null)}
                   className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition hover:border-white/20 hover:text-white"
@@ -6692,12 +6972,16 @@ export default function MonitoringPage() {
                   Close
                 </button>
               </div>
+
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <button
-                  onClick={() => openBrandProfile(selectedSignal.brand)}
-                  className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:border-fuchsia-300/40 hover:bg-fuchsia-500/10"
+                  onClick={() => {
+                    setSelectedBrandName(selectedSignal.brand);
+                    setBrandProfileMode("f2");
+                  }}
+                  className="rounded-3xl border border-white/10 bg-black/25 p-5 text-left transition hover:border-cyan-300/40 hover:bg-cyan-500/10"
                 >
-                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-fuchsia-300">
+                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-cyan-300">
                     Brand
                   </div>
                   <div className="text-2xl font-black text-white">
@@ -6706,12 +6990,13 @@ export default function MonitoringPage() {
                   <div className="mt-2 text-sm text-gray-400">
                     Advertiser / Company: {selectedSignal.advertiser}
                   </div>
-                  <div className="mt-3 text-xs uppercase tracking-[0.2em] text-fuchsia-200">
-                    Open Brand Intelligence →
+                  <div className="mt-3 text-xs uppercase tracking-[0.2em] text-cyan-200">
+                    Open brand profile →
                   </div>
                 </button>
+
                 <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
-                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-indigo-300">
+                  <div className="mb-2 text-xs uppercase tracking-[0.2em] text-fuchsia-300">
                     Product
                   </div>
                   <div className="text-2xl font-black text-white">
@@ -6721,6 +7006,7 @@ export default function MonitoringPage() {
                     Raw product text: {selectedSignal.product}
                   </div>
                 </div>
+
                 <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
                   <div className="mb-2 text-xs uppercase tracking-[0.2em] text-green-300">
                     Campaign
@@ -6732,32 +7018,28 @@ export default function MonitoringPage() {
                     Duration: {selectedSignal.duration || "N/A"} sec
                   </div>
                 </div>
+
                 <div className="rounded-3xl border border-white/10 bg-black/25 p-5">
                   <div className="mb-2 text-xs uppercase tracking-[0.2em] text-amber-300">
                     IAB / Category
                   </div>
                   <div className="text-lg font-bold text-white">
-                    {selectedSignal.iabClass ||
-                      "Unclassified / pending IAB mapping"}
+                    {selectedSignal.iabClass || "Unclassified / pending IAB mapping"}
                   </div>
                   <div className="mt-2 text-sm text-gray-400">
-                    Confidence:{" "}
-                    {selectedSignal.iabConfidence ||
-                      selectedSignal.confidence ||
-                      "N/A"}
+                    Confidence: {selectedSignal.iabConfidence || selectedSignal.confidence || "N/A"}
                   </div>
                 </div>
               </div>
+
               <div className="mt-4 rounded-3xl border border-white/10 bg-black/25 p-5">
                 <div className="mb-2 text-sm font-semibold text-cyan-200">
                   Human-readable explanation
                 </div>
                 <p className="text-sm leading-7 text-gray-300">
-                  This signal connects{" "}
-                  <span className="font-semibold text-white">
-                    {selectedSignal.brand}
-                  </span>{" "}
-                  to{" "}
+                  This signal is grouped around the brand{" "}
+                  <span className="font-semibold text-white">{selectedSignal.brand}</span>,
+                  connected to product{" "}
                   <span className="font-semibold text-white">
                     {selectedSignal.canonicalProduct || selectedSignal.product}
                   </span>
@@ -6769,10 +7051,11 @@ export default function MonitoringPage() {
                   <span className="font-semibold text-white">
                     {selectedSignal.iabClass || "Unclassified"}
                   </span>
-                  . It is ready to be used as a brand-first intelligence signal
-                  in Brand Galaxy.
+                  . It can be used by the relationship graph as a brand-first
+                  intelligence signal.
                 </p>
               </div>
+
               {selectedSignal.riskLabels?.length > 0 && (
                 <div className="mt-4 rounded-3xl border border-red-300/20 bg-red-500/10 p-5">
                   <div className="mb-2 text-sm font-semibold text-red-200">
@@ -6780,7 +7063,12 @@ export default function MonitoringPage() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {selectedSignal.riskLabels.map((label: string) => (
-                      <Pill key={label}>{label}</Pill>
+                      <span
+                        key={label}
+                        className="rounded-full border border-red-300/20 bg-black/25 px-3 py-1 text-xs text-red-100"
+                      >
+                        {label}
+                      </span>
                     ))}
                   </div>
                 </div>
@@ -6789,33 +7077,6 @@ export default function MonitoringPage() {
           </div>
         )}
 
-        {infoPanel && (
-          <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 px-4 backdrop-blur-xl">
-            <div className="max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] border border-white/10 bg-[#020617] p-6 shadow-[0_0_90px_rgba(34,211,238,0.14)]">
-              <div className="mb-5 flex items-start justify-between gap-4">
-                <div>
-                  <div
-                    className={`mb-2 inline-flex rounded-full border px-3 py-1 text-xs uppercase tracking-[0.25em] ${toneClasses(infoPanel.tone)}`}
-                  >
-                    {infoPanel.eyebrow || "Information Panel"}
-                  </div>
-                  <h3 className="text-3xl font-black text-white">
-                    {infoPanel.title}
-                  </h3>
-                </div>
-                <button
-                  onClick={() => setInfoPanel(null)}
-                  className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition hover:border-white/20 hover:text-white"
-                >
-                  Close
-                </button>
-              </div>
-              <div className="space-y-4 text-sm leading-7 text-gray-300">
-                {infoPanel.body}
-              </div>
-            </div>
-          </div>
-        )}
       </main>
     </>
   );
