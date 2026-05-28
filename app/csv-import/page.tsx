@@ -389,9 +389,41 @@ function shouldSkipNielsenRow(row: CsvRow) {
   const lowerName = name.toLowerCase();
 
   // Nielsen/H-Tech cleanup:
-  // 2 = PROMO, 34 = PRG. Also remove DIGITAL/station/web/program noise.
-  if (clipType === "2" || clipType === "34") return true;
-  if (lowerName === "promo" || lowerName === "prg" || lowerName === "digital") return true;
+  // 2 = PROMO
+  // 32 = DIGITAL / network promo
+  // 34 = PRG
+  if (
+  clipType === "2" ||
+  clipType === "17" ||
+  clipType === "32" ||
+  clipType === "34"
+  ) {
+    return true;
+  }
+
+  const blockedTerms = [
+    "promo",
+    "prg",
+    "digital",
+    "traffic tracker",
+    "weather",
+    "news",
+    "station id",
+    "coming up",
+    "next on",
+    "abc -",
+    "cbs -",
+    "nbc -",
+    "fox -",
+    "wlky",
+    "amc -",
+    "rfd-tv",
+  ];
+
+  if (blockedTerms.some((term) => lowerName.includes(term))) {
+    return true;
+  }
+
   if (isLikelyProgramOrPromoNoise(name)) return true;
   if (isLikelyDigitalOrStationNoise(name)) return true;
 
