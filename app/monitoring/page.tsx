@@ -6256,13 +6256,53 @@ export default function MonitoringPage() {
                 <div className="mb-6 rounded-[2rem] border border-white/10 bg-black/25 p-5">
                   <div className="mb-4 flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
                     <div>
-                      <div className="text-sm font-semibold text-cyan-200">
-                        Search / Filter / A-Z Control
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Analyst controls for set checking, dedup review and brand-first navigation.
-                      </div>
-                    </div>
+  <div className="text-sm font-semibold text-cyan-200">
+    Search / Filter / A-Z Control
+  </div>
+
+  <div className="text-xs text-gray-500">
+    Analyst controls for set checking, dedup review and brand-first navigation.
+  </div>
+
+  <div className="mt-4 flex flex-wrap gap-2">
+    {[
+      { key: "campaign", label: "Group by Campaign" },
+      { key: "product", label: "Group by Product" },
+      { key: "brand", label: "Group by Brand" },
+    ].map((mode) => (
+      <button
+        key={mode.key}
+        onClick={() => setGroupMode(mode.key as GroupMode)}
+        className={`rounded-2xl border px-4 py-2 text-sm transition ${
+          groupMode === mode.key
+            ? "border-cyan-300/40 bg-cyan-500/15 text-cyan-100"
+            : "border-white/10 bg-black/25 text-gray-400 hover:text-white"
+        }`}
+      >
+        {mode.label}
+      </button>
+    ))}
+  </div>
+
+  <div className="mt-3 flex flex-wrap gap-2">
+    {[
+      { key: "now", label: "Top Now" },
+      { key: "overall", label: "Overall Top" },
+    ].map((mode) => (
+      <button
+        key={mode.key}
+        onClick={() => setRankingMode(mode.key as RankingMode)}
+        className={`rounded-2xl border px-4 py-2 text-sm transition ${
+          rankingMode === mode.key
+            ? "border-fuchsia-300/40 bg-fuchsia-500/15 text-fuchsia-100"
+            : "border-white/10 bg-black/25 text-gray-400 hover:text-white"
+        }`}
+      >
+        {mode.label}
+      </button>
+    ))}
+  </div>
+</div>
 
                     <button
                       onClick={() => {
