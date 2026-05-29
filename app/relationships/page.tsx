@@ -12,8 +12,6 @@ import "reactflow/dist/style.css";
 
 import NavBar from "@/components/NavBar";
 import { supabase } from "@/lib/supabase";
-import BrandIntelligenceModal from "@/app/components/BrandIntelligenceModal";
-import { buildBrandProfile, type BrandIntelligenceProfile } from "@/lib/brandProfiles";
 
 const GALAXY_BACKGROUND = "/wallpaperflare.com_wallpaper.jpg";
 
@@ -2070,7 +2068,6 @@ export default function RelationshipExplorer() {
   const [argusAds, setArgusAds] = useState<any[]>([]);
   const [argusGraphStatus, setArgusGraphStatus] = useState("Loading ARGUS live layer...");
   const [selectedNode, setSelectedNode] = useState<any>(null);
-  const [selectedBrandProfile, setSelectedBrandProfile] = useState<BrandIntelligenceProfile | null>(null);
   const [focusedBrandNodeId, setFocusedBrandNodeId] = useState<string | null>(
     null
   );
@@ -2085,31 +2082,6 @@ export default function RelationshipExplorer() {
 
   const activeScenario = useMemo(() => {
   
-  function openRelationshipBrandProfile(nodeData: any) {
-    if (!nodeData || nodeData.entityType !== "brand") return;
-
-    const profile = buildBrandProfile(nodeData.entity || { name: nodeData.label }, {
-      products: selectedEcosystemProfile.products.map((item: any) => item.entity?.name).filter(Boolean),
-      campaigns: selectedEcosystemProfile.campaigns.map((item: any) => item.entity?.name).filter(Boolean),
-      audiences: selectedEcosystemProfile.audiences.map((item: any) => item.entity?.name).filter(Boolean),
-      subsidiaries: selectedEcosystemProfile.products.map((item: any) => item.entity?.name).filter(Boolean),
-      categories: [
-        nodeData.entity?.category,
-        nodeData.entity?.iab_tier_1,
-        nodeData.entity?.iab_full_path,
-      ].filter(Boolean),
-      iabFootprint: [
-        nodeData.entity?.iab_full_path,
-        [nodeData.entity?.iab_tier_1, nodeData.entity?.iab_tier_2, nodeData.entity?.iab_tier_3]
-          .filter(Boolean)
-          .join(" → "),
-      ].filter(Boolean),
-      sources: [nodeData.entity?.source || "Relationship Graph"],
-    });
-
-    setSelectedBrandProfile(profile);
-  }
-
   return (
       demoScenarios.find((scenario) => scenario.id === activeScenarioId) || null
     );
@@ -2841,41 +2813,12 @@ export default function RelationshipExplorer() {
                   setIntelligenceAnswer(null);
 
                   if (node.data.entityType === "brand") {
-  setFocusedBrandNodeId(node.data.nodeId);
-
-  const profile = buildBrandProfile(
-    node.data.entity || { name: node.data.label },
-    {
-      products: [],
-      campaigns: [],
-      audiences: [],
-      subsidiaries: [],
-      categories: [
-        node.data.entity?.category,
-        node.data.entity?.iab_tier_1,
-        node.data.entity?.iab_full_path,
-      ].filter(Boolean),
-      iabFootprint: [
-        node.data.entity?.iab_full_path,
-        [
-          node.data.entity?.iab_tier_1,
-          node.data.entity?.iab_tier_2,
-          node.data.entity?.iab_tier_3,
-        ]
-          .filter(Boolean)
-          .join(" → "),
-      ].filter(Boolean),
-      sources: [node.data.entity?.source || "Relationship Graph"],
-    }
-  );
-
-  setSelectedBrandProfile(profile);
-}
+                    setFocusedBrandNodeId(node.data.nodeId);
+                  }
                 }}
                 onPaneClick={() => {
                   setSelectedNode(null);
                   setFocusedBrandNodeId(null);
-                  setSelectedBrandProfile(null);
                 }}
                 style={{
                   background: "transparent",
@@ -2904,11 +2847,7 @@ export default function RelationshipExplorer() {
             />
           </div>
         </div>
-      <BrandIntelligenceModal
-        profile={selectedBrandProfile}
-        onClose={() => setSelectedBrandProfile(null)}
-      />
-      </main>
+</main>
     </>
   );
 }
