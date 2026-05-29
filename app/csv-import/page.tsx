@@ -825,12 +825,12 @@ function enrichRows(rows: CsvRow[]): EnrichedRow[] {
     const iab = inferIab(category);
 
     const canonical = canonicalizeBrandAndProducts(brandName, productNames);
-brandName = canonical.brandName;
-const canonicalProductNames = canonical.productNames;
-    
+    brandName = canonical.brandName;
+    const canonicalProductNames = canonical.productNames;
+
     const enrichedBase: Partial<EnrichedRow> = {
       brandName,
-      productNames: uniqueValues(productNames),
+      productNames: canonicalProductNames,
     };
 
     const enriched: Partial<EnrichedRow> = {
@@ -838,7 +838,7 @@ const canonicalProductNames = canonical.productNames;
       original: normalized,
       companyName: normalized.company || undefined,
       brandName,
-      productNames: uniqueValues(productNames),
+      productNames: canonicalProductNames,
       campaignName: normalized.campaign || undefined,
       audienceName: normalized.audience || undefined,
       category,
@@ -1087,6 +1087,9 @@ The Coca-Cola Company,Coca-Cola,Coca-Cola Zero,Coca-Cola Lifestyle Campaign,Soft
       errors: [],
     };
 
+    const brandEnrichmentQueue: { id: string; name: string }[] = [];
+    let enrichmentSummary = "";
+
     for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
       const row = rows[rowIndex];
 
@@ -1158,6 +1161,14 @@ The Coca-Cola Company,Coca-Cola,Coca-Cola Zero,Coca-Cola Lifestyle Campaign,Soft
           });
 
           brandId = data?.id || null;
+
+          if (brandId && row.brandName) {
+            brandEnrichmentQueue.push({
+              id: brandId,
+              name: row.brandName,
+            });
+          }
+
           nextReport.brands++;
         }
 
@@ -1326,6 +1337,36 @@ The Coca-Cola Company,Coca-Cola,Coca-Cola Zero,Coca-Cola Lifestyle Campaign,Soft
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
 
+    const uniqueBrandsForEnrichment = Array.from(
+      new Map(brandEnrichmentQueue.map((brand) => [brand.id, brand])).values()
+    );
+
+    if (uniqueBrandsForEnrichment.length > 0) {
+      try {
+        const response = await fetch("/api/brand-enrichment", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            brands: uniqueBrandsForEnrichment.slice(0, 25),
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data?.error || "Brand auto-enrichment failed");
+        }
+
+        enrichmentSummary = ` Auto-enrichment: ${data.updated || 0} updated, ${data.skipped || 0} skipped.`;
+      } catch (error: any) {
+        nextReport.errors.push(
+          `Brand auto-enrichment: ${error?.message || "Unknown enrichment error"}`
+        );
+      }
+    }
+
     const nextHistory: ImportHistoryItem[] = [
       {
         id: crypto.randomUUID(),
@@ -1360,10 +1401,12 @@ The Coca-Cola Company,Coca-Cola,Coca-Cola Zero,Coca-Cola Lifestyle Campaign,Soft
 
     if (nextReport.errors.length > 0) {
       setStatus(
-        `Import finished with ${nextReport.errors.length} issue(s). Check the report below.`
+        `Import finished with ${nextReport.errors.length} issue(s). Check the report below.${enrichmentSummary}`
       );
     } else {
-      setStatus("CSV import complete. Refresh Galaxy Map to see new signals.");
+      setStatus(
+        `CSV import complete. Brand enrichment completed automatically.${enrichmentSummary} Refresh Galaxy Map to see new signals.`
+      );
     }
   }
 
