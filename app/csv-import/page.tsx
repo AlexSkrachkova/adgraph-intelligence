@@ -179,6 +179,42 @@ const brandAsProductRules: Record<string, string> = {
   "Netflix Premium": "Netflix",
 };
 
+const productToBrandPatterns: { pattern: RegExp; brand: string }[] = [
+  { pattern: /\bgalaxy\b/i, brand: "Samsung" },
+  { pattern: /\biphone\b|\bipad\b|\bmacbook\b|\bapple tv\b/i, brand: "Apple" },
+  { pattern: /\bplaystation\b|\bps5\b|\bps4\b/i, brand: "PlayStation" },
+  { pattern: /\bxbox\b|\bgame pass\b/i, brand: "Xbox" },
+  { pattern: /\bnintendo switch\b|\bswitch oled\b|\bswitch lite\b/i, brand: "Nintendo" },
+  { pattern: /\bwrangler\b|\bcompass\b|\bgrand cherokee\b/i, brand: "Jeep" },
+  { pattern: /\bf-150\b|\bbronco\b|\bmustang\b/i, brand: "Ford" },
+  { pattern: /\bzero sugar\b|\bcoca-cola zero\b|\bdiet coke\b/i, brand: "Coca-Cola" },
+];
+
+function canonicalizeBrandAndProducts(brandName?: string, productNames: string[] = []) {
+  let brand = cleanValue(brandName);
+  const products = uniqueValues(productNames);
+
+  for (const product of [brand, ...products]) {
+    const match = productToBrandPatterns.find((rule) => rule.pattern.test(product));
+    if (match) {
+      if (brand && brand !== match.brand && !products.includes(brand)) {
+        products.push(brand);
+      }
+
+      brand = match.brand;
+
+      if (product && product !== match.brand && !products.includes(product)) {
+        products.push(product);
+      }
+    }
+  }
+
+  return {
+    brandName: brand || undefined,
+    productNames: uniqueValues(products.filter((p) => p && p !== brand)),
+  };
+}
+
 function cleanValue(value?: string) {
   return (value || "").trim().replace(/\s+/g, " ");
 }
@@ -788,6 +824,10 @@ function enrichRows(rows: CsvRow[]): EnrichedRow[] {
     const category = normalized.category || normalized.industry || undefined;
     const iab = inferIab(category);
 
+    const canonical = canonicalizeBrandAndProducts(brandName, productNames);
+brandName = canonical.brandName;
+const canonicalProductNames = canonical.productNames;
+    
     const enrichedBase: Partial<EnrichedRow> = {
       brandName,
       productNames: uniqueValues(productNames),
