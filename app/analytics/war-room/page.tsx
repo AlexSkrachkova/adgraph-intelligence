@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import NavBar from "@/components/NavBar";
 import { supabase } from "@/lib/supabase";
+import BrandIntelligenceModal from "@/app/components/BrandIntelligenceModal";
+import { buildBrandProfile, type BrandIntelligenceProfile } from "@/lib/brandProfiles";
 
 type Metric = {
   label: string;
@@ -99,6 +101,7 @@ export default function StrategyHubPage() {
   const [taxonomy, setTaxonomy] = useState<any[]>([]);
   const [spots, setSpots] = useState<any[]>([]);
   const [modal, setModal] = useState<InfoModal | null>(null);
+  const [selectedBrandProfile, setSelectedBrandProfile] = useState<BrandIntelligenceProfile | null>(null);
 
   useEffect(() => {
     async function loadHub() {
@@ -379,30 +382,25 @@ export default function StrategyHubPage() {
   }
 
   function openBrandModal(brand: any) {
-    setModal({
-      label: "Brand Star",
-      title: brand.name || "Unnamed brand",
-      subtitle:
-        brand.description ||
-        "Brand intelligence profile generated from available Supabase entity fields.",
-      bullets: [
-        "This brand can appear in Monitoring, Relationship Graph, Galaxy Search and CSV import results.",
-        "A stronger brand profile should include products, campaigns, audiences, company ownership, aliases, website and slogan.",
-        "The next platform step is to reuse the same Brand Intelligence modal across Strategy Hub, Monitoring and Relationship Graph.",
-      ],
-      stats: [
-        { label: "IAB", value: buildIabLabel(brand) },
-        { label: "Status", value: brand.status || "Active / unknown" },
-        { label: "Country", value: brand.country || "Global / unknown" },
-      ],
-      chips: [
-        buildIabLabel(brand),
-        brand.industry || "Industry pending",
-        brand.country || "Country pending",
-      ],
-      href: "/relationships",
-      hrefLabel: "Open Galaxy Map",
-    });
+    const relatedProducts = products
+      .filter((product) => product.brand_id === brand.id || product.brand_name === brand.name)
+      .map((product) => product.name || product.product_name)
+      .filter(Boolean);
+
+    const relatedCampaigns = campaigns
+      .filter((campaign) => campaign.brand_id === brand.id || campaign.brand_name === brand.name)
+      .map((campaign) => campaign.name || campaign.campaign_name)
+      .filter(Boolean);
+
+    setSelectedBrandProfile(
+      buildBrandProfile(brand, {
+        products: relatedProducts,
+        campaigns: relatedCampaigns,
+        iabFootprint: [buildIabLabel(brand)],
+        categories: [brand.industry, brand.country].filter(Boolean),
+        sources: ["Strategy Hub", "Supabase"],
+      })
+    );
   }
 
   function openScoreModal() {
@@ -681,6 +679,11 @@ export default function StrategyHubPage() {
             </>
           )}
         </div>
+
+        <BrandIntelligenceModal
+          profile={selectedBrandProfile}
+          onClose={() => setSelectedBrandProfile(null)}
+        />
 
         {modal && (
           <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/75 px-4 backdrop-blur-xl">
