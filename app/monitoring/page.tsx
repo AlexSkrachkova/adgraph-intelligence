@@ -6020,22 +6020,23 @@ export default function MonitoringPage() {
                   {(topBrands.length > 0 ? topBrands : argusStats?.by_brand || [])
                     .slice(0, 6)
                     .map((brand) => (
-                      <button
-                        key={brand.value}
-                        onClick={() => {
-                          setSelectedBrandName(brand.value);
-                          setBrandProfileMode("f2");
-                        }}
-                        className="flex w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3 text-left transition hover:border-fuchsia-300/40 hover:bg-fuchsia-500/10"
-                      >
-                        <span className="truncate text-sm font-semibold text-white">
-                          {brand.value}
-                        </span>
-                        <span className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
-                          {brand.count}
-                        </span>
-                      </button>
-                    ))}
+  <button
+    key={brand.value}
+    onClick={() => {
+      setSelectedBrandName(brand.value);
+      setBrandProfileMode("f2");
+    }}
+    className="flex w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3 text-left transition hover:border-fuchsia-300/40 hover:bg-fuchsia-500/10"
+  >
+    <span className="truncate text-sm font-semibold text-white">
+      {brand.value}
+    </span>
+
+    <span className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-100">
+      {brand.count}
+    </span>
+  </button>
+))}
                 </div>
               </div>
 
