@@ -228,7 +228,7 @@ function EntityLogo({ entity, name }: { entity: any; name: string }) {
 export default function EntitySearchPage() {
   const [query, setQuery] = useState("");
   const [alphaFilter, setAlphaFilter] = useState("All");
-  const [typeFilter, setTypeFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("brand");
   const [groupMode, setGroupMode] = useState<GroupMode>("name");
   const [entities, setEntities] = useState<EntityResult[]>([]);
   const [loading, setLoading] = useState(true);
