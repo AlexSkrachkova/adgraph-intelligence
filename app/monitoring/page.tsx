@@ -5814,15 +5814,15 @@ export default function MonitoringPage() {
 
   <MetricCard
     value={1}
-    label="Why This Page Exists"
+    label="Page History & Role"
     tone="cyan"
     source="Platform Documentation"
     tooltip="Explains the purpose of Monitoring Center, its role in AdGraph Intelligence, and how advertising signals become structured intelligence."
     onClick={() =>
       setSelectedPlatformInfo(
         buildPlatformInfo(
-          "Why This Page Exists",
-          "Monitoring Center Mission",
+          "Page History & Role",
+          "Monitoring Center History & Role",
           "Monitoring Center is the intelligence ingestion layer of AdGraph. It converts advertising observations into structured signals used across the platform.",
           [
             "Collects advertising signals from ARGUS and imported datasets.",
