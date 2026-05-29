@@ -6071,18 +6071,37 @@ export default function MonitoringPage() {
                   )
                     .slice(0, 5)
                     .map((category) => (
-                      <div
-                        key={category.value}
-                        className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3"
-                      >
-                        <span className="truncate text-sm font-semibold text-white">
-                          {category.value}
-                        </span>
-                        <span className="rounded-full border border-amber-300/20 bg-amber-500/10 px-3 py-1 text-xs text-amber-100">
-                          {category.count}
-                        </span>
-                      </div>
-                    ))}
+  <button
+    key={category.value}
+    onClick={() =>
+      setSelectedPlatformInfo(
+        buildPlatformInfo(
+          category.value,
+          "Category Intelligence",
+          `${category.value} is currently one of the strongest detected advertising categories in the monitoring feed.`,
+          [
+            `Detected signals: ${category.count}`,
+            "Used for IAB classification and enrichment.",
+            "Helps identify category-level advertising activity.",
+            "Feeds Brand Galaxy relationship analysis.",
+            "Can connect brands, products and campaigns through shared category context.",
+            "Future versions will show competitors, market share and trend movement."
+          ],
+          "Monitoring Category Analysis"
+        )
+      )
+    }
+    className="flex w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3 text-left transition hover:border-amber-300/30 hover:bg-amber-500/10"
+  >
+    <span className="truncate text-sm font-semibold text-white">
+      {category.value}
+    </span>
+
+    <span className="rounded-full border border-amber-300/20 bg-amber-500/10 px-3 py-1 text-xs text-amber-100">
+      {category.count}
+    </span>
+  </button>
+))}
                 </div>
               </div>
             </div>
