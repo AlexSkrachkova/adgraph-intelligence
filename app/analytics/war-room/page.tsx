@@ -253,7 +253,11 @@ const uniqueCompanies = new Set(
         },
         {
           label: "Graph Signals",
-          value: relationshipsData.length,
+          value: relationshipsData.filter((r: any) =>
+  ["owned_by", "has_product", "runs_campaign", "promotes", "targets"].includes(
+    r.relationship_type
+  )
+).length,
           helper: "Relationship edges.",
           tone: "cyan",
           detailTitle: "Graph Signals",
