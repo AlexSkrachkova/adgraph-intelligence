@@ -136,6 +136,26 @@ export default function StrategyHubPage() {
       const taxonomyData = taxonomyResult.data || [];
       const spotsData = spotsResult.data || [];
 
+      const uniqueBrands = new Set(
+  brandsData.map((b: any) => (b.name || "").trim().toLowerCase())
+).size;
+
+const uniqueProducts = new Set(
+  productsData.map((p: any) =>
+    (p.name || p.product_name || "").trim().toLowerCase()
+  )
+).size;
+
+const uniqueCampaigns = new Set(
+  campaignsData.map((c: any) =>
+    (c.name || c.campaign_name || "").trim().toLowerCase()
+  )
+).size;
+
+const uniqueCompanies = new Set(
+  companiesData.map((c: any) => (c.name || "").trim().toLowerCase())
+).size;
+
       setCompanies(companiesData);
       setProducts(productsData);
       setCampaigns(campaignsData.slice(0, 8));
@@ -148,7 +168,7 @@ export default function StrategyHubPage() {
       setMetrics([
         {
           label: "Brand Stars",
-          value: brandsData.length,
+          value: uniqueBrands,
           helper: "Brands mapped inside the galaxy.",
           tone: "fuchsia",
           detailTitle: "Brand Stars",
@@ -165,7 +185,7 @@ export default function StrategyHubPage() {
         },
         {
           label: "Products",
-          value: productsData.length,
+          value: uniqueProducts,
           helper: "Advertised products and services.",
           tone: "emerald",
           detailTitle: "Products",
@@ -182,7 +202,7 @@ export default function StrategyHubPage() {
         },
         {
           label: "Campaigns",
-          value: campaignsData.length,
+          value: uniqueCampaigns,
           helper: "Active campaign intelligence.",
           tone: "amber",
           detailTitle: "Campaigns",
@@ -216,7 +236,7 @@ export default function StrategyHubPage() {
         },
         {
           label: "Companies",
-          value: companiesData.length,
+          value: uniqueCompanies,
           helper: "Ownership signals.",
           tone: "indigo",
           detailTitle: "Companies",
