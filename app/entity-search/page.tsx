@@ -208,11 +208,11 @@ function EntityLogo({ entity, name }: { entity: any; name: string }) {
 
   if (logo) {
     return (
-      <div className="flex h-16 w-24 items-center justify-center rounded-2xl border border-white/10 bg-white p-2">
+      <div className="flex h-16 w-24 items-center justify-center rounded-2xl border border-white/10 bg-black/30 p-2">
         <img
           src={logo}
           alt={`${name} logo`}
-          className="max-h-12 max-w-full object-contain"
+          className="max-h-12 max-w-full rounded-lg bg-white/90 p-1 object-contain"
         />
       </div>
     );
