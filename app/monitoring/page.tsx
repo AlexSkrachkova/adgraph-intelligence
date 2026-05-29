@@ -4896,12 +4896,14 @@ function MetricCard({
   tone,
   tooltip,
   source,
+  onClick,
 }: {
   value: number;
   label: string;
   tone?: "cyan" | "pink" | "indigo" | "green";
   tooltip: string;
   source: string;
+  onClick?: () => void;
 }) {
   const color =
     tone === "pink"
@@ -4912,8 +4914,13 @@ function MetricCard({
       ? "text-green-200"
       : "text-cyan-200";
 
+  const Wrapper = onClick ? "button" : "div";
+
   return (
-    <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-xl transition duration-300 hover:-translate-y-0.5 hover:border-white/20">
+    <Wrapper
+      onClick={onClick}
+      className="w-full rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 text-left backdrop-blur-xl transition duration-300 hover:-translate-y-0.5 hover:border-white/20"
+    >
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className={`text-4xl font-black ${color}`}>{value}</div>
         <InfoTooltip text={tooltip} />
@@ -4921,7 +4928,13 @@ function MetricCard({
 
       <div className="text-sm font-semibold text-gray-200">{label}</div>
       <div className="mt-2 text-xs leading-5 text-gray-500">{source}</div>
-    </div>
+
+      {onClick && (
+        <div className="mt-4 text-[10px] uppercase tracking-[0.22em] text-cyan-200/70">
+          Click for context →
+        </div>
+      )}
+    </Wrapper>
   );
 }
 
@@ -5766,40 +5779,65 @@ export default function MonitoringPage() {
               audience intelligence for the Brand Galaxy graph.
             </p>
           </div>
+<div className="mb-6 grid grid-cols-1 gap-5 xl:grid-cols-5">
+  <MetricCard
+    value={argusStats?.total_ads || spots.length}
+    label="ARGUS Ads"
+    tone="cyan"
+    source="Source: ARGUS Public API"
+    tooltip="Total classified ads returned by the ARGUS public API stats endpoint. The feed below loads live ARGUS ad records through the secure backend route."
+  />
 
-          <div className="mb-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-            <MetricCard
-              value={argusStats?.total_ads || spots.length}
-              label="ARGUS Ads"
-              tone="cyan"
-              source="Source: ARGUS Public API"
-              tooltip="Total classified ads returned by the ARGUS public API stats endpoint. The feed below loads live ARGUS ad records through the secure backend route."
-            />
+  <MetricCard
+    value={uniqueBrands}
+    label="Detected Brands"
+    tone="pink"
+    source="Source: ARGUS brand_name"
+    tooltip="Unique brands detected in the currently loaded ARGUS ad feed. This is based on live classified ad records, not the old demo brands table."
+  />
 
-            <MetricCard
-              value={uniqueBrands}
-              label="Detected Brands"
-              tone="pink"
-              source="Source: ARGUS brand_name"
-              tooltip="Unique brands detected in the currently loaded ARGUS ad feed. This is based on live classified ad records, not the old demo brands table."
-            />
+  <MetricCard
+    value={uniqueFeedProducts}
+    label="Detected Products"
+    tone="indigo"
+    source="Source: ARGUS products_text"
+    tooltip="Unique product strings detected from ARGUS products_text. Product normalization groups similar labels into canonical product objects where possible."
+  />
 
-            <MetricCard
-              value={uniqueFeedProducts}
-              label="Detected Products"
-              tone="indigo"
-              source="Source: ARGUS products_text"
-              tooltip="Unique product strings detected from ARGUS products_text. Product normalization groups similar labels into canonical product objects where possible."
-            />
+  <MetricCard
+    value={uniqueCampaigns}
+    label="Campaign Signals"
+    tone="green"
+    source="Source: ARGUS promotion_name"
+    tooltip="Unique ARGUS promotion/campaign names detected in the current feed. Multiple ads can belong to the same campaign or promotion."
+  />
 
-            <MetricCard
-              value={uniqueCampaigns}
-              label="Campaign Signals"
-              tone="green"
-              source="Source: ARGUS promotion_name"
-              tooltip="Unique ARGUS promotion/campaign names detected in the current feed. Multiple ads can belong to the same campaign or promotion."
-            />
-          </div>
+  <MetricCard
+    value={1}
+    label="Why This Page Exists"
+    tone="cyan"
+    source="Platform Documentation"
+    tooltip="Explains the purpose of Monitoring Center, its role in AdGraph Intelligence, and how advertising signals become structured intelligence."
+    onClick={() =>
+      setSelectedPlatformInfo(
+        buildPlatformInfo(
+          "Why This Page Exists",
+          "Monitoring Center Mission",
+          "Monitoring Center is the intelligence ingestion layer of AdGraph. It converts advertising observations into structured signals used across the platform.",
+          [
+            "Collects advertising signals from ARGUS and imported datasets.",
+            "Transforms ads into brands, products, campaigns and audience intelligence.",
+            "Feeds the Galaxy Map relationship engine.",
+            "Supports Strategy Hub, Brand Stars and Campaign Radar.",
+            "Acts as the primary intelligence source for downstream analytics.",
+            "Provides explainable signal classification through IAB taxonomy enrichment.",
+          ],
+          "Monitoring Center"
+        )
+      )
+    }
+  />
+</div>
 
           <div className="mb-8 grid grid-cols-1 gap-5 xl:grid-cols-3">
             <ExplanationCard
