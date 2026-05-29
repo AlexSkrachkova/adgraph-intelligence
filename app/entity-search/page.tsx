@@ -234,6 +234,8 @@ export default function EntitySearchPage() {
   const [loading, setLoading] = useState(true);
   const [selectedBrandProfile, setSelectedBrandProfile] =
     useState<BrandIntelligenceProfile | null>(null);
+  const [enriching, setEnriching] = useState(false);
+  const [enrichmentMessage, setEnrichmentMessage] = useState("");
 
   useEffect(() => {
     async function loadEntities() {
@@ -333,6 +335,76 @@ export default function EntitySearchPage() {
     );
   }
 
+  async function enrichMissingBrands() {
+    const missingBrands = entities
+      .filter((item) => item.entityType === "brand")
+      .filter((item) => !getEntityLogo(item.entity) || !getEntityWebsite(item.entity))
+      .slice(0, 25);
+
+    if (missingBrands.length === 0) {
+      setEnrichmentMessage("All visible brands already have logo/website fields.");
+      return;
+    }
+
+    setEnriching(true);
+    setEnrichmentMessage(`Enriching ${missingBrands.length} brands...`);
+
+    try {
+      const response = await fetch("/api/brand-enrichment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          brands: missingBrands.map((item) => ({
+            id: item.entity.id,
+            name: getEntityName(item),
+            website: getEntityWebsite(item.entity),
+            logo_url: getEntityLogo(item.entity),
+          })),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Brand enrichment failed");
+      }
+
+      const enriched = data.enriched || [];
+
+      if (enriched.length > 0) {
+        setEntities((current) =>
+          current.map((item) => {
+            if (item.entityType !== "brand") return item;
+
+            const match = enriched.find((brand: any) => brand.id === item.entity.id);
+            if (!match) return item;
+
+            return {
+              ...item,
+              entity: {
+                ...item.entity,
+                website: match.website || item.entity.website,
+                logo_url: match.logo_url || item.entity.logo_url,
+                slogan: match.slogan || item.entity.slogan,
+                description: match.description || item.entity.description,
+              },
+            };
+          })
+        );
+      }
+
+      setEnrichmentMessage(
+        `Enrichment complete: ${data.updated || 0} updated, ${data.skipped || 0} skipped.`
+      );
+    } catch (error: any) {
+      setEnrichmentMessage(error?.message || "Brand enrichment failed.");
+    } finally {
+      setEnriching(false);
+    }
+  }
+
   return (
     <GalaxyShell>
       <div className="mb-10">
@@ -401,21 +473,37 @@ export default function EntitySearchPage() {
           </select>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          {ALPHABET.map((letter) => (
-            <button
-              key={letter}
-              onClick={() => setAlphaFilter(letter)}
-              className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                alphaFilter === letter
-                  ? "border-fuchsia-300/50 bg-fuchsia-500/20 text-fuchsia-100"
-                  : "border-white/10 bg-black/25 text-gray-400 hover:border-white/20 hover:text-white"
-              }`}
-            >
-              {letter}
-            </button>
-          ))}
+        <div className="mt-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-wrap gap-2">
+            {ALPHABET.map((letter) => (
+              <button
+                key={letter}
+                onClick={() => setAlphaFilter(letter)}
+                className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                  alphaFilter === letter
+                    ? "border-fuchsia-300/50 bg-fuchsia-500/20 text-fuchsia-100"
+                    : "border-white/10 bg-black/25 text-gray-400 hover:border-white/20 hover:text-white"
+                }`}
+              >
+                {letter}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={enrichMissingBrands}
+            disabled={enriching}
+            className="rounded-2xl border border-cyan-300/30 bg-cyan-500/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-cyan-100 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {enriching ? "Enriching..." : "Enrich missing logos"}
+          </button>
         </div>
+
+        {enrichmentMessage && (
+          <div className="mt-3 rounded-2xl border border-white/10 bg-black/30 p-3 text-sm text-gray-300">
+            {enrichmentMessage}
+          </div>
+        )}
       </div>
 
       {loading ? (
