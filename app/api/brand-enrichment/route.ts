@@ -146,7 +146,7 @@ function getDomainFromWebsite(website: string) {
 function buildClearbitLogoUrl(website: string) {
   const domain = getDomainFromWebsite(website);
   if (!domain) return "";
-  return `https://logo.clearbit.com/${domain}`;
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 }
 
 function findKnownBrand(name: string) {
