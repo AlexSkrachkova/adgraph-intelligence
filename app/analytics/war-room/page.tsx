@@ -89,6 +89,20 @@ function cleanText(value?: string | null) {
   return (value || "").trim();
 }
 
+function MetricTooltip({ text }: { text: string }) {
+  return (
+    <div className="group relative inline-flex">
+      <div className="flex h-5 w-5 items-center justify-center rounded-full border border-white/20 text-[10px] font-bold text-gray-300">
+        i
+      </div>
+
+      <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 hidden w-64 -translate-x-1/2 rounded-xl border border-white/10 bg-[#020617] p-3 text-xs leading-5 text-gray-300 shadow-2xl group-hover:block">
+        {text}
+      </div>
+    </div>
+  );
+}
+
 export default function StrategyHubPage() {
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<Metric[]>([]);
@@ -567,9 +581,11 @@ const uniqueCompanies = new Set(
                         {metric.value}
                       </div>
 
-                      <div className="mb-1 text-lg font-bold text-white">
-                        {metric.label}
-                      </div>
+                      <div className="mb-1 flex items-center gap-2 text-lg font-bold text-white">
+  {metric.label}
+
+  <MetricTooltip text={metric.helper} />
+</div>
 
                       <div className="text-sm text-gray-400">{metric.helper}</div>
 
