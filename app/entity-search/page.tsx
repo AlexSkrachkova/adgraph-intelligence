@@ -246,6 +246,12 @@ export default function EntitySearchPage() {
     useState<BrandIntelligenceProfile | null>(null);
   const [enriching, setEnriching] = useState(false);
   const [enrichmentMessage, setEnrichmentMessage] = useState("");
+  const [enrichmentProgress, setEnrichmentProgress] = useState<{
+    total: number;
+    processed: number;
+    current: string;
+    brands: string[];
+  } | null>(null);
 
   useEffect(() => {
     async function loadEntities() {
@@ -348,47 +354,86 @@ export default function EntitySearchPage() {
   async function enrichMissingBrands() {
     const missingBrands = entities
       .filter((item) => item.entityType === "brand")
-      .filter((item) => !getEntityLogo(item.entity) || !getEntityWebsite(item.entity))
-      .slice(0, 25);
+      .filter((item) => !getEntityLogo(item.entity) || !getEntityWebsite(item.entity));
 
     if (missingBrands.length === 0) {
       setEnrichmentMessage("All visible brands already have logo/website fields.");
+      setEnrichmentProgress(null);
       return;
     }
 
     setEnriching(true);
     setEnrichmentMessage(`Enriching ${missingBrands.length} brands...`);
+    setEnrichmentProgress({
+      total: missingBrands.length,
+      processed: 0,
+      current: getEntityName(missingBrands[0]),
+      brands: missingBrands.map((item) => getEntityName(item)),
+    });
+
+    let updated = 0;
+    let skipped = 0;
+    const allEnriched: any[] = [];
 
     try {
-      const response = await fetch("/api/brand-enrichment", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          brands: missingBrands.map((item) => ({
-            id: item.entity.id,
-            name: getEntityName(item),
-            website: getEntityWebsite(item.entity),
-            logo_url: getEntityLogo(item.entity),
-          })),
-        }),
-      });
+      for (let index = 0; index < missingBrands.length; index++) {
+        const item = missingBrands[index];
+        const brandName = getEntityName(item);
 
-      const data = await response.json();
+        setEnrichmentProgress({
+          total: missingBrands.length,
+          processed: index,
+          current: brandName,
+          brands: missingBrands.map((brand) => getEntityName(brand)),
+        });
 
-      if (!response.ok) {
-        throw new Error(data?.error || "Brand enrichment failed");
+        const response = await fetch("/api/brand-enrichment", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            brands: [
+              {
+                id: item.entity.id,
+                name: brandName,
+                website: getEntityWebsite(item.entity),
+                logo_url: getEntityLogo(item.entity),
+              },
+            ],
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          skipped += 1;
+          continue;
+        }
+
+        updated += data.updated || 0;
+        skipped += data.skipped || 0;
+        allEnriched.push(...(data.enriched || []));
+
+        setEnrichmentProgress({
+          total: missingBrands.length,
+          processed: index + 1,
+          current:
+            index + 1 < missingBrands.length
+              ? getEntityName(missingBrands[index + 1])
+              : "Complete",
+          brands: missingBrands.map((brand) => getEntityName(brand)),
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 80));
       }
 
-      const enriched = data.enriched || [];
-
-      if (enriched.length > 0) {
+      if (allEnriched.length > 0) {
         setEntities((current) =>
           current.map((item) => {
             if (item.entityType !== "brand") return item;
 
-            const match = enriched.find((brand: any) => brand.id === item.entity.id);
+            const match = allEnriched.find((brand: any) => brand.id === item.entity.id);
             if (!match) return item;
 
             return {
@@ -406,15 +451,23 @@ export default function EntitySearchPage() {
       }
 
       setEnrichmentMessage(
-        `Enrichment complete: ${data.updated || 0} updated, ${data.skipped || 0} skipped.`
+        `Enrichment complete: ${updated} updated, ${skipped} skipped.`
       );
     } catch (error: any) {
       setEnrichmentMessage(error?.message || "Brand enrichment failed.");
     } finally {
       setEnriching(false);
+      setEnrichmentProgress((current) =>
+        current
+          ? {
+              ...current,
+              processed: current.total,
+              current: "Complete",
+            }
+          : current
+      );
     }
   }
-
   return (
     <GalaxyShell>
       <div className="mb-10">
@@ -511,7 +564,75 @@ export default function EntitySearchPage() {
 
         {enrichmentMessage && (
           <div className="mt-3 rounded-2xl border border-white/10 bg-black/30 p-3 text-sm text-gray-300">
-            {enrichmentMessage}
+            <div className="flex items-center gap-2">
+              <span>{enrichmentMessage}</span>
+
+              {enriching && (
+                <span className="flex items-end gap-1">
+                  {[0, 1, 2].map((dot) => (
+                    <span
+                      key={dot}
+                      className="h-2 w-2 rounded-full bg-cyan-200"
+                      style={{
+                        animation: "brandEnrichmentDotBounce 0.75s ease-in-out infinite",
+                        animationDelay: `${dot * 0.16}s`,
+                      }}
+                    />
+                  ))}
+                </span>
+              )}
+            </div>
+
+            {enrichmentProgress && (
+              <div className="mt-3">
+                <div className="mb-2 flex items-center justify-between text-xs text-cyan-100/80">
+                  <span>
+                    {enrichmentProgress.processed} / {enrichmentProgress.total} brands
+                  </span>
+                  <span>Current: {enrichmentProgress.current}</span>
+                </div>
+
+                <div className="h-2 overflow-hidden rounded-full bg-black/40">
+                  <div
+                    className="h-full rounded-full bg-cyan-300 transition-all duration-300"
+                    style={{
+                      width: `${Math.round(
+                        (enrichmentProgress.processed / Math.max(enrichmentProgress.total, 1)) * 100
+                      )}%`,
+                    }}
+                  />
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {enrichmentProgress.brands.slice(0, 24).map((brand, index) => (
+                    <span
+                      key={`${brand}-${index}`}
+                      className={`rounded-full border px-3 py-1 text-xs ${
+                        index < enrichmentProgress.processed
+                          ? "border-green-300/20 bg-green-500/10 text-green-100"
+                          : brand === enrichmentProgress.current
+                          ? "border-cyan-300/30 bg-cyan-500/10 text-cyan-100"
+                          : "border-white/10 bg-white/[0.04] text-gray-400"
+                      }`}
+                    >
+                      {brand}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <style jsx>{`
+              @keyframes brandEnrichmentDotBounce {
+                0%, 80%, 100% {
+                  transform: translateY(0);
+                }
+
+                35% {
+                  transform: translateY(-9px);
+                }
+              }
+            `}</style>
           </div>
         )}
       </div>
