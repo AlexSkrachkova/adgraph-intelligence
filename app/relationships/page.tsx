@@ -1886,6 +1886,22 @@ function SelectedEntityPanel({
 
       <h2 className="mb-5 text-3xl font-black">{entity?.name || "Unknown"}</h2>
 
+      <div className="mb-5">
+  <button
+    onClick={() =>
+      window.open(
+        `/entity-search?entity=${encodeURIComponent(
+          entity?.name || ""
+        )}`,
+        "_blank"
+      )
+    }
+    className="rounded-2xl border border-cyan-300/20 bg-cyan-500/10 px-5 py-3 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-500/20"
+  >
+    Open Full Brand Intelligence →
+  </button>
+</div>
+
       <div className="mb-5 rounded-3xl border border-cyan-300/24 bg-cyan-500/8 p-5 shadow-[0_0_28px_rgba(34,211,238,0.08)]">
         <div className="mb-3 text-sm font-semibold text-cyan-200">
           Galaxy Intelligence Score
