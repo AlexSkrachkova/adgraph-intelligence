@@ -1363,7 +1363,15 @@ function IntelligenceMetric({ label, value }: any) {
   );
 }
 
-function MiniEntityList({ title, items }: any) {
+function MiniEntityList({
+  title,
+  items,
+  onSelect,
+}: {
+  title: string;
+  items: any[];
+  onSelect?: (item: any) => void;
+}) {
   return (
     <div className="rounded-2xl border border-white/10 bg-black/30 p-4 shadow-[0_0_18px_rgba(255,255,255,0.03)]">
       <div className="mb-3 flex items-center justify-between">
@@ -1377,10 +1385,11 @@ function MiniEntityList({ title, items }: any) {
 
       <div className="space-y-2">
         {items.map((item: any) => (
-          <div
-            key={item.nodeId}
-            className="rounded-xl border border-white/10 bg-white/5 p-3"
-          >
+          <button
+  key={item.nodeId}
+  onClick={() => onSelect?.(item)}
+  className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-left transition hover:border-cyan-300/30 hover:bg-cyan-500/10"
+>
             <div className="text-xs uppercase text-cyan-300">
               {item.entityType}
             </div>
@@ -1388,7 +1397,7 @@ function MiniEntityList({ title, items }: any) {
             <div className="text-sm font-semibold">
               {item.entity?.name || "Unknown"}
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </div>
@@ -2096,10 +2105,7 @@ function SelectedEntityDeepDive({
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
-        <MiniEntityList
-          title="Company Planets"
-          items={ecosystemProfile.companies}
-        />
+         title="Company Planets"
         <MiniEntityList
           title="Product Moons"
           items={ecosystemProfile.products}
