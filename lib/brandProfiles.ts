@@ -4,6 +4,8 @@ export type BrandProfileInput = {
   name?: string;
   description?: string;
   website?: string;
+  logoUrl?: string;
+  logo_url?: string;
   slogan?: string;
   company?: string;
   owner?: string;
@@ -30,6 +32,7 @@ export type BrandProfileInput = {
 export type BrandIntelligenceProfile = {
   name: string;
   logoEmoji: string;
+  logoUrl: string;
   slogan: string;
   website: string;
   company: string;
@@ -55,6 +58,7 @@ export function normalizeBrandKey(value: string) {
     .replace(/[®™©]/g, "")
     .replace(/[’']/g, "")
     .replace(/&/g, "and")
+    .replace(/\+/g, "plus")
     .replace(/\b(the|brand|company|inc|llc|ltd|corp|corporation|group)\b/g, " ")
     .replace(/[^a-z0-9]+/g, "")
     .trim();
@@ -72,87 +76,66 @@ export function dedupeText(values: any[]) {
   );
 }
 
+function favicon(domain: string) {
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+}
+
 export const BRAND_PROFILE_REGISTRY: Record<string, Partial<BrandIntelligenceProfile>> = {
   jeep: {
     name: "Jeep",
     logoEmoji: "🚙",
+    logoUrl: "https://cdn.worldvectorlogo.com/logos/jeep-6.svg",
     slogan: "Go Anywhere. Do Anything.",
     website: "https://www.jeep.com",
     company: "Stellantis",
-    ownership: "Jeep is part of Stellantis. Historically, the brand moved through Willys-Overland, Kaiser Jeep, AMC, Chrysler, FCA and then Stellantis.",
+    ownership:
+      "Jeep is part of Stellantis. Historically, the brand moved through Willys-Overland, Kaiser Jeep, AMC, Chrysler, FCA and then Stellantis.",
     aliases: ["Jeep", "Jeep Brand", "Stellantis Jeep"],
     subsidiaries: ["Wrangler", "Grand Cherokee", "Gladiator", "Cherokee"],
-    history: "Jeep is an American SUV and off-road vehicle brand known for utility, adventure and four-wheel-drive positioning. Its current commercial ecosystem is strongly tied to SUV product families and adventure-led campaigns.",
-  },
-  carshield: {
-    name: "Car Shield",
-    logoEmoji: "🛡️",
-    slogan: "Protect your vehicle budget.",
-    website: "https://carshield.com",
-    company: "CarShield",
-    ownership: "Ownership and corporate structure should be verified before external reporting.",
-    aliases: ["CarShield", "Car Shield", "CarShield.com"],
-    subsidiaries: [],
-    history: "CarShield is tracked here as an automotive services advertiser. Imported monitoring signals commonly map it to vehicle protection and direct response advertising.",
-  },
-  libertymutual: {
-    name: "Liberty Mutual",
-    logoEmoji: "🗽",
-    slogan: "Only pay for what you need.",
-    website: "https://www.libertymutual.com",
-    company: "Liberty Mutual Insurance",
-    ownership: "Liberty Mutual is a mutual insurance group. Detailed subsidiary and ownership history should be verified for formal reporting.",
-    aliases: ["Liberty Mutual", "Liberty Mutual Insurance"],
-    subsidiaries: ["Safeco"],
-    history: "Liberty Mutual is a major insurance advertiser with strong direct-response and brand-building campaign activity.",
-  },
-  progressive: {
-    name: "Progressive",
-    logoEmoji: "🏷️",
-    slogan: "Name your price.",
-    website: "https://www.progressive.com",
-    company: "Progressive Corporation",
-    ownership: "Progressive operates as The Progressive Corporation. Subsidiaries and underwriting entities should be verified before external reporting.",
-    aliases: ["Progressive", "Progressive Insurance"],
-    subsidiaries: [],
-    history: "Progressive is an insurance advertiser known for recurring creative characters and high-frequency campaign activity.",
+    history:
+      "Jeep is an American SUV and off-road vehicle brand known for utility, adventure and four-wheel-drive positioning. Its current commercial ecosystem is strongly tied to SUV product families and adventure-led campaigns.",
   },
   netflix: {
     name: "Netflix",
     logoEmoji: "🎬",
+    logoUrl: favicon("netflix.com"),
     slogan: "See what's next.",
     website: "https://www.netflix.com",
     company: "Netflix, Inc.",
     ownership: "Netflix is operated by Netflix, Inc.",
-    aliases: ["Netflix"],
+    aliases: ["Netflix", "Netflix Premium"],
     subsidiaries: [],
-    history: "Netflix is a streaming entertainment brand. In the platform, it anchors streaming-category audience and campaign analysis.",
+    history:
+      "Netflix is a streaming entertainment brand. In the platform, it anchors streaming-category audience and campaign analysis.",
   },
   youtube: {
     name: "YouTube",
     logoEmoji: "▶️",
+    logoUrl: favicon("youtube.com"),
     slogan: "Broadcast yourself.",
     website: "https://www.youtube.com",
     company: "Google / Alphabet",
     ownership: "YouTube is owned by Google, which is part of Alphabet.",
-    aliases: ["YouTube", "Google YouTube"],
-    subsidiaries: ["YouTube Music", "YouTube TV"],
+    aliases: ["YouTube", "Google YouTube", "YouTube Premium"],
+    subsidiaries: ["YouTube Music", "YouTube TV", "YouTube Premium"],
     history: "YouTube is a video and streaming platform used here as a streaming/media ecosystem brand.",
   },
   spotify: {
     name: "Spotify",
     logoEmoji: "🎧",
+    logoUrl: favicon("spotify.com"),
     slogan: "Music for everyone.",
     website: "https://www.spotify.com",
     company: "Spotify Technology S.A.",
     ownership: "Spotify operates under Spotify Technology S.A.",
-    aliases: ["Spotify"],
-    subsidiaries: [],
+    aliases: ["Spotify", "Spotify Premium"],
+    subsidiaries: ["Spotify Premium"],
     history: "Spotify is an audio streaming platform. It supports streaming and entertainment audience clustering in Brand Galaxy.",
   },
   mcdonalds: {
     name: "McDonald's",
     logoEmoji: "🍟",
+    logoUrl: favicon("mcdonalds.com"),
     slogan: "I'm lovin' it.",
     website: "https://www.mcdonalds.com",
     company: "McDonald's Corporation",
@@ -161,31 +144,10 @@ export const BRAND_PROFILE_REGISTRY: Record<string, Partial<BrandIntelligencePro
     subsidiaries: [],
     history: "McDonald's is a global quick-service restaurant brand and a key Fast Food scenario anchor.",
   },
-  burgerking: {
-    name: "Burger King",
-    logoEmoji: "🍔",
-    slogan: "Have it your way.",
-    website: "https://www.bk.com",
-    company: "Restaurant Brands International",
-    ownership: "Burger King is part of Restaurant Brands International.",
-    aliases: ["Burger King", "BK"],
-    subsidiaries: [],
-    history: "Burger King is a global quick-service restaurant brand tracked for competitive fast-food relationship mapping.",
-  },
-  kfc: {
-    name: "KFC",
-    logoEmoji: "🍗",
-    slogan: "It's finger lickin' good.",
-    website: "https://www.kfc.com",
-    company: "Yum! Brands",
-    ownership: "KFC is part of Yum! Brands.",
-    aliases: ["KFC", "Kentucky Fried Chicken"],
-    subsidiaries: [],
-    history: "KFC is a fried-chicken quick-service restaurant brand used in fast-food scenario mapping.",
-  },
   nike: {
     name: "Nike",
     logoEmoji: "👟",
+    logoUrl: favicon("nike.com"),
     slogan: "Just Do It.",
     website: "https://www.nike.com",
     company: "Nike, Inc.",
@@ -197,68 +159,146 @@ export const BRAND_PROFILE_REGISTRY: Record<string, Partial<BrandIntelligencePro
   adidas: {
     name: "Adidas",
     logoEmoji: "👟",
+    logoUrl: favicon("adidas.com"),
     slogan: "Impossible is nothing.",
     website: "https://www.adidas.com",
     company: "Adidas AG",
     ownership: "Adidas is operated by Adidas AG.",
-    aliases: ["Adidas"],
+    aliases: ["Adidas", "Adidas AG"],
     subsidiaries: [],
     history: "Adidas is a global sportswear brand and competitor in the Fashion scenario.",
   },
   apple: {
     name: "Apple",
     logoEmoji: "🍎",
+    logoUrl: favicon("apple.com"),
     slogan: "Think Different.",
     website: "https://www.apple.com",
     company: "Apple Inc.",
     ownership: "Apple is operated by Apple Inc.",
-    aliases: ["Apple", "Apple Inc."],
+    aliases: ["Apple", "Apple Inc.", "iPhone", "Apple TV"],
     subsidiaries: ["iPhone", "iPad", "Mac", "Apple TV+"],
     history: "Apple is a consumer technology brand used for mobile and consumer electronics ecosystem mapping.",
   },
   samsung: {
     name: "Samsung",
     logoEmoji: "📱",
+    logoUrl: favicon("samsung.com"),
     slogan: "Do what you can't.",
     website: "https://www.samsung.com",
     company: "Samsung Electronics",
     ownership: "Samsung Electronics is part of the Samsung group ecosystem.",
-    aliases: ["Samsung", "Samsung Mobile"],
-    subsidiaries: ["Galaxy"],
+    aliases: ["Samsung", "Samsung Mobile", "Samsung Galaxy", "Galaxy"],
+    subsidiaries: ["Galaxy", "Galaxy S", "Galaxy Watch"],
     history: "Samsung is a consumer electronics and mobile technology brand. Samsung Galaxy is treated as a product/satellite, not a brand node.",
   },
   playstation: {
     name: "PlayStation",
     logoEmoji: "🎮",
+    logoUrl: favicon("playstation.com"),
     slogan: "Play has no limits.",
     website: "https://www.playstation.com",
     company: "Sony Interactive Entertainment",
     ownership: "PlayStation is operated by Sony Interactive Entertainment, part of Sony Group.",
-    aliases: ["PlayStation", "Sony PlayStation"],
-    subsidiaries: ["PS5", "PlayStation Plus"],
+    aliases: ["PlayStation", "Sony PlayStation", "PS5", "PS4", "PlayStation Plus"],
+    subsidiaries: ["PlayStation 5", "PlayStation Plus"],
     history: "PlayStation is a console gaming brand and part of the Gaming scenario.",
   },
   xbox: {
     name: "Xbox",
     logoEmoji: "🎮",
+    logoUrl: favicon("xbox.com"),
     slogan: "Power your dreams.",
     website: "https://www.xbox.com",
     company: "Microsoft",
     ownership: "Xbox is operated by Microsoft Gaming.",
-    aliases: ["Xbox", "Microsoft Xbox"],
-    subsidiaries: ["Game Pass", "Xbox Series X"],
+    aliases: ["Xbox", "Microsoft Xbox", "Xbox Game Pass", "Game Pass"],
+    subsidiaries: ["Xbox Game Pass"],
     history: "Xbox is a console gaming brand and part of the Gaming scenario.",
   },
   nintendo: {
     name: "Nintendo",
     logoEmoji: "🎮",
+    logoUrl: favicon("nintendo.com"),
     slogan: "There's no play like it.",
     website: "https://www.nintendo.com",
     company: "Nintendo Co., Ltd.",
     ownership: "Nintendo operates under Nintendo Co., Ltd.",
-    aliases: ["Nintendo"],
+    aliases: ["Nintendo", "Nintendo Switch"],
     subsidiaries: ["Nintendo Switch"],
     history: "Nintendo is a gaming brand. Nintendo Switch is treated as a product/satellite of Nintendo, not a brand.",
+  },
+  ford: {
+    name: "Ford",
+    logoEmoji: "🚗",
+    logoUrl: favicon("ford.com"),
+    slogan: "Built Ford Tough.",
+    website: "https://www.ford.com",
+    company: "Ford Motor Company",
+    ownership: "Ford is operated by Ford Motor Company.",
+    aliases: ["Ford", "Ford Motor Company", "F-150", "Bronco", "Mustang"],
+    subsidiaries: ["F-150", "Bronco", "Mustang"],
+    history: "Ford is an automotive brand used for vehicle model and campaign relationship mapping.",
+  },
+  bmw: {
+    name: "BMW",
+    logoEmoji: "🚗",
+    logoUrl: favicon("bmw.com"),
+    slogan: "The Ultimate Driving Machine.",
+    website: "https://www.bmw.com",
+    company: "BMW Group",
+    ownership: "BMW is operated by BMW Group.",
+    aliases: ["BMW", "BMW Group"],
+    subsidiaries: [],
+    history: "BMW is a premium automotive brand.",
+  },
+  mercedesbenz: {
+    name: "Mercedes-Benz",
+    logoEmoji: "🚗",
+    logoUrl: favicon("mercedes-benz.com"),
+    slogan: "The best or nothing.",
+    website: "https://www.mercedes-benz.com",
+    company: "Mercedes-Benz Group",
+    ownership: "Mercedes-Benz is operated by Mercedes-Benz Group.",
+    aliases: ["Mercedes-Benz", "Mercedes Benz", "Mercedes"],
+    subsidiaries: [],
+    history: "Mercedes-Benz is a premium automotive brand.",
+  },
+  cocacola: {
+    name: "Coca-Cola",
+    logoEmoji: "🥤",
+    logoUrl: favicon("coca-cola.com"),
+    slogan: "Taste the Feeling.",
+    website: "https://www.coca-cola.com",
+    company: "The Coca-Cola Company",
+    ownership: "Coca-Cola is operated by The Coca-Cola Company.",
+    aliases: ["Coca-Cola", "Coca Cola", "Coke", "Coca-Cola Zero", "Coca-Cola Zero Sugar"],
+    subsidiaries: ["Coca-Cola Zero Sugar", "Diet Coke"],
+    history: "Coca-Cola is a global beverage brand and soft-drink category anchor.",
+  },
+  pepsi: {
+    name: "Pepsi",
+    logoEmoji: "🥤",
+    logoUrl: favicon("pepsi.com"),
+    slogan: "That's What I Like.",
+    website: "https://www.pepsi.com",
+    company: "PepsiCo",
+    ownership: "Pepsi is operated by PepsiCo.",
+    aliases: ["Pepsi", "Pepsi Zero Sugar"],
+    subsidiaries: ["Pepsi Zero Sugar"],
+    history: "Pepsi is a global beverage brand and soft-drink category anchor.",
+  },
+  schiff: {
+    name: "Schiff",
+    logoEmoji: "💊",
+    logoUrl: favicon("schiffvitamins.com"),
+    slogan: "Health and wellness supplements.",
+    website: "https://www.schiffvitamins.com",
+    company: "Reckitt",
+    ownership: "Schiff is treated as a vitamins and supplements brand profile in the intelligence graph.",
+    aliases: ["Schiff", "Schiff Vitamins"],
+    subsidiaries: [],
+    history: "Schiff is a vitamins and supplements brand used in health and wellness advertising classification.",
   },
 };
 
@@ -270,7 +310,11 @@ export function getRegisteredBrandProfile(name: string) {
     const profileKeys = [registryKey, profile.name, ...(profile.aliases || [])].map((item) =>
       normalizeBrandKey(item || "")
     );
-    return profileKeys.includes(key) || profileKeys.some((item) => key.includes(item) || item.includes(key));
+
+    return (
+      profileKeys.includes(key) ||
+      profileKeys.some((item) => key.includes(item) || item.includes(key))
+    );
   });
 
   return found?.[1] || null;
@@ -306,11 +350,13 @@ export function buildBrandProfile(
   return {
     name: registry.name || name,
     logoEmoji: entity.logoEmoji || registry.logoEmoji || "🪐",
+    logoUrl: entity.logoUrl || entity.logo_url || registry.logoUrl || "",
     slogan: entity.slogan || registry.slogan || "Brand intelligence profile",
     website: entity.website || registry.website || "",
     company:
       entity.company ||
       entity.owner ||
+      entity.ownership ||
       registry.company ||
       related.company ||
       "Ownership data pending",
