@@ -1997,8 +1997,7 @@ const IAB_TAXONOMY: IabTaxonomyRow[] = [
     "tier2": "Toys and Games",
     "tier3": "Games",
     "keywords": "games"
-  },
-  {
+  },{
     "id": "1243",
     "label": "Outdoor Play Equipment",
     "tier1": "Consumer Packaged Goods",
@@ -3997,8 +3996,7 @@ const IAB_TAXONOMY: IabTaxonomyRow[] = [
     "tier2": "Ticket Services",
     "tier3": "",
     "keywords": "ticket services"
-  },
-  {
+  },{
     "id": "1493",
     "label": "Fitness Activities",
     "tier1": "Fitness Activities",
@@ -5980,8 +5978,7 @@ export default function MonitoringPage() {
                 </div>
 
                 <div className="space-y-3">
-                  {latestArgusAds.length > 0 ? (
-                    latestArgusAds.map((ad) => (
+                  {latestArgusAds.length > 0 ? (latestArgusAds.map((ad) => (
                       <div
                         key={ad.id}
                         className="rounded-2xl border border-white/10 bg-black/25 p-4"
@@ -6042,68 +6039,79 @@ export default function MonitoringPage() {
               </div>
 
               <div className="p-6">
-                <div className="mb-4 text-xs uppercase tracking-[0.25em] text-amber-200">
-                  Top Categories / Risk
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-xs uppercase tracking-[0.25em] text-amber-200">
+                      Top Now / Overall Top
+                    </div>
+                    <div className="mt-1 text-xs text-gray-500">
+                      Top Now uses current filters. Overall Top uses the full loaded monitoring set.
+                    </div>
+                  </div>
+
+                  <div className="flex rounded-2xl border border-white/10 bg-black/25 p-1">
+                    {[
+                      { key: "now", label: "Now" },
+                      { key: "overall", label: "Overall" },
+                    ].map((mode) => (
+                      <button
+                        key={mode.key}
+                        onClick={() => setRankingMode(mode.key as RankingMode)}
+                        className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
+                          rankingMode === mode.key
+                            ? "bg-amber-500/20 text-amber-100"
+                            : "text-gray-500 hover:text-white"
+                        }`}
+                      >
+                        {mode.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="mb-4 grid grid-cols-2 gap-3">
                   <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
                     <div className="text-3xl font-black text-cyan-100">
-                      {classifiedSignals}
+                      {rankedBrands.length}
                     </div>
                     <div className="mt-1 text-xs text-gray-400">
-                      Classified in feed
+                      Ranked brands
                     </div>
                   </div>
 
                   <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
-                    <div className="text-3xl font-black text-red-100">
-                      {riskSignalCount}
+                    <div className="text-3xl font-black text-fuchsia-100">
+                      {rankedProducts.length}
                     </div>
                     <div className="mt-1 text-xs text-gray-400">
-                      Observation signals
+                      Ranked products
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  {(topCategories.length > 0
-                    ? topCategories
-                    : argusStats?.by_category || []
-                  )
-                    .slice(0, 5)
-                    .map((category) => (
-  <button
-    key={category.value}
-    onClick={() =>
-      setSelectedPlatformInfo(
-        buildPlatformInfo(
-          category.value,
-          "Category Intelligence",
-          `${category.value} is currently one of the strongest detected advertising categories in the monitoring feed.`,
-          [
-            `Detected signals: ${category.count}`,
-            "Used for IAB classification and enrichment.",
-            "Helps identify category-level advertising activity.",
-            "Feeds Brand Galaxy relationship analysis.",
-            "Can connect brands, products and campaigns through shared category context.",
-            "Future versions will show competitors, market share and trend movement."
-          ],
-          "Monitoring Category Analysis"
-        )
-      )
-    }
-    className="flex w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3 text-left transition hover:border-amber-300/30 hover:bg-amber-500/10"
-  >
-    <span className="truncate text-sm font-semibold text-white">
-      {category.value}
-    </span>
+                <div className="mb-3 text-xs uppercase tracking-[0.2em] text-cyan-200">
+                  Brand leaders
+                </div>
 
-    <span className="rounded-full border border-amber-300/20 bg-amber-500/10 px-3 py-1 text-xs text-amber-100">
-      {category.count}
-    </span>
-  </button>
-))}
+                <div className="space-y-3">
+                  {rankedBrands.slice(0, 5).map((brand, index) => (
+                    <button
+                      key={brand.value}
+                      onClick={() => {
+                        setSelectedBrandName(brand.value);
+                        setBrandProfileMode("f2");
+                      }}
+                      className="flex w-full items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 p-3 text-left transition hover:border-cyan-300/30 hover:bg-cyan-500/10"
+                    >
+                      <span className="truncate text-sm font-semibold text-white">
+                        #{index + 1} {brand.value}
+                      </span>
+
+                      <span className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-100">
+                        {brand.count}
+                      </span>
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
