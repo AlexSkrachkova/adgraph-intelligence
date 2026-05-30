@@ -247,11 +247,23 @@ export default function EntitySearchPage() {
   const [enriching, setEnriching] = useState(false);
   const [enrichmentMessage, setEnrichmentMessage] = useState("");
   const [enrichmentProgress, setEnrichmentProgress] = useState<{
+    
     total: number;
     processed: number;
     current: string;
     brands: string[];
   } | null>(null);
+
+  useEffect(() => {
+  if (typeof window === "undefined") return;
+
+  const params = new URLSearchParams(window.location.search);
+  const entityFromUrl = params.get("entity");
+
+  if (entityFromUrl) {
+    setQuery(entityFromUrl);
+  }
+}, []);
 
   useEffect(() => {
     async function loadEntities() {
