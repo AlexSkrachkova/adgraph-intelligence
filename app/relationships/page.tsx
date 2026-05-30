@@ -1452,19 +1452,41 @@ function CompetitiveOverlapPanel({
   );
 
   if (uniqueCompetitors.length === 0) {
-    return (
-      <div className="mb-6 rounded-3xl border border-white/10 bg-black/24 p-5">
-        <div className="text-slate-200 text-sm font-semibold mb-2">
-          Competitive Orbit
+  return (
+    <div className="mb-6 rounded-3xl border border-amber-400/24 bg-amber-500/8 p-5 shadow-[0_0_24px_rgba(245,158,11,0.08)]">
+      <div className="text-amber-200 text-sm font-semibold mb-4">
+        Competitive Orbit Intelligence
+      </div>
+
+      <div className="rounded-2xl border border-white/10 bg-black/24 p-4">
+        <div className="text-lg font-bold text-white">
+          Potential Competitive Landscape
         </div>
 
-        <div className="text-sm text-gray-400">
-          No direct competitor orbit detected yet.
+        <div className="mt-3 text-sm leading-6 text-gray-300">
+          No explicit competitor relationships have been mapped yet.
+          However, this brand operates inside a shared ecosystem and
+          should be evaluated against related automotive, technology,
+          streaming or gaming brands in the galaxy.
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-cyan-100">
+            Market Overlap Analysis Available
+          </div>
+
+          <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-cyan-100">
+            Audience Comparison Available
+          </div>
+
+          <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-cyan-100">
+            Campaign Benchmarking Available
+          </div>
         </div>
       </div>
-    );
-  }
-
+    </div>
+  );
+}
   return (
     <div className="mb-6 rounded-3xl border border-red-400/24 bg-red-500/8 p-5 shadow-[0_0_24px_rgba(239,68,68,0.08)]">
       <div className="text-red-200 text-sm font-semibold mb-4">
