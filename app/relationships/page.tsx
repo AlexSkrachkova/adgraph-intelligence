@@ -1366,11 +1366,9 @@ function IntelligenceMetric({ label, value }: any) {
 function MiniEntityList({
   title,
   items,
-  onSelect,
 }: {
   title: string;
   items: any[];
-  onSelect?: (item: any) => void;
 }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-black/30 p-4 shadow-[0_0_18px_rgba(255,255,255,0.03)]">
@@ -1385,10 +1383,9 @@ function MiniEntityList({
 
       <div className="space-y-2">
         {items.map((item: any) => (
-          <button
+          <div
   key={item.nodeId}
-  onClick={() => onSelect?.(item)}
-  className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-left transition hover:border-cyan-300/30 hover:bg-cyan-500/10"
+  className="rounded-xl border border-white/10 bg-white/5 p-3"
 >
             <div className="text-xs uppercase text-cyan-300">
               {item.entityType}
@@ -1397,7 +1394,7 @@ function MiniEntityList({
             <div className="text-sm font-semibold">
               {item.entity?.name || "Unknown"}
             </div>
-          </button>
+          </div>
         ))}
       </div>
     </div>
@@ -1754,6 +1751,7 @@ function SelectedEntityPanel({
   activeScenario,
   intelligenceAnswer,
   nodes,
+  setSelectedNode,
 }: any) {
   if (!selectedNode && !intelligenceAnswer) {
     return (
@@ -2103,30 +2101,36 @@ function SelectedEntityDeepDive({
           value={ecosystemProfile.audiences.length}
         />
       </div>
-
+      
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
-         title="Company Planets"
-        <MiniEntityList
-          title="Product Moons"
-          items={ecosystemProfile.products}
-        />
-        <MiniEntityList
-          title="Campaign Planets"
-          items={ecosystemProfile.campaigns}
-        />
-        <MiniEntityList
-          title="Audience Planets"
-          items={ecosystemProfile.audiences}
-        />
-        <MiniEntityList
-          title="Related Brand Stars"
-          items={ecosystemProfile.brands}
-        />
-      </div>
+  <MiniEntityList
+    title="Company Planets"
+    items={ecosystemProfile.companies}
+  />
+
+  <MiniEntityList
+    title="Product Moons"
+    items={ecosystemProfile.products}
+  />
+
+  <MiniEntityList
+    title="Campaign Planets"
+    items={ecosystemProfile.campaigns}
+  />
+
+  <MiniEntityList
+    title="Audience Planets"
+    items={ecosystemProfile.audiences}
+  />
+
+  <MiniEntityList
+    title="Related Brand Stars"
+    items={ecosystemProfile.brands}
+  />
+</div>
     </section>
   );
 }
-
 
 export default function RelationshipExplorer() {
   const [nodes, setNodes] = useState<any[]>([]);
@@ -2903,15 +2907,16 @@ export default function RelationshipExplorer() {
             </div>
 
             <SelectedEntityPanel
-              selectedNode={selectedNode}
-              ecosystemProfile={selectedEcosystemProfile}
-              aiSummary={aiSummary}
-              relationships={relationships}
-              nodeLookup={nodeLookup}
-              activeScenario={activeScenario}
-              intelligenceAnswer={intelligenceAnswer}
-              nodes={nodes}
-            />
+  selectedNode={selectedNode}
+  ecosystemProfile={selectedEcosystemProfile}
+  aiSummary={aiSummary}
+  relationships={relationships}
+  nodeLookup={nodeLookup}
+  activeScenario={activeScenario}
+  intelligenceAnswer={intelligenceAnswer}
+  nodes={nodes}
+  setSelectedNode={setSelectedNode}
+/>
           </div>
 
           <SelectedEntityDeepDive
