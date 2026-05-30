@@ -384,19 +384,31 @@ const uniqueCompanies = new Set(
     title: "Coverage & Quality",
     subtitle:
       "Quality snapshot of how ready the Brand Galaxy dataset is for advertising intelligence, strategy review and demo presentation.",
-    bullets: [
-      "Logo and website enrichment show whether brand profiles are presentation-ready.",
-      "IAB coverage shows how many entities have category intelligence.",
-      "Graph signals show how connected brands, products, campaigns and companies are.",
-      "Campaign cleanup removes Nielsen noise, station promos and technical records.",
-      "This view helps identify what still needs enrichment before the final demo.",
-    ],
+   bullets: [
+  "Logo Coverage shows how many visible brand profiles have a usable logo.",
+  "Website Coverage shows how many brands have a verified or generated website URL.",
+  "IAB Coverage shows how much taxonomy/category intelligence exists in the platform.",
+  "Graph Density shows how many usable relationship edges connect brands, products, campaigns and companies.",
+  "Use this panel before demos to quickly identify missing logos, weak categories or disconnected graph entities.",
+],
     stats: [
-      { label: "Brands", value: metrics.find((m) => m.label === "Brand Stars")?.value || 0 },
-      { label: "Products", value: products.length },
-      { label: "Campaigns", value: metrics.find((m) => m.label === "Campaigns")?.value || 0 },
-      { label: "Graph edges", value: metrics.find((m) => m.label === "Graph Signals")?.value || 0 },
-    ],
+  {
+    label: "Logo Coverage",
+    value: `${recentBrands.filter((b) => b.logo_url).length} / ${recentBrands.length}`,
+  },
+  {
+    label: "Website Coverage",
+    value: `${recentBrands.filter((b) => b.website).length} / ${recentBrands.length}`,
+  },
+  {
+    label: "IAB Coverage",
+    value: metrics.find((m) => m.label === "IAB Categories")?.value || 0,
+  },
+  {
+    label: "Graph Density",
+    value: metrics.find((m) => m.label === "Graph Signals")?.value || 0,
+  },
+],
     chips: [
       "Data Quality",
       "IAB Coverage",
