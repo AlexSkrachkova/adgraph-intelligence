@@ -559,18 +559,17 @@ const uniqueCompanies = new Set(
                   className="rounded-[2rem] border border-cyan-300/25 bg-cyan-500/10 p-6 text-left shadow-[0_0_60px_rgba(34,211,238,0.12)] backdrop-blur-xl transition hover:border-cyan-200/50 hover:bg-cyan-500/15"
                 >
                   <div className="mb-3 text-xs uppercase tracking-[0.3em] text-cyan-200">
-  Platform Intelligence
+  Advertising Intelligence
 </div>
 
 <div className="text-3xl font-black text-white">
-  System Overview
+  Coverage & Quality
 </div>
 
                   <p className="mt-4 text-sm leading-7 text-gray-300">
-                    Opens the story of what this page does, how the data flows
-                    through the platform and how Strategy Hub connects to
-                    Monitoring, CSV Import and Relationship Graph.
-                  </p>
+  Executive snapshot of data quality, classification coverage, relationship
+  density and intelligence readiness across the Brand Galaxy ecosystem.
+</p>
 
                   <div className="mt-5 text-xs uppercase tracking-[0.24em] text-cyan-200/80">
                     Click to open page story →
