@@ -6754,10 +6754,13 @@ export default function MonitoringPage() {
 
         {selectedBrandProfile && (
           <BrandIntelligenceModal
-            profile={{
-              ...selectedBrandProfile,
-              subsidiaries: selectedBrandProfile.products || [],
-            }}
+            profile={
+  {
+    ...selectedBrandProfile,
+    logoUrl: (selectedBrandProfile as any).logoUrl || "",
+    subsidiaries: selectedBrandProfile.products || [],
+  } as any
+}
             onClose={() => setSelectedBrandName(null)}
           />
         )}
