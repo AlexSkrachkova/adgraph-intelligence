@@ -183,7 +183,7 @@ const uniqueCompanies = new Set(
         {
           label: "Brand Stars",
           value: uniqueBrands,
-          helper: "Products and services detected from imported advertising data.",
+          helper: "Total number of brand entities currently stored in Brand Galaxy.",
           tone: "fuchsia",
           detailTitle: "Brand Stars",
           detailSubtitle: "Brands mapped inside the galaxy.",
@@ -362,21 +362,50 @@ const uniqueCompanies = new Set(
       subtitle:
         "Strategy Hub is the executive layer of Brand Galaxy. It gathers the platform’s entity counts, campaign activity, graph signals and taxonomy coverage into one command view.",
       bullets: [
-        "Monitoring brings in ARGUS, Nielsen/CSV and ad signal data.",
-        "CSV Import cleans and enriches uploaded files before writing to Supabase.",
-        "Relationship Graph turns brands, products, campaigns, audiences and companies into a galaxy map.",
+        "Monitoring brings in ARGUS, Nielsen/CSV and advertising signal data.",
+        "CSV Import cleans, validates and enriches uploaded files before writing to Supabase.",
+        "Relationship Graph turns brands, products, campaigns, audiences and companies into a connected galaxy map.",
+        "Entity Search gives a searchable, logo-enriched directory for brands and related commercial entities.",
         "Strategy Hub summarizes the whole intelligence system for fast review and decision-making.",
-        "Next goal: every visible object becomes clickable and explains what it means.",
       ],
       stats: [
         { label: "Brands", value: metrics.find((m) => m.label === "Brand Stars")?.value || 0 },
         { label: "Products", value: products.length },
-        { label: "Campaigns", value: campaigns.length },
-        { label: "Graph edges", value: relationships.length },
+        { label: "Campaigns", value: metrics.find((m) => m.label === "Campaigns")?.value || 0 },
+        { label: "Graph edges", value: metrics.find((m) => m.label === "Graph Signals")?.value || 0 },
       ],
       chips: ["Monitoring", "CSV Import", "Relationship Graph", "Galaxy Search", "Strategy Hub"],
     });
   }
+
+  function openQualityModal() {
+  setModal({
+    label: "Advertising Intelligence",
+    title: "Coverage & Quality",
+    subtitle:
+      "Quality snapshot of how ready the Brand Galaxy dataset is for advertising intelligence, strategy review and demo presentation.",
+    bullets: [
+      "Logo and website enrichment show whether brand profiles are presentation-ready.",
+      "IAB coverage shows how many entities have category intelligence.",
+      "Graph signals show how connected brands, products, campaigns and companies are.",
+      "Campaign cleanup removes Nielsen noise, station promos and technical records.",
+      "This view helps identify what still needs enrichment before the final demo.",
+    ],
+    stats: [
+      { label: "Brands", value: metrics.find((m) => m.label === "Brand Stars")?.value || 0 },
+      { label: "Products", value: products.length },
+      { label: "Campaigns", value: metrics.find((m) => m.label === "Campaigns")?.value || 0 },
+      { label: "Graph edges", value: metrics.find((m) => m.label === "Graph Signals")?.value || 0 },
+    ],
+    chips: [
+      "Data Quality",
+      "IAB Coverage",
+      "Logo Enrichment",
+      "Graph Density",
+      "Demo Readiness",
+    ],
+  });
+}
 
   function openMetricModal(metric: Metric) {
     setModal({
@@ -555,7 +584,7 @@ const uniqueCompanies = new Set(
                 </button>
 
                 <button
-                  onClick={openStoryModal}
+                  onClick={openQualityModal}
                   className="rounded-[2rem] border border-cyan-300/25 bg-cyan-500/10 p-6 text-left shadow-[0_0_60px_rgba(34,211,238,0.12)] backdrop-blur-xl transition hover:border-cyan-200/50 hover:bg-cyan-500/15"
                 >
                   <div className="mb-3 text-xs uppercase tracking-[0.3em] text-cyan-200">
@@ -572,7 +601,7 @@ const uniqueCompanies = new Set(
 </p>
 
                   <div className="mt-5 text-xs uppercase tracking-[0.24em] text-cyan-200/80">
-                    Click to open page story →
+                    Click to inspect quality →
                   </div>
                 </button>
               </div>
