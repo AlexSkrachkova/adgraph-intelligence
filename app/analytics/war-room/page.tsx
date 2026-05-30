@@ -183,7 +183,7 @@ const uniqueCompanies = new Set(
         {
           label: "Brand Stars",
           value: uniqueBrands,
-          helper: "Brands mapped inside the galaxy.",
+          helper: "Products and services detected from imported advertising data.",
           tone: "fuchsia",
           detailTitle: "Brand Stars",
           detailSubtitle: "Brands mapped inside the galaxy.",
@@ -405,10 +405,21 @@ const uniqueCompanies = new Set(
         "Future enrichment can add flight dates, spend, creative format, competitors and performance notes.",
       ],
       stats: [
-        { label: "IAB", value: buildIabLabel(campaign) },
-        { label: "Status", value: campaign.status || "Unknown" },
-        { label: "Product ID", value: campaign.product_id || "Not linked" },
-      ],
+  {
+    label: "IAB Category",
+    value:
+      buildIabLabel(campaign) === "Unclassified"
+        ? "Pending Classification"
+        : buildIabLabel(campaign),
+  },
+  {
+    label: "Campaign Status",
+    value:
+      campaign.status === "active"
+        ? "Active"
+        : campaign.status || "Unknown",
+  },
+],
       chips: [
         campaign.objective || "No objective",
         buildIabLabel(campaign),
@@ -548,12 +559,12 @@ const uniqueCompanies = new Set(
                   className="rounded-[2rem] border border-cyan-300/25 bg-cyan-500/10 p-6 text-left shadow-[0_0_60px_rgba(34,211,238,0.12)] backdrop-blur-xl transition hover:border-cyan-200/50 hover:bg-cyan-500/15"
                 >
                   <div className="mb-3 text-xs uppercase tracking-[0.3em] text-cyan-200">
-                    Strategy Hub Story
-                  </div>
+  Platform Intelligence
+</div>
 
-                  <div className="text-3xl font-black text-white">
-                    Page history & role
-                  </div>
+<div className="text-3xl font-black text-white">
+  System Overview
+</div>
 
                   <p className="mt-4 text-sm leading-7 text-gray-300">
                     Opens the story of what this page does, how the data flows
