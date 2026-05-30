@@ -353,14 +353,13 @@ export default function EntitySearchPage() {
 
   async function enrichMissingBrands() {
     const missingBrands = entities
-      .filter((item) => item.entityType === "brand")
-      .filter((item) => !getEntityLogo(item.entity) || !getEntityWebsite(item.entity));
+  .filter((item) => item.entityType === "brand");
 
     if (missingBrands.length === 0) {
-      setEnrichmentMessage("All visible brands already have logo/website fields.");
-      setEnrichmentProgress(null);
-      return;
-    }
+  setEnrichmentMessage("No brands found for enrichment.");
+  setEnrichmentProgress(null);
+  return;
+}
 
     setEnriching(true);
     setEnrichmentMessage(`Enriching ${missingBrands.length} brands...`);
