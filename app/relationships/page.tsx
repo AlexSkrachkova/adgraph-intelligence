@@ -1991,19 +1991,63 @@ function SelectedEntityPanel({
         <div className="text-sm leading-7 text-gray-200">{aiSummary}</div>
       </div>
 
-      <RelationshipInsightPanel
-        selectedNode={selectedNode}
-        relationships={relationships}
-        nodeLookup={nodeLookup}
-      />
+    </aside>
+  );
+}
+
+function SelectedEntityDeepDive({
+  selectedNode,
+  ecosystemProfile,
+  relationships,
+  nodeLookup,
+}: any) {
+  if (!selectedNode) return null;
+
+  const strategicOpportunities = [
+    ecosystemProfile.campaigns.length === 0
+      ? "Add campaign signals to improve strategic momentum."
+      : "Campaign layer is active and can support positioning analysis.",
+    ecosystemProfile.audiences.length === 0
+      ? "Audience coverage is weak. Add audience segments for better targeting intelligence."
+      : "Audience layer is connected and supports targeting analysis.",
+    ecosystemProfile.products.length === 0
+      ? "Product-level coverage is missing. Add products to strengthen the ecosystem."
+      : "Product signals improve ecosystem strength and brand context.",
+  ];
+
+  return (
+    <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.055] p-6 shadow-[0_0_42px_rgba(34,211,238,0.08)] backdrop-blur-xl">
+      <div className="mb-5">
+        <div className="text-xs uppercase tracking-[0.3em] text-cyan-200">
+          Full Relationship Intelligence
+        </div>
+        <h2 className="mt-2 text-3xl font-black text-white">
+          {selectedNode.entity?.name || "Selected Entity"} Deep Dive
+        </h2>
+        <p className="mt-2 max-w-4xl text-sm leading-6 text-gray-400">
+          Detailed relationship, explainability, heatmap and ecosystem signals for the selected galaxy object.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
+        <div className="xl:col-span-2">
+          <RelationshipInsightPanel
+            selectedNode={selectedNode}
+            relationships={relationships}
+            nodeLookup={nodeLookup}
+          />
+        </div>
+
+        <div>
+          <RelationshipHeatmap
+            selectedNode={selectedNode}
+            relationships={relationships}
+            nodeLookup={nodeLookup}
+          />
+        </div>
+      </div>
 
       <ExplainabilityLayer
-        selectedNode={selectedNode}
-        relationships={relationships}
-        nodeLookup={nodeLookup}
-      />
-
-      <RelationshipHeatmap
         selectedNode={selectedNode}
         relationships={relationships}
         nodeLookup={nodeLookup}
@@ -2014,11 +2058,11 @@ function SelectedEntityPanel({
           Strategic Opportunities
         </div>
 
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {strategicOpportunities.map((opportunity) => (
             <div
               key={opportunity}
-              className="rounded-2xl border border-white/10 bg-black/25 p-3 text-sm leading-6 text-gray-300"
+              className="rounded-2xl border border-white/10 bg-black/25 p-4 text-sm leading-6 text-gray-300"
             >
               ✦ {opportunity}
             </div>
@@ -2032,7 +2076,7 @@ function SelectedEntityPanel({
         nodeLookup={nodeLookup}
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-3">
+      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
         <IntelligenceMetric
           label="Companies"
           value={ecosystemProfile.companies.length}
@@ -2051,7 +2095,7 @@ function SelectedEntityPanel({
         />
       </div>
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
         <MiniEntityList
           title="Company Planets"
           items={ecosystemProfile.companies}
@@ -2073,9 +2117,10 @@ function SelectedEntityPanel({
           items={ecosystemProfile.brands}
         />
       </div>
-    </aside>
+    </section>
   );
 }
+
 
 export default function RelationshipExplorer() {
   const [nodes, setNodes] = useState<any[]>([]);
@@ -2862,6 +2907,13 @@ export default function RelationshipExplorer() {
               nodes={nodes}
             />
           </div>
+
+          <SelectedEntityDeepDive
+            selectedNode={selectedNode}
+            ecosystemProfile={selectedEcosystemProfile}
+            relationships={relationships}
+            nodeLookup={nodeLookup}
+          />
         </div>
 </main>
     </>
