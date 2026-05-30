@@ -1405,6 +1405,7 @@ function CompetitiveOverlapPanel({
   selectedNode,
   relationships,
   nodeLookup,
+  ecosystemProfile,
 }: any) {
   if (!selectedNode) return null;
 
@@ -1451,38 +1452,25 @@ function CompetitiveOverlapPanel({
     new Map(directCompetitors.map((item: any) => [item.nodeId, item])).values()
   );
 
-  if (uniqueCompetitors.length === 0) {
+  const fallbackCompetitors =
+  uniqueCompetitors.length > 0
+    ? uniqueCompetitors
+    : (ecosystemProfile?.brands || []).slice(0, 6).map((brand: any, index: number) => ({
+        ...brand,
+        relationshipStrength: Math.max(62, 88 - index * 6),
+        relationshipBadge: "Inferred Competitive Signal",
+        inferred: true,
+      }));
+
+  if (fallbackCompetitors.length === 0) {
   return (
-    <div className="mb-6 rounded-3xl border border-amber-400/24 bg-amber-500/8 p-5 shadow-[0_0_24px_rgba(245,158,11,0.08)]">
-      <div className="text-amber-200 text-sm font-semibold mb-4">
-        Competitive Orbit Intelligence
+    <div className="mb-6 rounded-3xl border border-white/10 bg-black/24 p-5">
+      <div className="text-slate-200 text-sm font-semibold mb-2">
+        Competitive Orbit
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-black/24 p-4">
-        <div className="text-lg font-bold text-white">
-          Potential Competitive Landscape
-        </div>
-
-        <div className="mt-3 text-sm leading-6 text-gray-300">
-          No explicit competitor relationships have been mapped yet.
-          However, this brand operates inside a shared ecosystem and
-          should be evaluated against related automotive, technology,
-          streaming or gaming brands in the galaxy.
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-cyan-100">
-            Market Overlap Analysis Available
-          </div>
-
-          <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-cyan-100">
-            Audience Comparison Available
-          </div>
-
-          <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-cyan-100">
-            Campaign Benchmarking Available
-          </div>
-        </div>
+      <div className="text-sm text-gray-400">
+        No competitive orbit detected yet.
       </div>
     </div>
   );
@@ -1494,7 +1482,7 @@ function CompetitiveOverlapPanel({
       </div>
 
       <div className="space-y-3">
-        {uniqueCompetitors.map((competitor: any) => (
+        {fallbackCompetitors.map((competitor: any) => (
           <div
             key={competitor.nodeId}
             className="rounded-2xl border border-white/10 bg-black/24 p-4"
@@ -1517,8 +1505,9 @@ function CompetitiveOverlapPanel({
             </div>
 
             <div className="mt-2 text-sm text-gray-300 leading-6">
-              {selectedNode.entity?.name} and {competitor.entity?.name} share
-              direct competitive positioning signals in the advertising galaxy.
+              {competitor.inferred
+  ? `${competitor.entity?.name} appears in the same related brand orbit as ${selectedNode.entity?.name}, which suggests potential market, audience or category overlap.`
+  : `${selectedNode.entity?.name} and ${competitor.entity?.name} share direct competitive positioning signals in the advertising galaxy.`}
             </div>
           </div>
         ))}
@@ -2100,10 +2089,11 @@ function SelectedEntityDeepDive({
       </div>
 
       <CompetitiveOverlapPanel
-        selectedNode={selectedNode}
-        relationships={relationships}
-        nodeLookup={nodeLookup}
-      />
+  selectedNode={selectedNode}
+  relationships={relationships}
+  nodeLookup={nodeLookup}
+  ecosystemProfile={ecosystemProfile}
+/>
 
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
         <IntelligenceMetric
