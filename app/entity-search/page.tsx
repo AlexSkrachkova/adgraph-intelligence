@@ -207,29 +207,29 @@ function EntityLogo({ entity, name }: { entity: any; name: string }) {
   const logo = getEntityLogo(entity);
 
   if (logo) {
-  return (
-    <div className="flex h-16 w-24 items-center justify-center rounded-2xl border border-white/10 bg-black/30 p-2">
-      <img
-        src={logo}
-        alt={`${name} logo`}
-        onError={(event) => {
-          event.currentTarget.style.display = "none";
-          const fallback =
-            event.currentTarget.parentElement?.querySelector(".logo-fallback");
-          if (fallback) fallback.classList.remove("hidden");
-        }}
-        className="max-h-12 max-w-full rounded-lg bg-white/90 p-1 object-contain"
-      />
+    return (
+      <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white p-2 shadow-lg">
+        <img
+          src={logo}
+          alt={`${name} logo`}
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+            const fallback =
+              event.currentTarget.parentElement?.querySelector(".logo-fallback");
+            if (fallback) fallback.classList.remove("hidden");
+          }}
+          className="h-full w-full object-contain"
+        />
 
-      <div className="logo-fallback hidden text-xl font-black text-cyan-100">
-        {getInitials(name)}
+        <div className="logo-fallback hidden text-xl font-black text-slate-900">
+          {getInitials(name)}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   return (
-    <div className="flex h-16 w-24 items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-500/10 text-xl font-black text-cyan-100">
+    <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-500/10 text-xl font-black text-cyan-100">
       {getInitials(name)}
     </div>
   );
