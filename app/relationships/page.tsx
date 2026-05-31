@@ -1374,9 +1374,14 @@ function MiniEntityList({
 }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-black/30 p-4 shadow-[0_0_18px_rgba(255,255,255,0.03)]">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="font-semibold text-white">{title}</h3>
-        <span className="text-xs text-gray-500">{items.length}</span>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <h3 className="font-semibold text-white">{title}</h3>
+          <p className="mt-1 text-xs leading-5 text-gray-500">
+            Click any card to open its intelligence context.
+          </p>
+        </div>
+        <span className="shrink-0 text-xs text-gray-500">{items.length}</span>
       </div>
 
       {items.length === 0 && (
@@ -2158,32 +2163,32 @@ function SelectedEntityDeepDive({
   <MiniEntityList
     title="Company Planets"
     items={ecosystemProfile.companies}
-  onSelect={openDeepDiveItem}
-/>
+    onSelect={openDeepDiveItem}
+  />
 
   <MiniEntityList
     title="Product Moons"
-    items={ecosystemProfile.companies}
-  onSelect={openDeepDiveItem}
-/>
+    items={ecosystemProfile.products}
+    onSelect={openDeepDiveItem}
+  />
 
   <MiniEntityList
     title="Campaign Planets"
-    items={ecosystemProfile.companies}
-  onSelect={openDeepDiveItem}
-/>
+    items={ecosystemProfile.campaigns}
+    onSelect={openDeepDiveItem}
+  />
 
   <MiniEntityList
     title="Audience Planets"
-    items={ecosystemProfile.companies}
-  onSelect={openDeepDiveItem}
-/>
+    items={ecosystemProfile.audiences}
+    onSelect={openDeepDiveItem}
+  />
 
   <MiniEntityList
     title="Related Brand Stars"
-    items={ecosystemProfile.companies}
-  onSelect={openDeepDiveItem}
-/>
+    items={ecosystemProfile.brands}
+    onSelect={openDeepDiveItem}
+  />
 </div>
     </section>
   );
@@ -2990,7 +2995,7 @@ export default function RelationshipExplorer() {
 </main>
 {selectedDeepDiveItem && (
   <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm">
-    <div className="w-full max-w-2xl rounded-[2rem] border border-cyan-300/20 bg-slate-950 p-6 shadow-[0_0_60px_rgba(34,211,238,0.18)]">
+    <div className="max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-[2rem] border border-cyan-300/20 bg-slate-950 p-6 shadow-[0_0_60px_rgba(34,211,238,0.18)]">
       <div className="mb-3 text-xs uppercase tracking-[0.25em] text-cyan-300">
         {selectedDeepDiveItem.entityType} Intelligence
       </div>
