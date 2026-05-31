@@ -12,8 +12,7 @@ function InfoTooltip({ text }: { text: string }) {
         i
       </span>
 
-      <span className="pointer-events-none absolute left-0 top-7 z-50 hidden w-56 rounded-2xl border border-cyan-300/20 bg-slate-950/95 p-4 text-left text-xs leading-5 text-gray-200 shadow-[0_0_35px_rgba(34,211,238,0.16)] backdrop-blur-xl group-hover:block">
-        {text}
+      <span className="pointer-events-none absolute left-1/2 top-7 z-50 hidden w-48 -translate-x-1/2 rounded-2xl border border-cyan-300/20 bg-slate-950/95 p-3 text-center text-xs leading-5 text-gray-200 shadow-[0_0_35px_rgba(34,211,238,0.16)] backdrop-blur-xl group-hover:block">
       </span>
     </span>
   );
