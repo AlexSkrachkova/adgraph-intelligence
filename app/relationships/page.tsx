@@ -1366,9 +1366,11 @@ function IntelligenceMetric({ label, value }: any) {
 function MiniEntityList({
   title,
   items,
+  onSelect,
 }: {
   title: string;
   items: any[];
+  onSelect?: (item: any) => void;
 }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-black/30 p-4 shadow-[0_0_18px_rgba(255,255,255,0.03)]">
@@ -1383,9 +1385,10 @@ function MiniEntityList({
 
       <div className="space-y-2">
         {items.map((item: any) => (
-          <div
+          <button
   key={item.nodeId}
-  className="rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:border-cyan-300/30 hover:bg-cyan-500/5"
+  onClick={() => onSelect?.(item)}
+  className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:border-cyan-300/30 hover:bg-cyan-500/5"
 >
   <div className="mb-2 flex items-center justify-between">
     <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">
@@ -1427,7 +1430,7 @@ function MiniEntityList({
       Active Signal
     </div>
   </div>
-</div>
+</button>
         ))}
       </div>
     </div>
@@ -2051,6 +2054,8 @@ function SelectedEntityDeepDive({
   ecosystemProfile,
   relationships,
   nodeLookup,
+  nodes,
+  setSelectedNode,
 }: any) {
   if (!selectedNode) return null;
 
@@ -2065,6 +2070,17 @@ function SelectedEntityDeepDive({
       ? "Product-level coverage is missing. Add products to strengthen the ecosystem."
       : "Product signals improve ecosystem strength and brand context.",
   ];
+
+  const openDeepDiveItem = (item: any) => {
+  const node =
+    nodes.find((n: any) => n.data?.nodeId === item.nodeId) ||
+    nodes.find((n: any) => n.id === item.nodeId);
+
+  if (node) {
+    setSelectedNode(node.data);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+};
 
   return (
     <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.055] p-6 shadow-[0_0_42px_rgba(34,211,238,0.08)] backdrop-blur-xl">
@@ -2151,27 +2167,32 @@ function SelectedEntityDeepDive({
   <MiniEntityList
     title="Company Planets"
     items={ecosystemProfile.companies}
-  />
+  onSelect={openDeepDiveItem}
+/>
 
   <MiniEntityList
     title="Product Moons"
-    items={ecosystemProfile.products}
-  />
+    items={ecosystemProfile.companies}
+  onSelect={openDeepDiveItem}
+/>
 
   <MiniEntityList
     title="Campaign Planets"
-    items={ecosystemProfile.campaigns}
-  />
+    items={ecosystemProfile.companies}
+  onSelect={openDeepDiveItem}
+/>
 
   <MiniEntityList
     title="Audience Planets"
-    items={ecosystemProfile.audiences}
-  />
+    items={ecosystemProfile.companies}
+  onSelect={openDeepDiveItem}
+/>
 
   <MiniEntityList
     title="Related Brand Stars"
-    items={ecosystemProfile.brands}
-  />
+    items={ecosystemProfile.companies}
+  onSelect={openDeepDiveItem}
+/>
 </div>
     </section>
   );
@@ -2965,11 +2986,13 @@ export default function RelationshipExplorer() {
           </div>
 
           <SelectedEntityDeepDive
-            selectedNode={selectedNode}
-            ecosystemProfile={selectedEcosystemProfile}
-            relationships={relationships}
-            nodeLookup={nodeLookup}
-          />
+  selectedNode={selectedNode}
+  ecosystemProfile={selectedEcosystemProfile}
+  relationships={relationships}
+  nodeLookup={nodeLookup}
+  nodes={nodes}
+  setSelectedNode={setSelectedNode}
+/>
         </div>
 </main>
     </>
