@@ -12,7 +12,8 @@ function InfoTooltip({ text }: { text: string }) {
         i
       </span>
 
-      <span className="pointer-events-none absolute left-1/2 top-7 z-50 hidden w-48 -translate-x-1/2 rounded-2xl border border-cyan-300/20 bg-slate-950/95 p-3 text-center text-xs leading-5 text-gray-200 shadow-[0_0_35px_rgba(34,211,238,0.16)] backdrop-blur-xl group-hover:block">
+      <span className="pointer-events-none fixed left-1/2 top-24 z-[9999] hidden w-[min(28rem,calc(100vw-2rem))] -translate-x-1/2 rounded-2xl border border-cyan-300/20 bg-slate-950/95 p-4 text-center text-xs leading-5 text-gray-200 shadow-[0_0_35px_rgba(34,211,238,0.22)] backdrop-blur-xl group-hover:block">
+        {text}
       </span>
     </span>
   );
@@ -54,19 +55,16 @@ function FeatureCard({
 function Metric({
   value,
   label,
-  tooltip,
 }: {
   value: string;
   label: string;
-  tooltip: string;
+  tooltip?: string;
 }) {
   return (
-    <div className="relative overflow-visible rounded-3xl border border-white/10 bg-black/35 p-5 transition duration-500 hover:border-cyan-300/20 hover:bg-black/45 hover:shadow-[0_0_28px_rgba(34,211,238,0.08)]">
-      <div className="text-4xl font-black text-cyan-200">
-  {value}
-</div>
+    <div className="rounded-3xl border border-white/10 bg-black/35 p-5 transition duration-500 hover:border-cyan-300/20 hover:bg-black/45 hover:shadow-[0_0_28px_rgba(34,211,238,0.08)]">
+      <div className="text-4xl font-black text-cyan-200">{value}</div>
 
-      <div className="text-xs uppercase tracking-[0.22em] text-gray-500">
+      <div className="mt-2 text-xs uppercase tracking-[0.22em] text-gray-500">
         {label}
       </div>
     </div>
