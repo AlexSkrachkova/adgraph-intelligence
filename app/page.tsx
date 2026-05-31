@@ -62,7 +62,7 @@ function Metric({
   tooltip: string;
 }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-black/35 p-5 transition duration-500 hover:border-cyan-300/20 hover:bg-black/45 hover:shadow-[0_0_28px_rgba(34,211,238,0.08)]">
+    <div className="relative overflow-visible rounded-3xl border border-white/10 bg-black/35 p-5 transition duration-500 hover:border-cyan-300/20 hover:bg-black/45 hover:shadow-[0_0_28px_rgba(34,211,238,0.08)]">
       <div className="mb-2 flex items-start justify-between gap-3">
         <div className="text-4xl font-black text-cyan-200">{value}</div>
         <InfoTooltip text={tooltip} />
@@ -274,6 +274,7 @@ const intelligenceFlow = [
 ];
 
 export default function HomePage() {
+  const [selectedSignal, setSelectedSignal] = useState<FeedSignal | null>(null);
   const [feedSignals, setFeedSignals] = useState<FeedSignal[]>([]);
   const [feedLoading, setFeedLoading] = useState(true);
   const [platformStats, setPlatformStats] = useState<PlatformStats>({
@@ -372,7 +373,7 @@ export default function HomePage() {
     <>
       <NavBar />
 
-      <main className="relative min-h-screen overflow-hidden bg-[#020617] text-white">
+      <main className="relative min-h-screen overflow-visible bg-[#020617] text-white">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(217,70,239,0.22),transparent_24%),radial-gradient(circle_at_85%_10%,rgba(34,211,238,0.16),transparent_22%),radial-gradient(circle_at_50%_85%,rgba(99,102,241,0.16),transparent_30%)]" />
 
         <div className="pointer-events-none absolute inset-0 opacity-30 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:80px_80px]" />
@@ -488,10 +489,11 @@ export default function HomePage() {
                       </div>
                     ) : (
                       visibleSignals.map((item) => (
-                        <div
-                          key={item.id}
-                          className="rounded-2xl border border-white/10 bg-black/30 p-3 transition duration-500 hover:border-cyan-300/25 hover:bg-black/45"
-                        >
+                        <button
+  key={item.id}
+  onClick={() => setSelectedSignal(item)}
+  className="w-full rounded-2xl border border-white/10 bg-black/30 p-3 text-left transition duration-500 hover:border-cyan-300/25 hover:bg-black/45"
+>
                           <div className="flex items-center justify-between gap-3">
                             <div className="truncate text-sm font-black text-white">
                               {item.brand}
@@ -505,7 +507,7 @@ export default function HomePage() {
                           <div className="mt-1 line-clamp-2 text-xs text-gray-300">
                             {item.signal}
                           </div>
-                        </div>
+                        </button>
                       ))
                     )}
                   </div>
@@ -606,6 +608,68 @@ export default function HomePage() {
           </section>
         </div>
       </main>
+      {selectedSignal && (
+  <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm">
+    <div className="w-full max-w-2xl rounded-[2rem] border border-cyan-300/20 bg-slate-950 p-6 shadow-[0_0_60px_rgba(34,211,238,0.18)]">
+      <div className="mb-3 text-xs uppercase tracking-[0.25em] text-cyan-300">
+        {selectedSignal.type} Intelligence
+      </div>
+
+      <h2 className="mb-4 text-3xl font-black text-white">
+        {selectedSignal.brand}
+      </h2>
+
+      <p className="mb-5 text-sm leading-7 text-gray-300">
+        {selectedSignal.signal}
+      </p>
+
+      <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-cyan-300/20 bg-cyan-500/10 p-4">
+          <div className="text-xs uppercase tracking-[0.18em] text-cyan-200">
+            Signal Type
+          </div>
+          <div className="mt-2 text-sm font-bold text-white">
+            {selectedSignal.type}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-fuchsia-300/20 bg-fuchsia-500/10 p-4">
+          <div className="text-xs uppercase tracking-[0.18em] text-fuchsia-200">
+            Intelligence Role
+          </div>
+          <div className="mt-2 text-sm font-bold text-white">
+            Campaign Context
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-emerald-300/20 bg-emerald-500/10 p-4">
+          <div className="text-xs uppercase tracking-[0.18em] text-emerald-200">
+            Status
+          </div>
+          <div className="mt-2 text-sm font-bold text-white">
+            Live Signal
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+        <div className="mb-3 text-sm font-semibold text-cyan-200">
+          Why this matters
+        </div>
+        <div className="text-sm leading-7 text-gray-300">
+          This signal is part of the live intelligence stream and helps explain current campaign, brand or audience activity inside the Brand Galaxy platform.
+        </div>
+      </div>
+
+      <button
+        onClick={() => setSelectedSignal(null)}
+        className="mt-6 rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
     </>
   );
 }
