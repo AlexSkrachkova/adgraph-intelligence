@@ -4960,7 +4960,6 @@ function ExplanationCard({
         <div className="flex items-center gap-2">
           {onClick && (
             <span className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-cyan-100">
-              Click
             </span>
           )}
           <InfoTooltip text="This explanatory panel explains what this part of the intelligence page does. Clickable panels can open a deeper explanation." />

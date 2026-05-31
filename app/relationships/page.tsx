@@ -2054,8 +2054,7 @@ function SelectedEntityDeepDive({
   ecosystemProfile,
   relationships,
   nodeLookup,
-  nodes,
-  setSelectedNode,
+  setSelectedDeepDiveItem,
 }: any) {
   if (!selectedNode) return null;
 
@@ -2072,16 +2071,8 @@ function SelectedEntityDeepDive({
   ];
 
   const openDeepDiveItem = (item: any) => {
-  const node =
-    nodes.find((n: any) => n.data?.nodeId === item.nodeId) ||
-    nodes.find((n: any) => n.id === item.nodeId);
-
-  if (node) {
-    setSelectedNode(node.data);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+  setSelectedDeepDiveItem(item);
 };
-
   return (
     <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.055] p-6 shadow-[0_0_42px_rgba(34,211,238,0.08)] backdrop-blur-xl">
       <div className="mb-5">
@@ -2199,6 +2190,7 @@ function SelectedEntityDeepDive({
 }
 
 export default function RelationshipExplorer() {
+  const [selectedDeepDiveItem, setSelectedDeepDiveItem] = useState<any>(null);
   const [nodes, setNodes] = useState<any[]>([]);
   const [relationships, setRelationships] = useState<any[]>([]);
   const [nodeLookup, setNodeLookup] = useState<Record<string, any>>({});
@@ -2992,9 +2984,61 @@ export default function RelationshipExplorer() {
   nodeLookup={nodeLookup}
   nodes={nodes}
   setSelectedNode={setSelectedNode}
+  setSelectedDeepDiveItem={setSelectedDeepDiveItem}
 />
         </div>
 </main>
+{selectedDeepDiveItem && (
+  <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm">
+    <div className="w-full max-w-2xl rounded-[2rem] border border-cyan-300/20 bg-slate-950 p-6 shadow-[0_0_60px_rgba(34,211,238,0.18)]">
+      <div className="mb-3 text-xs uppercase tracking-[0.25em] text-cyan-300">
+        {selectedDeepDiveItem.entityType} Intelligence
+      </div>
+
+      <h2 className="mb-4 text-3xl font-black text-white">
+        {selectedDeepDiveItem.entity?.name || "Unknown"}
+      </h2>
+
+      <p className="mb-5 text-sm leading-7 text-gray-300">
+        {selectedDeepDiveItem.entityType === "product" &&
+          "This product is connected to the selected brand ecosystem and contributes to product-level intelligence."}
+
+        {selectedDeepDiveItem.entityType === "campaign" &&
+          "This campaign is connected to the selected brand and contributes to campaign momentum and advertising intelligence."}
+
+        {selectedDeepDiveItem.entityType === "brand" &&
+          "This related brand star shares ecosystem overlap with the selected brand."}
+
+        {selectedDeepDiveItem.entityType === "audience" &&
+          "This audience signal contributes to targeting, affinity and market context."}
+
+        {selectedDeepDiveItem.entityType === "company" &&
+          "This company signal represents ownership or strategic corporate relationship."}
+      </p>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <div className="text-xs uppercase text-gray-500">Type</div>
+          <div className="font-bold text-white">{selectedDeepDiveItem.entityType}</div>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <div className="text-xs uppercase text-gray-500">Source</div>
+          <div className="font-bold text-white">
+            {selectedDeepDiveItem.entity?.source || "Brand Galaxy"}
+          </div>
+        </div>
+      </div>
+
+      <button
+        onClick={() => setSelectedDeepDiveItem(null)}
+        className="mt-6 rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
     </>
   );
 }
