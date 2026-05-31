@@ -62,10 +62,9 @@ function Metric({
 }) {
   return (
     <div className="relative overflow-visible rounded-3xl border border-white/10 bg-black/35 p-5 transition duration-500 hover:border-cyan-300/20 hover:bg-black/45 hover:shadow-[0_0_28px_rgba(34,211,238,0.08)]">
-      <div className="mb-2 flex items-start justify-between gap-3">
-        <div className="text-4xl font-black text-cyan-200">{value}</div>
-        <InfoTooltip text={tooltip} />
-      </div>
+      <div className="text-4xl font-black text-cyan-200">
+  {value}
+</div>
 
       <div className="text-xs uppercase tracking-[0.22em] text-gray-500">
         {label}
