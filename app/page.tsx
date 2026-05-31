@@ -428,7 +428,11 @@ export default function HomePage() {
                     <div className="text-xs uppercase tracking-[0.3em] text-fuchsia-200">
                       Live Intelligence Status
                     </div>
-                    <InfoTooltip text="These numbers are loaded from the live Supabase tables, not hard-coded presentation numbers." />
+
+<div className="mt-3 text-xs leading-5 text-gray-400">
+  Live counts from Supabase tables, updated automatically.
+</div>
+
                   </div>
 
                   <h2 className="mb-8 text-4xl font-black">
@@ -473,9 +477,14 @@ export default function HomePage() {
                       <div className="mt-2 text-2xl font-black text-white">
                         Strategic Signal Stream
                       </div>
+
+<div className="mt-3 text-xs leading-5 text-gray-400">
+  Recent campaign, brand and audience intelligence signals.
+</div>
+
                     </div>
 
-                    <InfoTooltip text="This feed previews recent live campaign, brand and audience records from Supabase. It falls back only if no live records are available." />
+
                   </div>
 
                   <div className="space-y-3">
