@@ -1997,8 +1997,7 @@ const IAB_TAXONOMY: IabTaxonomyRow[] = [
     "tier2": "Toys and Games",
     "tier3": "Games",
     "keywords": "games"
-  },{
-    "id": "1243",
+  },{"id": "1243",
     "label": "Outdoor Play Equipment",
     "tier1": "Consumer Packaged Goods",
     "tier2": "Toys and Games",
@@ -3996,8 +3995,7 @@ const IAB_TAXONOMY: IabTaxonomyRow[] = [
     "tier2": "Ticket Services",
     "tier3": "",
     "keywords": "ticket services"
-  },{
-    "id": "1493",
+  },{ "id": "1493",
     "label": "Fitness Activities",
     "tier1": "Fitness Activities",
     "tier2": "",
