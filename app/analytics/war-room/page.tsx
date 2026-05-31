@@ -81,7 +81,7 @@ function buildIabLabel(entity: any) {
   return (
     [entity?.iab_tier_1, entity?.iab_tier_2, entity?.iab_tier_3]
       .filter(Boolean)
-      .join(" → ") || "Unclassified"
+      .join(" → ") || "Pending Classification"
   );
 }
 
@@ -99,6 +99,32 @@ function MetricTooltip({ text }: { text: string }) {
       <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 hidden w-64 -translate-x-1/2 rounded-xl border border-white/10 bg-[#020617] p-3 text-xs leading-5 text-gray-300 shadow-2xl group-hover:block">
         {text}
       </div>
+    </div>
+  );
+}
+
+function BrandLogo({ brand }: { brand: any }) {
+  const logoUrl = brand?.logo_url || brand?.logoUrl || brand?.logo || "";
+  const name = brand?.name || "Brand";
+
+  if (!logoUrl) {
+    return (
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-fuchsia-300/20 bg-fuchsia-500/10 text-sm font-black text-fuchsia-100">
+        {String(name).slice(0, 2).toUpperCase()}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/90 p-1">
+      <img
+        src={logoUrl}
+        alt={`${name} logo`}
+        className="max-h-full max-w-full object-contain"
+        onError={(event) => {
+          event.currentTarget.style.display = "none";
+        }}
+      />
     </div>
   );
 }
@@ -151,24 +177,30 @@ export default function StrategyHubPage() {
       const spotsData = spotsResult.data || [];
 
       const uniqueBrands = new Set(
-  brandsData.map((b: any) => (b.name || "").trim().toLowerCase())
-).size;
+        brandsData.map((b: any) => (b.name || "").trim().toLowerCase())
+      ).size;
 
-const uniqueProducts = new Set(
-  productsData.map((p: any) =>
-    (p.name || p.product_name || "").trim().toLowerCase()
-  )
-).size;
+      const uniqueProducts = new Set(
+        productsData.map((p: any) =>
+          (p.name || p.product_name || "").trim().toLowerCase()
+        )
+      ).size;
 
-const uniqueCampaigns = new Set(
-  campaignsData.map((c: any) =>
-    (c.name || c.campaign_name || "").trim().toLowerCase()
-  )
-).size;
+      const uniqueCampaigns = new Set(
+        campaignsData.map((c: any) =>
+          (c.name || c.campaign_name || "").trim().toLowerCase()
+        )
+      ).size;
 
-const uniqueCompanies = new Set(
-  companiesData.map((c: any) => (c.name || "").trim().toLowerCase())
-).size;
+      const uniqueCompanies = new Set(
+        companiesData.map((c: any) => (c.name || "").trim().toLowerCase())
+      ).size;
+
+      const usableGraphSignals = relationshipsData.filter((r: any) =>
+        ["owned_by", "has_product", "runs_campaign", "promotes", "targets"].includes(
+          r.relationship_type
+        )
+      ).length;
 
       setCompanies(companiesData);
       setProducts(productsData);
@@ -267,11 +299,7 @@ const uniqueCompanies = new Set(
         },
         {
           label: "Graph Signals",
-          value: relationshipsData.filter((r: any) =>
-  ["owned_by", "has_product", "runs_campaign", "promotes", "targets"].includes(
-    r.relationship_type
-  )
-).length,
+          value: usableGraphSignals,
           helper: "Relationship edges.",
           tone: "cyan",
           detailTitle: "Graph Signals",
@@ -329,13 +357,31 @@ const uniqueCompanies = new Set(
   }, []);
 
   const galaxyScore = useMemo(() => {
-    const total = metrics.reduce((sum, metric) => sum + metric.value, 0);
-    return Math.min(100, Math.round(total / 2));
+    const brands = metrics.find((m) => m.label === "Brand Stars")?.value || 0;
+    const productsCount = metrics.find((m) => m.label === "Products")?.value || 0;
+    const campaignsCount = metrics.find((m) => m.label === "Campaigns")?.value || 0;
+    const audiencesCount = metrics.find((m) => m.label === "Audiences")?.value || 0;
+    const companiesCount = metrics.find((m) => m.label === "Companies")?.value || 0;
+    const graphSignals = metrics.find((m) => m.label === "Graph Signals")?.value || 0;
+    const iabRows = metrics.find((m) => m.label === "IAB Categories")?.value || 0;
+
+    return Math.min(
+      100,
+      Math.round(
+        brands * 1.6 +
+          productsCount * 0.9 +
+          campaignsCount * 1.8 +
+          audiencesCount * 1.2 +
+          companiesCount * 1.1 +
+          graphSignals * 0.55 +
+          Math.min(iabRows, 300) * 0.04
+      )
+    );
   }, [metrics]);
 
   const campaignStats = useMemo(() => {
     const withObjective = campaigns.filter((campaign) => cleanText(campaign.objective)).length;
-    const classified = campaigns.filter((campaign) => buildIabLabel(campaign) !== "Unclassified").length;
+    const classified = campaigns.filter((campaign) => buildIabLabel(campaign) !== "Pending Classification").length;
 
     return {
       visible: campaigns.length,
@@ -345,15 +391,31 @@ const uniqueCompanies = new Set(
   }, [campaigns]);
 
   const brandStats = useMemo(() => {
-    const classified = recentBrands.filter((brand) => buildIabLabel(brand) !== "Unclassified").length;
+    const classified = recentBrands.filter((brand) => buildIabLabel(brand) !== "Pending Classification").length;
     const withDescription = recentBrands.filter((brand) => cleanText(brand.description)).length;
+    const withLogo = recentBrands.filter((brand) => brand.logo_url || brand.logoUrl || brand.logo).length;
 
     return {
       visible: recentBrands.length,
       classified,
       withDescription,
+      withLogo,
     };
   }, [recentBrands]);
+
+  function getCampaignProductCount(campaign: any) {
+    const campaignName = (campaign.name || campaign.campaign_name || "").toLowerCase().trim();
+
+    return products.filter((product) => {
+      const productCampaignId = product.campaign_id || product.campaignId;
+      const productCampaignName = (product.campaign_name || product.campaign || "").toLowerCase().trim();
+
+      return (
+        productCampaignId === campaign.id ||
+        (campaignName && productCampaignName && productCampaignName === campaignName)
+      );
+    }).length;
+  }
 
   function openStoryModal() {
     setModal({
@@ -379,45 +441,45 @@ const uniqueCompanies = new Set(
   }
 
   function openQualityModal() {
-  setModal({
-    label: "Advertising Intelligence",
-    title: "Coverage & Quality",
-    subtitle:
-      "Quality snapshot of how ready the Brand Galaxy dataset is for advertising intelligence, strategy review and demo presentation.",
-   bullets: [
-  "Logo Coverage shows how many visible brand profiles have a usable logo.",
-  "Website Coverage shows how many brands have a verified or generated website URL.",
-  "IAB Coverage shows how much taxonomy/category intelligence exists in the platform.",
-  "Graph Density shows how many usable relationship edges connect brands, products, campaigns and companies.",
-  "Use this panel before demos to quickly identify missing logos, weak categories or disconnected graph entities.",
-],
-    stats: [
-  {
-    label: "Logo Coverage",
-    value: `${recentBrands.filter((b) => b.logo_url).length} / ${recentBrands.length}`,
-  },
-  {
-    label: "Website Coverage",
-    value: `${recentBrands.filter((b) => b.website).length} / ${recentBrands.length}`,
-  },
-  {
-    label: "IAB Coverage",
-    value: metrics.find((m) => m.label === "IAB Categories")?.value || 0,
-  },
-  {
-    label: "Graph Density",
-    value: metrics.find((m) => m.label === "Graph Signals")?.value || 0,
-  },
-],
-    chips: [
-      "Data Quality",
-      "IAB Coverage",
-      "Logo Enrichment",
-      "Graph Density",
-      "Demo Readiness",
-    ],
-  });
-}
+    setModal({
+      label: "Advertising Intelligence",
+      title: "Coverage & Quality",
+      subtitle:
+        "Quality snapshot of how ready the Brand Galaxy dataset is for advertising intelligence, strategy review and demo presentation.",
+      bullets: [
+        "Logo Coverage shows how many visible brand profiles have a usable logo.",
+        "Website Coverage shows how many brands have a verified or generated website URL.",
+        "IAB Coverage shows how much taxonomy/category intelligence exists in the platform.",
+        "Graph Density shows how many usable relationship edges connect brands, products, campaigns and companies.",
+        "Use this panel before demos to quickly identify missing logos, weak categories or disconnected graph entities.",
+      ],
+      stats: [
+        {
+          label: "Logo Coverage",
+          value: `${recentBrands.filter((b) => b.logo_url || b.logoUrl || b.logo).length} / ${recentBrands.length}`,
+        },
+        {
+          label: "Website Coverage",
+          value: `${recentBrands.filter((b) => b.website).length} / ${recentBrands.length}`,
+        },
+        {
+          label: "IAB Coverage",
+          value: metrics.find((m) => m.label === "IAB Categories")?.value || 0,
+        },
+        {
+          label: "Graph Density",
+          value: metrics.find((m) => m.label === "Graph Signals")?.value || 0,
+        },
+      ],
+      chips: [
+        "Data Quality",
+        "IAB Coverage",
+        "Logo Enrichment",
+        "Graph Density",
+        "Demo Readiness",
+      ],
+    });
+  }
 
   function openMetricModal(metric: Metric) {
     setModal({
@@ -436,35 +498,43 @@ const uniqueCompanies = new Set(
   }
 
   function openCampaignModal(campaign: any) {
+    const productCount = getCampaignProductCount(campaign);
+
     setModal({
       label: "Campaign Radar",
-      title: campaign.name || "Unnamed campaign",
+      title: campaign.name || campaign.campaign_name || "Unnamed campaign",
       subtitle: campaign.objective || "No objective available yet.",
       bullets: [
         "This campaign can be connected to brands, products, audiences and monitoring signals.",
-        "Campaign Radar is designed to surface current or recently imported campaign intelligence.",
+        "Campaign Radar surfaces current or recently imported campaign intelligence.",
+        "Connected products help explain what the campaign is promoting or positioning.",
         "Future enrichment can add flight dates, spend, creative format, competitors and performance notes.",
       ],
       stats: [
-  {
-    label: "IAB Category",
-    value:
-      buildIabLabel(campaign) === "Unclassified"
-        ? "Pending Classification"
-        : buildIabLabel(campaign),
-  },
-  {
-    label: "Campaign Status",
-    value:
-      campaign.status === "active"
-        ? "Active"
-        : campaign.status || "Unknown",
-  },
-],
+        {
+          label: "IAB Category",
+          value:
+            buildIabLabel(campaign) === "Pending Classification"
+              ? "Pending Classification"
+              : buildIabLabel(campaign),
+        },
+        {
+          label: "Campaign Status",
+          value:
+            campaign.status === "active"
+              ? "Active"
+              : campaign.status || "Unknown",
+        },
+        {
+          label: "Connected Products",
+          value: productCount,
+        },
+      ],
       chips: [
         campaign.objective || "No objective",
         buildIabLabel(campaign),
         campaign.status || "Status pending",
+        `${productCount} connected products`,
       ],
       href: "/monitoring",
       hrefLabel: "Open Monitoring",
@@ -498,17 +568,17 @@ const uniqueCompanies = new Set(
       label: "Galaxy Intelligence Score",
       title: `Galaxy Score: ${galaxyScore}`,
       subtitle:
-        "The score is a simple executive health indicator based on the amount of mapped intelligence currently present in the platform.",
+        "The score is an executive readiness indicator based on mapped entities, usable graph edges, campaign coverage, audience coverage and IAB taxonomy context.",
       bullets: [
-        "Higher entity coverage increases the score.",
-        "More relationship edges make the graph more useful.",
-        "Campaign, audience and IAB coverage improve strategic usefulness.",
-        "This can later become a weighted formula using freshness, classification quality and graph density.",
+        "Brands and products create the visible commercial universe.",
+        "Campaign and audience coverage improve strategic usefulness.",
+        "Graph signals increase relationship explainability and ecosystem depth.",
+        "IAB taxonomy coverage improves category and market context for imported data.",
       ],
       stats: [
         { label: "Score", value: galaxyScore },
         { label: "Brands", value: metrics.find((m) => m.label === "Brand Stars")?.value || 0 },
-        { label: "Graph signals", value: relationships.length },
+        { label: "Graph signals", value: metrics.find((m) => m.label === "Graph Signals")?.value || 0 },
         { label: "IAB rows", value: taxonomy.length },
       ],
       chips: ["Coverage", "Graph density", "Classification", "Freshness"],
@@ -533,9 +603,13 @@ const uniqueCompanies = new Set(
                 Brand Galaxy Command Center · Click for story
               </button>
 
-              <h1 className="mb-4 text-7xl font-black tracking-tight">
+              <h1 className="mb-3 text-7xl font-black tracking-tight">
                 Strategy Hub
               </h1>
+
+              <div className="mb-4 text-xs uppercase tracking-[0.32em] text-cyan-200">
+                Advertising Intelligence Platform
+              </div>
 
               <p className="max-w-3xl text-lg leading-8 text-gray-300">
                 Executive overview of your advertising galaxy: brands,
@@ -600,17 +674,17 @@ const uniqueCompanies = new Set(
                   className="rounded-[2rem] border border-cyan-300/25 bg-cyan-500/10 p-6 text-left shadow-[0_0_60px_rgba(34,211,238,0.12)] backdrop-blur-xl transition hover:border-cyan-200/50 hover:bg-cyan-500/15"
                 >
                   <div className="mb-3 text-xs uppercase tracking-[0.3em] text-cyan-200">
-  Advertising Intelligence
-</div>
+                    Advertising Intelligence
+                  </div>
 
-<div className="text-3xl font-black text-white">
-  Coverage & Quality
-</div>
+                  <div className="text-3xl font-black text-white">
+                    Coverage & Quality
+                  </div>
 
                   <p className="mt-4 text-sm leading-7 text-gray-300">
-  Executive snapshot of data quality, classification coverage, relationship
-  density and intelligence readiness across the Brand Galaxy ecosystem.
-</p>
+                    Executive snapshot of data quality, classification coverage, relationship
+                    density and intelligence readiness across the Brand Galaxy ecosystem.
+                  </p>
 
                   <div className="mt-5 text-xs uppercase tracking-[0.24em] text-cyan-200/80">
                     Click to inspect quality →
@@ -633,10 +707,9 @@ const uniqueCompanies = new Set(
                       </div>
 
                       <div className="mb-1 flex items-center gap-2 text-lg font-bold text-white">
-  {metric.label}
-
-  <MetricTooltip text={metric.helper} />
-</div>
+                        {metric.label}
+                        <MetricTooltip text={metric.helper} />
+                      </div>
 
                       <div className="text-sm text-gray-400">{metric.helper}</div>
 
@@ -690,15 +763,20 @@ const uniqueCompanies = new Set(
                           className="w-full rounded-2xl border border-white/10 bg-black/30 p-4 text-left transition hover:border-cyan-300/35 hover:bg-cyan-500/10"
                         >
                           <div className="font-bold text-white">
-                            {campaign.name}
+                            {campaign.name || campaign.campaign_name || "Unnamed campaign"}
                           </div>
 
                           <div className="mt-1 text-sm text-gray-400">
                             {campaign.objective || "No objective available"}
                           </div>
 
-                          <div className="mt-3 text-xs text-cyan-200">
-                            {buildIabLabel(campaign)}
+                          <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                            <span className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-3 py-1 text-cyan-100">
+                              {buildIabLabel(campaign)}
+                            </span>
+                            <span className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-gray-300">
+                              {getCampaignProductCount(campaign)} products
+                            </span>
                           </div>
                         </button>
                       ))
@@ -720,13 +798,13 @@ const uniqueCompanies = new Set(
                           "Brand Stars are the market-facing brand entities that form the visible universe of Brand Galaxy.",
                         bullets: [
                           "Every brand card is clickable.",
-                          "Brand Stars should eventually show logo, slogan, website, owner, aliases, products, campaigns and audiences.",
+                          "Brand Stars show logo, category, ownership and relationship context when available.",
                           "These brands can be opened inside the Relationship Graph for a wider ecosystem view.",
                         ],
                         stats: [
                           { label: "Visible brands", value: brandStats.visible },
                           { label: "Classified", value: brandStats.classified },
-                          { label: "With description", value: brandStats.withDescription },
+                          { label: "With logo", value: brandStats.withLogo },
                         ],
                         chips: ["Brands", "IAB", "Ownership", "Graph"],
                         href: "/relationships",
@@ -752,10 +830,15 @@ const uniqueCompanies = new Set(
                           onClick={() => openBrandModal(brand)}
                           className="rounded-2xl border border-white/10 bg-black/30 p-4 text-left transition hover:border-fuchsia-300/35 hover:bg-fuchsia-500/10"
                         >
-                          <div className="font-bold text-white">{brand.name}</div>
+                          <div className="flex items-center gap-3">
+                            <BrandLogo brand={brand} />
 
-                          <div className="mt-2 text-xs text-indigo-200">
-                            {buildIabLabel(brand)}
+                            <div className="min-w-0">
+                              <div className="truncate font-bold text-white">{brand.name}</div>
+                              <div className="mt-1 truncate text-xs text-indigo-200">
+                                {buildIabLabel(brand)}
+                              </div>
+                            </div>
                           </div>
                         </button>
                       ))
