@@ -3016,6 +3016,74 @@ export default function RelationshipExplorer() {
           "This company signal represents ownership or strategic corporate relationship."}
       </p>
 
+      <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+  <div className="rounded-2xl border border-cyan-300/20 bg-cyan-500/10 p-4">
+    <div className="text-xs uppercase tracking-[0.18em] text-cyan-200">
+      Intelligence Role
+    </div>
+    <div className="mt-2 text-sm font-bold text-white">
+      {selectedDeepDiveItem.entityType === "company" && "Ownership Anchor"}
+      {selectedDeepDiveItem.entityType === "product" && "Product Signal"}
+      {selectedDeepDiveItem.entityType === "campaign" && "Campaign Driver"}
+      {selectedDeepDiveItem.entityType === "brand" && "Competitive Brand Star"}
+      {selectedDeepDiveItem.entityType === "audience" && "Audience Context"}
+    </div>
+  </div>
+
+  <div className="rounded-2xl border border-fuchsia-300/20 bg-fuchsia-500/10 p-4">
+    <div className="text-xs uppercase tracking-[0.18em] text-fuchsia-200">
+      Signal Strength
+    </div>
+    <div className="mt-2 text-sm font-bold text-white">
+      {selectedDeepDiveItem.entityType === "company" ? "High" : "Active"}
+    </div>
+  </div>
+
+  <div className="rounded-2xl border border-emerald-300/20 bg-emerald-500/10 p-4">
+    <div className="text-xs uppercase tracking-[0.18em] text-emerald-200">
+      Demo Value
+    </div>
+    <div className="mt-2 text-sm font-bold text-white">
+      Explains graph context
+    </div>
+  </div>
+</div>
+
+<div className="mb-5 rounded-2xl border border-white/10 bg-white/5 p-5">
+  <div className="mb-3 text-sm font-semibold text-cyan-200">
+    Why this matters
+  </div>
+
+  <div className="text-sm leading-7 text-gray-300">
+    {selectedDeepDiveItem.entityType === "company" &&
+      `${selectedDeepDiveItem.entity?.name} acts as the corporate layer behind the selected brand ecosystem. It helps explain ownership, advertiser structure and strategic business context.`}
+
+    {selectedDeepDiveItem.entityType === "product" &&
+      `${selectedDeepDiveItem.entity?.name} is a product-level signal connected to the selected brand. Product signals help reveal what the brand is promoting, positioning or competing around.`}
+
+    {selectedDeepDiveItem.entityType === "campaign" &&
+      `${selectedDeepDiveItem.entity?.name} represents campaign activity connected to the selected brand. Campaign signals show current market messaging, promotion strategy and advertising momentum.`}
+
+    {selectedDeepDiveItem.entityType === "brand" &&
+      `${selectedDeepDiveItem.entity?.name} appears as a related brand star in the same ecosystem. This suggests possible competitive, category, audience or market overlap.`}
+
+    {selectedDeepDiveItem.entityType === "audience" &&
+      `${selectedDeepDiveItem.entity?.name} is an audience/context signal connected to the brand ecosystem. It supports targeting intelligence and audience affinity analysis.`}
+  </div>
+</div>
+
+<div className="mb-5 rounded-2xl border border-indigo-300/20 bg-indigo-500/10 p-5">
+  <div className="mb-3 text-sm font-semibold text-indigo-200">
+    Suggested analysis
+  </div>
+
+  <div className="space-y-2 text-sm text-gray-300">
+    <div>✦ Compare this signal against related brands in the orbit.</div>
+    <div>✦ Check whether it strengthens product, campaign or audience coverage.</div>
+    <div>✦ Use it as supporting evidence in the final strategy explanation.</div>
+  </div>
+</div>
+
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
           <div className="text-xs uppercase text-gray-500">Type</div>
