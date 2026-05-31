@@ -1385,16 +1385,49 @@ function MiniEntityList({
         {items.map((item: any) => (
           <div
   key={item.nodeId}
-  className="rounded-xl border border-white/10 bg-white/5 p-3"
+  className="rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:border-cyan-300/30 hover:bg-cyan-500/5"
 >
-            <div className="text-xs uppercase text-cyan-300">
-              {item.entityType}
-            </div>
+  <div className="mb-2 flex items-center justify-between">
+    <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">
+      {item.entityType}
+    </div>
 
-            <div className="text-sm font-semibold">
-              {item.entity?.name || "Unknown"}
-            </div>
-          </div>
+    <div className="rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-gray-300">
+      Signal
+    </div>
+  </div>
+
+  <div className="text-sm font-bold text-white">
+    {item.entity?.name || "Unknown"}
+  </div>
+
+  <div className="mt-2 text-xs leading-5 text-gray-400">
+    {item.entityType === "product" &&
+      "Product intelligence signal inside the ecosystem."}
+
+    {item.entityType === "campaign" &&
+      "Campaign activity connected to the selected brand."}
+
+    {item.entityType === "brand" &&
+      "Related brand star with ecosystem overlap."}
+
+    {item.entityType === "audience" &&
+      "Audience signal contributing to targeting intelligence."}
+
+    {item.entityType === "company" &&
+      "Corporate ownership or strategic company relationship."}
+  </div>
+
+  <div className="mt-3 flex flex-wrap gap-2">
+    <div className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-2 py-1 text-[10px] text-cyan-100">
+      Intelligence
+    </div>
+
+    <div className="rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-gray-300">
+      Active Signal
+    </div>
+  </div>
+</div>
         ))}
       </div>
     </div>
