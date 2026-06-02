@@ -1392,6 +1392,17 @@ function MiniEntityList({
   items: any[];
   onSelect?: (item: any) => void;
 }) {
+  const emptyContext = {
+    nodeId: `empty-${title}`,
+    entityType: "coverage",
+    emptyContext: true,
+    entity: {
+      name: title,
+      source: "Brand Galaxy",
+    },
+    contextTitle: title,
+  };
+
   return (
     <div className="rounded-2xl border border-white/10 bg-black/30 p-4 shadow-[0_0_18px_rgba(255,255,255,0.03)]">
       <div className="mb-3 flex items-center justify-between gap-3">
@@ -1404,59 +1415,92 @@ function MiniEntityList({
         <span className="shrink-0 text-xs text-gray-500">{items.length}</span>
       </div>
 
-      {items.length === 0 && (
-        <p className="text-sm text-gray-500">No signals detected.</p>
-      )}
-
       <div className="space-y-2">
-        {items.map((item: any) => (
+        {items.length === 0 ? (
           <button
-  key={item.nodeId}
-  onClick={() => onSelect?.(item)}
-  className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:border-cyan-300/30 hover:bg-cyan-500/5"
->
-  <div className="mb-2 flex items-center justify-between">
-    <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">
-      {item.entityType}
-    </div>
+            type="button"
+            onClick={() => onSelect?.(emptyContext)}
+            className="w-full rounded-2xl border border-dashed border-cyan-300/20 bg-cyan-500/5 p-4 text-left transition hover:border-cyan-300/40 hover:bg-cyan-500/10"
+          >
+            <div className="mb-2 flex items-center justify-between">
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">
+                Intelligence Context
+              </div>
 
-    <div className="rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-gray-300">
-      Signal
-    </div>
-  </div>
+              <div className="rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-gray-300">
+                Explore
+              </div>
+            </div>
 
-  <div className="text-sm font-bold text-white">
-    {item.entity?.name || "Unknown"}
-  </div>
+            <div className="text-sm font-bold text-white">
+              {title} coverage
+            </div>
 
-  <div className="mt-2 text-xs leading-5 text-gray-400">
-    {item.entityType === "product" &&
-      "Product intelligence signal inside the ecosystem."}
+            <div className="mt-2 text-xs leading-5 text-gray-400">
+              No direct signals are mapped yet, but this panel is ready for review, enrichment and future relationship expansion.
+            </div>
 
-    {item.entityType === "campaign" &&
-      "Campaign activity connected to the selected brand."}
+            <div className="mt-3 flex flex-wrap gap-2">
+              <div className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-2 py-1 text-[10px] text-cyan-100">
+                Clickable Context
+              </div>
 
-    {item.entityType === "brand" &&
-      "Related brand star with ecosystem overlap."}
+              <div className="rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-gray-300">
+                Ready for Signals
+              </div>
+            </div>
+          </button>
+        ) : (
+          items.map((item: any) => (
+            <button
+              key={item.nodeId}
+              type="button"
+              onClick={() => onSelect?.(item)}
+              className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:border-cyan-300/30 hover:bg-cyan-500/5"
+            >
+              <div className="mb-2 flex items-center justify-between">
+                <div className="text-xs uppercase tracking-[0.18em] text-cyan-300">
+                  {item.entityType}
+                </div>
 
-    {item.entityType === "audience" &&
-      "Audience signal contributing to targeting intelligence."}
+                <div className="rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-gray-300">
+                  Signal
+                </div>
+              </div>
 
-    {item.entityType === "company" &&
-      "Corporate ownership or strategic company relationship."}
-  </div>
+              <div className="text-sm font-bold text-white">
+                {item.entity?.name || "Unknown"}
+              </div>
 
-  <div className="mt-3 flex flex-wrap gap-2">
-    <div className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-2 py-1 text-[10px] text-cyan-100">
-      Intelligence
-    </div>
+              <div className="mt-2 text-xs leading-5 text-gray-400">
+                {item.entityType === "product" &&
+                  "Product intelligence signal inside the ecosystem."}
 
-    <div className="rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-gray-300">
-      Active Signal
-    </div>
-  </div>
-</button>
-        ))}
+                {item.entityType === "campaign" &&
+                  "Campaign activity connected to the selected brand."}
+
+                {item.entityType === "brand" &&
+                  "Related brand star with ecosystem overlap."}
+
+                {item.entityType === "audience" &&
+                  "Audience signal contributing to targeting intelligence."}
+
+                {item.entityType === "company" &&
+                  "Corporate ownership or strategic company relationship."}
+              </div>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                <div className="rounded-full border border-cyan-300/20 bg-cyan-500/10 px-2 py-1 text-[10px] text-cyan-100">
+                  Intelligence
+                </div>
+
+                <div className="rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-gray-300">
+                  Active Signal
+                </div>
+              </div>
+            </button>
+          ))
+        )}
       </div>
     </div>
   );
@@ -1471,6 +1515,8 @@ function CompetitiveOverlapPanel({
   if (!selectedNode) return null;
 
   const selectedNodeId = selectedNode.nodeId;
+  const selectedName = selectedNode.entity?.name || "Selected Entity";
+  const selectedNameKey = normalizeEntityKey(selectedName);
 
   const directCompetitors = relationships
     .filter((rel: any) => {
@@ -1497,6 +1543,7 @@ function CompetitiveOverlapPanel({
             ...competitor,
             relationshipStrength: strength,
             relationshipBadge: getRelationshipBadge(strength, rel.relationship_type),
+            inferred: false,
           }
         : null;
     })
@@ -1512,84 +1559,138 @@ function CompetitiveOverlapPanel({
   const uniqueCompetitors = Array.from(
     new Map(directCompetitors.map((item: any) => [item.nodeId, item])).values()
   );
-  const fallbackCompetitors =
-  uniqueCompetitors.length > 0
-    ? uniqueCompetitors
-    : (ecosystemProfile?.brands || []).slice(0, 6).map((brand: any, index: number) => ({
-        ...brand,
-        relationshipStrength: Math.max(62, 88 - index * 6),
-        relationshipBadge: "Inferred Competitive Signal",
-        inferred: true,
-      }));
 
-  if (fallbackCompetitors.length === 0) {
-    return (
-      <div className="mb-6 rounded-3xl border border-amber-400/24 bg-amber-500/8 p-5 shadow-[0_0_24px_rgba(245,158,11,0.08)]">
-        <div className="text-amber-200 text-sm font-semibold mb-4">
-          Competitive Orbit Intelligence
+  const allBrandNodes = Object.values(nodeLookup)
+    .map((node: any) => node?.data)
+    .filter(Boolean)
+    .filter((node: any) => node.entityType === "brand")
+    .filter((node: any) => node.nodeId !== selectedNodeId)
+    .filter((node: any) => !hiddenBrandNames.includes(node.entity?.name))
+    .filter((node: any) => !isNoisyImportedEntityName(node.entity?.name || ""));
+
+  const scenarioBrandNames =
+    demoScenarios.find((scenario) =>
+      scenario.brandNames.some(
+        (brandName: string) => normalizeEntityKey(brandName) === selectedNameKey
+      )
+    )?.brandNames || [];
+
+  const scenarioCompetitors = allBrandNodes.filter((brand: any) =>
+    scenarioBrandNames.some(
+      (brandName: string) =>
+        normalizeEntityKey(brandName) === normalizeEntityKey(brand.entity?.name || "")
+    )
+  );
+
+  const selectedCategory =
+    selectedNode.entity?.iab_tier_1 ||
+    selectedNode.entity?.industry ||
+    selectedNode.entity?.category ||
+    selectedNode.entity?.primary_category ||
+    "";
+
+  const categoryCompetitors = selectedCategory
+    ? allBrandNodes.filter((brand: any) => {
+        const category =
+          brand.entity?.iab_tier_1 ||
+          brand.entity?.industry ||
+          brand.entity?.category ||
+          brand.entity?.primary_category ||
+          "";
+
+        return (
+          category &&
+          normalizeEntityKey(category) === normalizeEntityKey(selectedCategory)
+        );
+      })
+    : [];
+
+  const fallbackSource =
+    uniqueCompetitors.length > 0
+      ? uniqueCompetitors
+      : ecosystemProfile?.brands?.length > 0
+      ? ecosystemProfile.brands
+      : scenarioCompetitors.length > 0
+      ? scenarioCompetitors
+      : categoryCompetitors.length > 0
+      ? categoryCompetitors
+      : allBrandNodes;
+
+  const fallbackCompetitors = Array.from(
+    new Map(
+      fallbackSource
+        .filter((brand: any) => brand.nodeId !== selectedNodeId)
+        .filter((brand: any) => !hiddenBrandNames.includes(brand.entity?.name))
+        .map((brand: any, index: number) => [
+          brand.nodeId,
+          uniqueCompetitors.length > 0
+            ? brand
+            : {
+                ...brand,
+                relationshipStrength: Math.max(62, 88 - index * 6),
+                relationshipBadge: "AI-inferred Competitive Signal",
+                inferred: true,
+              },
+        ])
+    ).values()
+  ).slice(0, 6);
+
+  return (
+    <div className="mb-6 rounded-3xl border border-red-400/24 bg-red-500/8 p-5 shadow-[0_0_24px_rgba(239,68,68,0.08)]">
+      <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-red-200 text-sm font-semibold">
+          Competitive Orbit
         </div>
+        <div className="text-xs text-gray-500">
+          {uniqueCompetitors.length > 0
+            ? "Direct competitor relationships"
+            : "AI-inferred competitive landscape"}
+        </div>
+      </div>
 
+      {fallbackCompetitors.length === 0 ? (
         <div className="rounded-2xl border border-white/10 bg-black/24 p-4">
           <div className="text-lg font-bold text-white">
-            Potential Competitive Landscape
+            Competitive Intelligence Ready
           </div>
 
           <div className="mt-3 text-sm leading-6 text-gray-300">
-            This entity does not have explicit competitor edges yet. Use related brand, product, campaign and audience signals to evaluate possible market overlap.
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-cyan-100">
-              Market Overlap Analysis
-            </div>
-            <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-cyan-100">
-              Audience Comparison
-            </div>
-            <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-cyan-100">
-              Campaign Benchmarking
-            </div>
+            This entity is ready for competitor mapping. Add related brand, campaign, audience or category signals to strengthen competitive analysis.
           </div>
         </div>
-      </div>
-    );
-  }
-  return (
-    <div className="mb-6 rounded-3xl border border-red-400/24 bg-red-500/8 p-5 shadow-[0_0_24px_rgba(239,68,68,0.08)]">
-      <div className="text-red-200 text-sm font-semibold mb-4">
-        Competitive Orbit
-      </div>
-
-      <div className="space-y-3">
-        {fallbackCompetitors.map((competitor: any) => (
-          <div
-            key={competitor.nodeId}
-            className="rounded-2xl border border-white/10 bg-black/24 p-4"
-          >
-            <div className="text-xs uppercase text-red-200">
-              Competitor Star
-            </div>
-
-            <div className="text-lg font-bold text-white">
-              {competitor.entity?.name}
-            </div>
-
-            <div className="mt-2 flex flex-wrap gap-2">
-              <div className="rounded-full border border-red-300/20 bg-red-500/10 px-3 py-1 text-xs text-red-100">
-                Strength {competitor.relationshipStrength || 88}%
+      ) : (
+        <div className="space-y-3">
+          {fallbackCompetitors.map((competitor: any) => (
+            <div
+              key={competitor.nodeId}
+              className="rounded-2xl border border-white/10 bg-black/24 p-4"
+            >
+              <div className="text-xs uppercase text-red-200">
+                Competitor Star
               </div>
-              <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-gray-200">
-                {competitor.relationshipBadge || "Competitive Signal"}
+
+              <div className="text-lg font-bold text-white">
+                {competitor.entity?.name}
+              </div>
+
+              <div className="mt-2 flex flex-wrap gap-2">
+                <div className="rounded-full border border-red-300/20 bg-red-500/10 px-3 py-1 text-xs text-red-100">
+                  Strength {competitor.relationshipStrength || 88}%
+                </div>
+                <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-gray-200">
+                  {competitor.relationshipBadge || "Competitive Signal"}
+                </div>
+              </div>
+
+              <div className="mt-2 text-sm text-gray-300 leading-6">
+                {competitor.inferred
+                  ? `${competitor.entity?.name} is positioned as a competitive or adjacent brand to ${selectedName} based on shared sector, category, ecosystem or related brand signals.`
+                  : `${selectedName} and ${competitor.entity?.name} share direct competitive positioning signals in the advertising galaxy.`}
               </div>
             </div>
-
-            <div className="mt-2 text-sm text-gray-300 leading-6">
-              {competitor.inferred
-  ? `${competitor.entity?.name} appears in the same related brand orbit as ${selectedNode.entity?.name}, which suggests potential market, audience or category overlap.`
-  : `${selectedNode.entity?.name} and ${competitor.entity?.name} share direct competitive positioning signals in the advertising galaxy.`}
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -3034,7 +3135,7 @@ export default function RelationshipExplorer() {
   <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm">
     <div className="max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-[2rem] border border-cyan-300/20 bg-slate-950 p-6 shadow-[0_0_60px_rgba(34,211,238,0.18)]">
       <div className="mb-3 text-xs uppercase tracking-[0.25em] text-cyan-300">
-        {selectedDeepDiveItem.entityType} Intelligence
+        {selectedDeepDiveItem.entityType === "coverage" ? "Coverage" : selectedDeepDiveItem.entityType} Intelligence
       </div>
 
       <h2 className="mb-4 text-3xl font-black text-white">
@@ -3056,6 +3157,9 @@ export default function RelationshipExplorer() {
 
         {selectedDeepDiveItem.entityType === "company" &&
           "This company signal represents ownership or strategic corporate relationship."}
+
+        {selectedDeepDiveItem.entityType === "coverage" &&
+          "This intelligence panel has no direct mapped signals yet, but it is fully clickable and ready to explain coverage, missing links and recommended enrichment."}
       </p>
 
       <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -3069,6 +3173,7 @@ export default function RelationshipExplorer() {
       {selectedDeepDiveItem.entityType === "campaign" && "Campaign Driver"}
       {selectedDeepDiveItem.entityType === "brand" && "Competitive Brand Star"}
       {selectedDeepDiveItem.entityType === "audience" && "Audience Context"}
+      {selectedDeepDiveItem.entityType === "coverage" && "Coverage Gap"}
     </div>
   </div>
 
@@ -3077,7 +3182,7 @@ export default function RelationshipExplorer() {
       Signal Strength
     </div>
     <div className="mt-2 text-sm font-bold text-white">
-      {selectedDeepDiveItem.entityType === "company" ? "High" : "Active"}
+      {selectedDeepDiveItem.entityType === "coverage" ? "Ready" : selectedDeepDiveItem.entityType === "company" ? "High" : "Active"}
     </div>
   </div>
 
@@ -3111,6 +3216,9 @@ export default function RelationshipExplorer() {
 
     {selectedDeepDiveItem.entityType === "audience" &&
       `${selectedDeepDiveItem.entity?.name} is an audience/context signal connected to the brand ecosystem. It supports targeting intelligence and audience affinity analysis.`}
+
+    {selectedDeepDiveItem.entityType === "coverage" &&
+      `${selectedDeepDiveItem.entity?.name} currently has no direct mapped records for this selected entity. This is useful during demo review because it clearly shows where additional campaigns, audiences, companies or brand relationships can be enriched next.`}
   </div>
 </div>
 
