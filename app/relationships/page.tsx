@@ -639,11 +639,31 @@ function buildEcosystemProfile(
     };
   }
 
-  const connectedIds = getConnectedNodeIds(selectedNode.nodeId, relationships, 3);
+  const selectedNodeId = selectedNode.nodeId;
+
+  const directConnectedIds = relationships
+    .filter((rel: any) => {
+      const sourceNodeId = `${rel.source_type}-${rel.source_id}`;
+      const targetNodeId = `${rel.target_type}-${rel.target_id}`;
+
+      return sourceNodeId === selectedNodeId || targetNodeId === selectedNodeId;
+    })
+    .map((rel: any) => {
+      const sourceNodeId = `${rel.source_type}-${rel.source_id}`;
+      const targetNodeId = `${rel.target_type}-${rel.target_id}`;
+
+      return sourceNodeId === selectedNodeId ? targetNodeId : sourceNodeId;
+    });
+
+  const deepConnectedIds = getConnectedNodeIds(selectedNodeId, relationships, 3);
+
+  const allConnectedIds = Array.from(
+    new Set([...directConnectedIds, ...deepConnectedIds])
+  );
 
   const uniqueNodes = Array.from(
     new Map(
-      connectedIds
+      allConnectedIds
         .map((id) => nodeLookup[id]?.data)
         .filter(Boolean)
         .filter(
@@ -1492,7 +1512,6 @@ function CompetitiveOverlapPanel({
   const uniqueCompetitors = Array.from(
     new Map(directCompetitors.map((item: any) => [item.nodeId, item])).values()
   );
-
   const fallbackCompetitors =
   uniqueCompetitors.length > 0
     ? uniqueCompetitors
@@ -1504,18 +1523,36 @@ function CompetitiveOverlapPanel({
       }));
 
   if (fallbackCompetitors.length === 0) {
-  return (
-    <div className="mb-6 rounded-3xl border border-white/10 bg-black/24 p-5">
-      <div className="text-slate-200 text-sm font-semibold mb-2">
-        Competitive Orbit
-      </div>
+    return (
+      <div className="mb-6 rounded-3xl border border-amber-400/24 bg-amber-500/8 p-5 shadow-[0_0_24px_rgba(245,158,11,0.08)]">
+        <div className="text-amber-200 text-sm font-semibold mb-4">
+          Competitive Orbit Intelligence
+        </div>
 
-      <div className="text-sm text-gray-400">
-        No competitive orbit detected yet.
+        <div className="rounded-2xl border border-white/10 bg-black/24 p-4">
+          <div className="text-lg font-bold text-white">
+            Potential Competitive Landscape
+          </div>
+
+          <div className="mt-3 text-sm leading-6 text-gray-300">
+            This entity does not have explicit competitor edges yet. Use related brand, product, campaign and audience signals to evaluate possible market overlap.
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-cyan-100">
+              Market Overlap Analysis
+            </div>
+            <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-cyan-100">
+              Audience Comparison
+            </div>
+            <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-cyan-100">
+              Campaign Benchmarking
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
   return (
     <div className="mb-6 rounded-3xl border border-red-400/24 bg-red-500/8 p-5 shadow-[0_0_24px_rgba(239,68,68,0.08)]">
       <div className="text-red-200 text-sm font-semibold mb-4">
