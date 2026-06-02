@@ -1989,8 +1989,7 @@ const IAB_TAXONOMY: IabTaxonomyRow[] = [
     "tier2": "Toys and Games",
     "tier3": "",
     "keywords": "toys and games"
-  },
-  {
+  }, {
     "id": "1242",
     "label": "Games",
     "tier1": "Consumer Packaged Goods",
@@ -4009,8 +4008,7 @@ const IAB_TAXONOMY: IabTaxonomyRow[] = [
     "tier2": "Dance Studios",
     "tier3": "",
     "keywords": "dance studios"
-  },
-  {
+  },{
     "id": "1495",
     "label": "Gyms and Health Clubs",
     "tier1": "Fitness Activities",
@@ -5493,6 +5491,19 @@ export default function MonitoringPage() {
     return buildPageHistoryProfile(monitoringFeed, argusStats);
   }, [monitoringFeed, argusStats]);
 
+  useEffect(() => {
+    if (!selectedSignal) return;
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setSelectedSignal(null);
+      }
+    }
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [selectedSignal]);
+
   const featuredSignal = monitoringFeed[0];
 
   const uniqueAdvertisers = useMemo(() => {
@@ -6771,8 +6782,14 @@ export default function MonitoringPage() {
         )}
 
         {selectedSignal && (
-          <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 px-4 backdrop-blur-xl">
-            <div className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-cyan-300/25 bg-[#020617] p-6 shadow-[0_0_90px_rgba(34,211,238,0.16)]">
+          <div
+            onClick={() => setSelectedSignal(null)}
+            className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 px-4 backdrop-blur-xl"
+          >
+            <div
+              onClick={(event) => event.stopPropagation()}
+              className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-cyan-300/25 bg-[#020617] p-6 shadow-[0_0_90px_rgba(34,211,238,0.16)]"
+            >
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <div className="mb-2 inline-flex rounded-full border border-cyan-300/25 bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-[0.25em] text-cyan-200">
@@ -6792,8 +6809,12 @@ export default function MonitoringPage() {
                   onClick={() => setSelectedSignal(null)}
                   className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-300 transition hover:border-white/20 hover:text-white"
                 >
-                  Close
+                  Back to all signals
                 </button>
+              </div>
+
+              <div className="mb-5 rounded-2xl border border-cyan-300/15 bg-cyan-500/8 p-4 text-sm leading-6 text-gray-300">
+                Click outside this panel, press Escape, or use “Back to all signals” to return to the full Monitoring feed and choose another signal.
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -6896,6 +6917,19 @@ export default function MonitoringPage() {
                   </div>
                 </div>
               )}
+
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-5">
+                <div className="text-xs leading-5 text-gray-500">
+                  Return to the Monitoring feed to inspect another brand, product, campaign or audience signal.
+                </div>
+
+                <button
+                  onClick={() => setSelectedSignal(null)}
+                  className="rounded-2xl border border-cyan-300/25 bg-cyan-500/10 px-5 py-3 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-500/20"
+                >
+                  Back to all signals
+                </button>
+              </div>
             </div>
           </div>
         )}
