@@ -5982,7 +5982,7 @@ export default function MonitoringPage() {
             <div className="grid grid-cols-1 gap-0 xl:grid-cols-[1.1fr_0.9fr_0.9fr]">
               <div className="border-b border-white/10 p-6 xl:border-b-0 xl:border-r">
                 <div className="mb-4 text-xs uppercase tracking-[0.25em] text-cyan-200">
-                  Latest ARGUS Ads
+                  UNIFIED MONITORING FEED
                 </div>
 
                 <div className="space-y-3">
