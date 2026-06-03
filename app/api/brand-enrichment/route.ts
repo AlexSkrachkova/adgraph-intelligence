@@ -355,7 +355,7 @@ function buildLikelyWebsite(name: string) {
 function mergePayload(brand: BrandInput): BrandPayload {
   const known = findKnownBrand(brand.name);
   const website = brand.website || known?.website || buildLikelyWebsite(brand.name);
-  const logo_url = brand.logo_url || known?.logo_url || buildLogoUrl(website);
+const logo_url = known?.logo_url || buildLogoUrl(website) || brand.logo_url || "";
 
   return {
     website,
