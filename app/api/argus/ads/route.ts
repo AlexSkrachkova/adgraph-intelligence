@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
 type RawAd = {
   id?: string;
@@ -860,28 +861,212 @@ async function fetchArgusItems(request: Request): Promise<RawAd[]> {
   return data.items || [];
 }
 
+
+async function fetchImportedItems(request: Request): Promise<RawAd[]> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return [];
+  }
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const limit = Number(searchParams.get("limit") || "50");
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    const [
+      campaignsResult,
+      brandsResult,
+      productsResult,
+      audiencesResult,
+      companiesResult,
+      relationshipsResult,
+    ] = await Promise.all([
+      supabase.from("campaigns").select("*").limit(Math.max(limit, 50)),
+      supabase.from("brands").select("*").limit(500),
+      supabase.from("products").select("*").limit(500),
+      supabase.from("audiences").select("*").limit(500),
+      supabase.from("companies").select("*").limit(500),
+      supabase.from("entity_relationships").select("*").limit(2000),
+    ]);
+
+    if (campaignsResult.error || relationshipsResult.error) {
+      return [];
+    }
+
+    const campaigns = campaignsResult.data || [];
+    const brands = brandsResult.data || [];
+    const products = productsResult.data || [];
+    const audiences = audiencesResult.data || [];
+    const companies = companiesResult.data || [];
+    const relationships = relationshipsResult.data || [];
+
+    const brandById = new Map(brands.map((item: any) => [String(item.id), item]));
+    const productById = new Map(products.map((item: any) => [String(item.id), item]));
+    const audienceById = new Map(audiences.map((item: any) => [String(item.id), item]));
+    const companyById = new Map(companies.map((item: any) => [String(item.id), item]));
+
+    function findBrandForCampaign(campaignId: string) {
+      const rel = relationships.find(
+        (item: any) =>
+          item.relationship_type === "runs_campaign" &&
+          item.source_type === "brand" &&
+          item.target_type === "campaign" &&
+          String(item.target_id) === campaignId
+      );
+
+      return rel ? brandById.get(String(rel.source_id)) : null;
+    }
+
+    function findCompanyForBrand(brandId?: string) {
+      if (!brandId) return null;
+
+      const rel = relationships.find(
+        (item: any) =>
+          item.relationship_type === "owned_by" &&
+          item.source_type === "brand" &&
+          item.target_type === "company" &&
+          String(item.source_id) === brandId
+      );
+
+      return rel ? companyById.get(String(rel.target_id)) : null;
+    }
+
+    function findProductsForCampaign(campaignId: string, brandId?: string) {
+      const campaignProductIds = relationships
+        .filter(
+          (item: any) =>
+            item.relationship_type === "promotes" &&
+            item.source_type === "campaign" &&
+            item.target_type === "product" &&
+            String(item.source_id) === campaignId
+        )
+        .map((item: any) => String(item.target_id));
+
+      const brandProductIds = brandId
+        ? relationships
+            .filter(
+              (item: any) =>
+                item.relationship_type === "has_product" &&
+                item.source_type === "brand" &&
+                item.target_type === "product" &&
+                String(item.source_id) === brandId
+            )
+            .map((item: any) => String(item.target_id))
+        : [];
+
+      return Array.from(new Set([...campaignProductIds, ...brandProductIds]))
+        .map((id) => productById.get(id))
+        .filter(Boolean);
+    }
+
+    function findAudiencesForCampaign(campaignId: string, brandId?: string) {
+      const campaignAudienceIds = relationships
+        .filter(
+          (item: any) =>
+            item.relationship_type === "targets" &&
+            item.source_type === "campaign" &&
+            item.target_type === "audience" &&
+            String(item.source_id) === campaignId
+        )
+        .map((item: any) => String(item.target_id));
+
+      const brandAudienceIds = brandId
+        ? relationships
+            .filter(
+              (item: any) =>
+                item.relationship_type === "targets" &&
+                item.source_type === "brand" &&
+                item.target_type === "audience" &&
+                String(item.source_id) === brandId
+            )
+            .map((item: any) => String(item.target_id))
+        : [];
+
+      return Array.from(new Set([...campaignAudienceIds, ...brandAudienceIds]))
+        .map((id) => audienceById.get(id))
+        .filter(Boolean);
+    }
+
+    return campaigns.map((campaign: any) => {
+      const campaignId = String(campaign.id);
+      const brand = findBrandForCampaign(campaignId);
+      const brandId = brand?.id ? String(brand.id) : undefined;
+      const company = findCompanyForBrand(brandId);
+      const linkedProducts = findProductsForCampaign(campaignId, brandId);
+      const linkedAudiences = findAudiencesForCampaign(campaignId, brandId);
+
+      const primaryCategory =
+        brand?.iab_tier_1 ||
+        linkedProducts[0]?.category ||
+        linkedProducts[0]?.product_type ||
+        campaign.objective ||
+        "Imported Intelligence";
+
+      const iabFullPath = [brand?.iab_tier_1, brand?.iab_tier_2, brand?.iab_tier_3]
+        .filter(Boolean)
+        .join(" → ");
+
+      return {
+        id: `csv-${campaignId}`,
+        brand_name: brand?.name || campaign.name || "Imported Brand",
+        advertiser_name: company?.name || brand?.ownership || brand?.name || "Imported Company",
+        parent_company: company?.name || undefined,
+        promotion_name: campaign.name || "Imported Campaign Signal",
+        campaign_name: campaign.name || "Imported Campaign Signal",
+        title: campaign.name || "Imported Campaign Signal",
+        products_text: linkedProducts.map((item: any) => item.name).join(", "),
+        primary_category: primaryCategory,
+        category: primaryCategory,
+        subcategory: linkedProducts[0]?.product_type || undefined,
+        iab_full_path: iabFullPath || brand?.iab_tier_1 || "Imported Intelligence",
+        iab_tier_1: brand?.iab_tier_1 || primaryCategory,
+        iab_tier_2: brand?.iab_tier_2 || undefined,
+        iab_tier_3: brand?.iab_tier_3 || undefined,
+        confidence: 0.86,
+        duration_ms: 30000,
+        risk_labels: ["CSV import", "Nielsen/H-Tech signal"],
+        source: "Supabase CSV Import",
+        ingested_at: campaign.created_at || new Date().toISOString(),
+        product: linkedProducts.map((item: any) => item.name).join(", "),
+        product_name: linkedProducts[0]?.name || undefined,
+        audiences: linkedAudiences.map((item: any) => item.name),
+      } as RawAd;
+    });
+  } catch (error) {
+    console.error("Imported monitoring signals unavailable", error);
+    return [];
+  }
+}
+
 export async function GET(request: Request) {
+  const importedItems = await fetchImportedItems(request);
+
   try {
     const argusItems = await fetchArgusItems(request);
-    const enrichedItems = dedupeAds(argusItems);
+    const enrichedItems = dedupeAds([...argusItems, ...importedItems]);
     const filtered = applyFilters(enrichedItems, request);
 
     return NextResponse.json({
       ...filtered,
       stats: buildStats(enrichedItems),
-      source: "ARGUS Public API",
+      source: "ARGUS Public API + Supabase CSV Imports",
       fallback: false,
+      importedCount: importedItems.length,
       generatedAt: new Date().toISOString(),
     });
   } catch (error: any) {
-    const fallbackEnriched = dedupeAds(fallbackItems);
+    const fallbackEnriched = dedupeAds([...fallbackItems, ...importedItems]);
     const filtered = applyFilters(fallbackEnriched, request);
 
     return NextResponse.json({
       ...filtered,
       stats: buildStats(fallbackEnriched),
-      source: "Fallback Intelligence Dataset",
+      source: "Fallback Intelligence Dataset + Supabase CSV Imports",
       fallback: true,
+      importedCount: importedItems.length,
       upstreamError:
         error?.message || "ARGUS API unavailable. Showing fallback monitoring data.",
       generatedAt: new Date().toISOString(),
