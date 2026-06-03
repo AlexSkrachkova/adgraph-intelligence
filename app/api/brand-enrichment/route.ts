@@ -120,7 +120,7 @@ const BRAND_DOMAIN_MAP: Record<string, BrandPayload> = {
   },
   jeep: {
   website: "https://www.jeep.com",
-  logo_url: "",
+  logo_url: "https://images.seeklogo.com/logo-png/7/1/jeep-logo-png_seeklogo-75276.png",
   slogan: "Go Anywhere. Do Anything.",
   description: "Jeep is an automotive brand known for SUV and off-road vehicles.",
   ownership: "Stellantis",
