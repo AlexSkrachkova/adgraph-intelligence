@@ -1814,15 +1814,22 @@ Samsung,Samsung Galaxy,Galaxy S25,Samsung Galaxy Campaign,Android Power Users,Mo
 
             <aside className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-xl">
               <div className="mb-5 rounded-3xl border border-cyan-300/30 bg-cyan-500/10 p-4">
-                <div className="text-sm font-semibold text-cyan-100">
-                  Nielsen Mode
-                </div>
-                <div className="mt-2 text-xs leading-5 text-gray-300">
-                  If the upload contains clip_type_id / raw data JSON, the importer
-                  automatically removes PRG and PROMO rows and keeps commercial,
-                  ad and direct-response signals only.
-                </div>
-              </div>
+  <div className="flex items-center gap-3">
+    <span className="relative flex h-3 w-3">
+      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-300 opacity-75" />
+      <span className="relative inline-flex h-3 w-3 rounded-full bg-cyan-200" />
+    </span>
+
+    <div className="text-sm font-semibold text-cyan-100">
+      Nielsen Mode Active
+    </div>
+  </div>
+
+  <div className="mt-2 text-xs leading-5 text-gray-300">
+    Headerless Nielsen/H-Tech exports are translated into Brand, Product,
+    Campaign and Audience intelligence signals before saving to Supabase.
+  </div>
+</div>
 
               <div className="text-sm text-fuchsia-200 font-semibold mb-4">
                 Expected CSV Columns
