@@ -5178,7 +5178,17 @@ function normalizeMonitoringSpot(item: any) {
 
   return {
     id: `argus-${item.id || spotCode || title}`,
-    type: item.risk_labels?.length ? "ARGUS RISK SIGNAL" : "ARGUS AD SIGNAL",
+type:
+  String(item.source || item.source_system || "")
+    .toLowerCase()
+    .includes("csv") ||
+  String(item.source || item.source_system || "")
+    .toLowerCase()
+    .includes("nielsen")
+    ? "NIELSEN IMPORT SIGNAL"
+    : item.risk_labels?.length
+    ? "ARGUS RISK SIGNAL"
+    : "ARGUS AD SIGNAL",    
     title,
     advertiser,
     brand,
@@ -5217,7 +5227,15 @@ function normalizeMonitoringSpot(item: any) {
       item.transcript ||
       item.full_text ||
       "ARGUS signal includes classification metadata. Open the full ARGUS ad endpoint for transcript, OCR, frames and evidence.",
-    source: "ARGUS Public API",
+source:
+  String(item.source || item.source_system || "")
+    .toLowerCase()
+    .includes("csv") ||
+  String(item.source || item.source_system || "")
+    .toLowerCase()
+    .includes("nielsen")
+    ? "Nielsen / CSV Import"
+    : "ARGUS Public API",
     confidence: item.confidence,
     sensitiveCategory: item.sensitive_category,
     riskLabels: item.risk_labels || [],
