@@ -280,6 +280,24 @@ const BRAND_DOMAIN_MAP: Record<string, BrandPayload> = {
     aliases: ["YouTube Premium"],
     subsidiaries: ["YouTube Premium"],
   },
+  marcospizza: {
+  website: "https://www.marcos.com",
+  logo_url: "",
+  slogan: "",
+  description: "Marco's Pizza is a quick-service pizza restaurant brand.",
+  ownership: "Marco's Franchising, LLC",
+  aliases: ["Marco's Pizza", "Marcos Pizza", "Marco’s Pizza"],
+  subsidiaries: [],
+},
+gruns: {
+  website: "https://www.gruns.co",
+  logo_url: "",
+  slogan: "",
+  description: "Gruns is a consumer wellness brand.",
+  ownership: "Gruns",
+  aliases: ["Grüns", "Gruns"],
+  subsidiaries: [],
+},
 };
 
 function normalizeKey(value: string) {
