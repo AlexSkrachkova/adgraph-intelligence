@@ -315,13 +315,19 @@ function looksLikeKnownHeader(headers: string[]) {
 
 function looksLikeHeaderlessNielsenRow(values: string[]) {
   const joined = values.join(" ").toLowerCase();
+  const first = values[0] || "";
 
   return (
-    joined.includes("edit clip") ||
-    joined.includes("type=") ||
-    joined.includes("clip_type_id") ||
-    joined.includes('"name"') ||
-    /\{\s*"id"\s*:/.test(joined)
+    values.length >= 7 &&
+    (
+      joined.includes("edit clip") ||
+      joined.includes("type=") ||
+      joined.includes("clip_type_id") ||
+      joined.includes('"name"') ||
+      joined.includes('""name""') ||
+      /\{\s*"?"?id"?"?\s*:/.test(joined) ||
+      /^\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4}$/.test(first)
+    )
   );
 }
 
@@ -346,13 +352,15 @@ function parseCsv(text: string): CsvRow[] {
 
   const lines = cleanText.split(/\r?\n/).filter((line) => line.trim());
   const delimiter = detectDelimiter(lines[0]);
-  const firstLineValues = parseCsvLine(lines[0], delimiter);
+  const parsedLines = lines.map((line) => parseCsvLine(line, delimiter));
+  const firstLineValues = parsedLines[0] || [];
   const headers = firstLineValues.map(normalizeHeader);
-  const isHeaderlessNielsen =
-    !looksLikeKnownHeader(headers) && looksLikeHeaderlessNielsenRow(firstLineValues);
+  const hasKnownHeader = looksLikeKnownHeader(headers);
+  const headerlessNielsenRows = parsedLines.filter(looksLikeHeaderlessNielsenRow);
+  const isHeaderlessNielsen = !hasKnownHeader && headerlessNielsenRows.length > 0;
 
   if (isHeaderlessNielsen) {
-    return lines.map((line) => mapHeaderlessNielsenValues(parseCsvLine(line, delimiter)));
+    return headerlessNielsenRows.map(mapHeaderlessNielsenValues);
   }
 
   return lines.slice(1).map((line) => {
@@ -403,22 +411,33 @@ function isNielsenExport(rows: CsvRow[]) {
       row.raw_data_json ||
       row.clip_type_id ||
       row.clip_id ||
-      row.sub_action
+      row.sub_action ||
+      row.action?.toLowerCase().includes("edit clip")
   );
 }
 
 function safeParseNielsenRawData(value?: string) {
   if (!value) return null;
 
-  try {
-    return JSON.parse(value);
-  } catch {
+  const candidates = Array.from(
+    new Set([
+      value,
+      value.trim(),
+      value.trim().replace(/^"|"$/g, ""),
+      value.replace(/""/g, '"'),
+      value.trim().replace(/^"|"$/g, "").replace(/""/g, '"'),
+    ])
+  );
+
+  for (const candidate of candidates) {
     try {
-      return JSON.parse(value.replace(/""/g, '"'));
+      return JSON.parse(candidate);
     } catch {
-      return null;
+      // Try next JSON candidate.
     }
   }
+
+  return null;
 }
 
 function getNielsenClipType(row: CsvRow) {
@@ -437,12 +456,13 @@ function getNielsenClipType(row: CsvRow) {
 
 function getNielsenName(row: CsvRow) {
   const raw = safeParseNielsenRawData(row.raw_data_json);
+  const rawText = row.raw_data_json || "";
+  const regexName =
+    rawText.match(/"name"\s*:\s*"([^"]+)"/)?.[1] ||
+    rawText.match(/""name""\s*:\s*""([^"\n]+)""/)?.[1] ||
+    "";
 
-  return cleanValue(
-    row.name ||
-      raw?.name ||
-      ""
-  );
+  return cleanValue(row.name || raw?.name || regexName || "");
 }
 
 
@@ -1163,19 +1183,40 @@ export default function CsvImportPage() {
     );
   }
 
+  const parsedCsvRows = useMemo(() => {
+    return parseCsv(csvText);
+  }, [csvText]);
+
+  const nielsenUploadDetected = useMemo(() => {
+    return isNielsenExport(parsedCsvRows);
+  }, [parsedCsvRows]);
+
   const detectedColumns = useMemo(() => {
     if (!csvText.trim()) return [];
+
+    if (nielsenUploadDetected) {
+      return [
+        "day",
+        "hour",
+        "username",
+        "action",
+        "sub_action",
+        "clip_id",
+        "raw_data_json",
+      ];
+    }
 
     const firstLine = csvText.trim().split(/\r?\n/)[0];
 
     return parseCsvLine(firstLine).map(normalizeHeader);
-  }, [csvText]);
+  }, [csvText, nielsenUploadDetected]);
 
   const missingColumns = useMemo(() => {
+    if (nielsenUploadDetected) return [];
     if (!detectedColumns.length) return requiredColumns;
 
     return requiredColumns.filter((column) => !detectedColumns.includes(column));
-  }, [detectedColumns]);
+  }, [detectedColumns, nielsenUploadDetected]);
 
   const inferredRelationships = useMemo(() => {
     return buildInferredRelationships(previewRows);
