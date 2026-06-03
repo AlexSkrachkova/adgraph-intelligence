@@ -187,6 +187,11 @@ const productToBrandPatterns: { pattern: RegExp; brand: string }[] = [
   { pattern: /\bnintendo switch\b|\bswitch oled\b|\bswitch lite\b/i, brand: "Nintendo" },
   { pattern: /\bwrangler\b|\bcompass\b|\bgrand cherokee\b/i, brand: "Jeep" },
   { pattern: /\bf-150\b|\bbronco\b|\bmustang\b/i, brand: "Ford" },
+  { pattern: /\bram\b|\b1500\b|\b2500\b|\bhemi\b/i, brand: "RAM" },
+  { pattern: /\bchevrolet\b|\bchevy\b|\bequinox\b|\btraverse\b|\bsilverado\b/i, brand: "Chevrolet" },
+  { pattern: /\bmarco'?s pizza\b|\bpizza\b/i, brand: "Marco's Pizza" },
+  { pattern: /\byamava\b|\bcasino\b/i, brand: "Yaamava'" },
+  { pattern: /\bhom furniture\b|\bfurniture\b/i, brand: "HOM Furniture" },
   { pattern: /\bzero sugar\b|\bcoca-cola zero\b|\bdiet coke\b/i, brand: "Coca-Cola" },
 ];
 
@@ -278,13 +283,77 @@ function detectDelimiter(headerLine: string) {
   return semicolons > commas ? ";" : ",";
 }
 
+const NIELSEN_HEADERLESS_COLUMNS = [
+  "day",
+  "hour",
+  "username",
+  "action",
+  "sub_action",
+  "clip_id",
+  "ibot",
+  "raw_data_json",
+];
+
+function looksLikeKnownHeader(headers: string[]) {
+  const knownHeaders = new Set([
+    ...requiredColumns,
+    ...optionalColumns,
+    "day",
+    "hour",
+    "username",
+    "action",
+    "sub_action",
+    "clip_id",
+    "ibot",
+    "raw_data_json",
+    "clip_type_id",
+    "name",
+  ]);
+
+  return headers.some((header) => knownHeaders.has(header));
+}
+
+function looksLikeHeaderlessNielsenRow(values: string[]) {
+  const joined = values.join(" ").toLowerCase();
+
+  return (
+    joined.includes("edit clip") ||
+    joined.includes("type=") ||
+    joined.includes("clip_type_id") ||
+    joined.includes('"name"') ||
+    /\{\s*"id"\s*:/.test(joined)
+  );
+}
+
+function mapHeaderlessNielsenValues(values: string[]): CsvRow {
+  const row: any = {};
+
+  NIELSEN_HEADERLESS_COLUMNS.forEach((header, index) => {
+    row[header] = values[index] || "";
+  });
+
+  // If the JSON payload was split because of unescaped commas, rebuild it.
+  if (values.length > NIELSEN_HEADERLESS_COLUMNS.length) {
+    row.raw_data_json = values.slice(7).join(",");
+  }
+
+  return row;
+}
+
 function parseCsv(text: string): CsvRow[] {
   const cleanText = text.trim();
   if (!cleanText) return [];
 
   const lines = cleanText.split(/\r?\n/).filter((line) => line.trim());
   const delimiter = detectDelimiter(lines[0]);
-  const headers = parseCsvLine(lines[0], delimiter).map(normalizeHeader);
+  const firstLineValues = parseCsvLine(lines[0], delimiter);
+  const headers = firstLineValues.map(normalizeHeader);
+  const isHeaderlessNielsen =
+    !looksLikeKnownHeader(headers) && looksLikeHeaderlessNielsenRow(firstLineValues);
+
+  if (isHeaderlessNielsen) {
+    return lines.map((line) => mapHeaderlessNielsenValues(parseCsvLine(line, delimiter)));
+  }
 
   return lines.slice(1).map((line) => {
     const values = parseCsvLine(line, delimiter);
@@ -466,8 +535,135 @@ function shouldSkipNielsenRow(row: CsvRow) {
   return false;
 }
 
+const NIELSEN_OWNER_MAP: Record<string, string> = {
+  ram: "Stellantis",
+  chevrolet: "General Motors",
+  chevy: "General Motors",
+  gmc: "General Motors",
+  ford: "Ford Motor Company",
+  toyota: "Toyota Motor Corporation",
+  jeep: "Stellantis",
+  marcos: "Marco's Pizza",
+  marcospizza: "Marco's Pizza",
+  homfurniture: "HOM Furniture",
+  yamava: "San Manuel Entertainment Authority",
+  gruns: "Gruns",
+};
+
+function normalizeNielsenBrand(value: string) {
+  const clean = cleanValue(value)
+    .replace(/^Chevy$/i, "Chevrolet")
+    .replace(/^Marco'?s$/i, "Marco's Pizza")
+    .replace(/^Yamava$/i, "Yaamava'")
+    .trim();
+
+  if (/^ram$/i.test(clean)) return "RAM";
+  if (/^chevrolet$/i.test(clean) || /^chevy$/i.test(clean)) return "Chevrolet";
+  if (/^marco'?s pizza$/i.test(clean) || /^marco'?s$/i.test(clean)) return "Marco's Pizza";
+  if (/^hom furniture$/i.test(clean)) return "HOM Furniture";
+  if (/^yamava/i.test(clean)) return "Yaamava'";
+
+  return clean;
+}
+
+function getNielsenOwner(brand: string) {
+  const key = brand.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  return NIELSEN_OWNER_MAP[key] || brand;
+}
+
+function extractNielsenCommercialParts(name: string) {
+  const cleaned = cleanValue(name);
+  const pieces = cleaned
+    .split(/\s+-\s+/)
+    .map((piece) => cleanValue(piece))
+    .filter(Boolean);
+
+  const brand = normalizeNielsenBrand(pieces[0] || cleaned);
+  const remainder = pieces.slice(1).join(" - ");
+
+  let product = remainder || brand;
+
+  if (/\bram\b/i.test(cleaned) && /1500|2500|3500|hemi|big horn/i.test(cleaned)) {
+    product = remainder || "RAM Truck";
+  } else if (/chevrolet|chevy|equinox|traverse|silverado/i.test(cleaned)) {
+    product = remainder || "Chevrolet Vehicle";
+  } else if (/marco'?s pizza/i.test(cleaned)) {
+    product = "Pizza";
+  } else if (/hom furniture/i.test(cleaned)) {
+    product = "Furniture";
+  } else if (/yamava|casino/i.test(cleaned)) {
+    product = "Casino Resort";
+  }
+
+  return {
+    brand,
+    company: getNielsenOwner(brand),
+    product: cleanValue(product),
+    campaign: cleaned,
+  };
+}
+
 function inferNielsenCategory(name: string) {
   const value = name.toLowerCase();
+
+  if (
+    value.includes("ram") ||
+    value.includes("chevrolet") ||
+    value.includes("chevy") ||
+    value.includes("ford") ||
+    value.includes("toyota") ||
+    value.includes("gmc") ||
+    value.includes("jeep") ||
+    value.includes("car") ||
+    value.includes("vehicle") ||
+    value.includes("truck") ||
+    value.includes("suv") ||
+    value.includes("equinox") ||
+    value.includes("traverse") ||
+    value.includes("hemi")
+  ) {
+    return {
+      category: "Automotive",
+      productType: value.includes("truck") || value.includes("ram") || value.includes("hemi")
+        ? "Truck / Vehicle"
+        : "Vehicle",
+      audience: value.includes("truck") || value.includes("ram") || value.includes("hemi")
+        ? "Truck Buyers"
+        : "Auto Intenders",
+      iab: "Automotive",
+      iab2: value.includes("truck") ? "Trucks" : "Passenger Cars",
+    };
+  }
+
+  if (value.includes("pizza") || value.includes("restaurant") || value.includes("marco")) {
+    return {
+      category: "Food",
+      productType: "Restaurant / Pizza",
+      audience: "Quick Service Restaurant Consumers",
+      iab: "Food & Drink",
+      iab2: "Restaurants",
+    };
+  }
+
+  if (value.includes("furniture") || value.includes("hom furniture")) {
+    return {
+      category: "Home and Garden Products",
+      productType: "Furniture",
+      audience: "Home Furnishing Shoppers",
+      iab: "Durable Goods",
+      iab2: "Furniture",
+    };
+  }
+
+  if (value.includes("casino") || value.includes("resort") || value.includes("yamava")) {
+    return {
+      category: "Travel and Tourism",
+      productType: "Casino Resort",
+      audience: "Travel and Entertainment Audience",
+      iab: "Travel and Tourism",
+      iab2: "Hotels and Resorts",
+    };
+  }
 
   if (
     value.includes("insurance") ||
@@ -532,20 +728,6 @@ function inferNielsenCategory(name: string) {
     };
   }
 
-  if (
-    value.includes("auto") ||
-    value.includes("car") ||
-    value.includes("vehicle")
-  ) {
-    return {
-      category: "Automotive",
-      productType: "Automotive Services",
-      audience: "Auto Intenders",
-      iab: "Automotive",
-      iab2: "Auto Services",
-    };
-  }
-
   return {
     category: "Advertising",
     productType: "Commercial Signal",
@@ -563,14 +745,7 @@ function cleanNielsenBrandName(name: string) {
     .replace(/^FOX\s+-\s+/i, "")
     .replace(/^CW\s+-\s+/i, "")
     .replace(/^MYTV\s+-\s+/i, "")
-    .replace(/^[A-Z]{2,5}\.com\s+-\s+/i, "")
-    .trim();
-
-  // Keep advertiser after station/site prefix: "WLKY.com - Republic Bank Foundation"
-  cleaned = cleaned.replace(/^[A-Z0-9.-]+\.com\s+-\s+/i, "");
-
-  // Remove only URL/platform suffixes, not meaningful advertiser names.
-  cleaned = cleaned
+    .replace(/^[A-Z0-9.-]+\.com\s+-\s+/i, "")
     .replace(/\s+-\s+(visit\s+)?[a-z0-9-]+\.(com|net|org|tv).*$/i, "")
     .replace(/\s+\|\s+.*$/g, "")
     .replace(/\s+–\s+.*$/g, "")
@@ -588,7 +763,7 @@ function cleanNielsenBrandName(name: string) {
   if (value.includes("progressive")) return "Progressive";
   if (value.includes("republic bank foundation")) return "Republic Bank Foundation";
 
-  return cleaned;
+  return extractNielsenCommercialParts(cleaned).brand;
 }
 
 function convertNielsenRowToStandard(row: CsvRow): CsvRow | null {
@@ -598,15 +773,17 @@ function convertNielsenRowToStandard(row: CsvRow): CsvRow | null {
   const nielsenName = getNielsenName(row);
   if (!nielsenName) return null;
 
+  const commercial = extractNielsenCommercialParts(nielsenName);
   const brand = cleanNielsenBrandName(nielsenName);
   const inferred = inferNielsenCategory(nielsenName);
   const clipType = getNielsenClipType(row);
+  const product = commercial.product || inferred.productType;
 
   return {
-    company: brand,
+    company: commercial.company || brand,
     brand,
-    product: inferred.productType,
-    campaign: nielsenName,
+    product,
+    campaign: commercial.campaign || nielsenName,
     audience: inferred.audience,
     category: inferred.category,
     description: `Nielsen/H-Tech ad signal. Clip ${row.clip_id || "unknown"} · clip_type_id ${clipType || "unknown"} · action ${row.action || "unknown"}.`,
@@ -614,12 +791,14 @@ function convertNielsenRowToStandard(row: CsvRow): CsvRow | null {
     objective:
       inferred.productType === "Direct Response"
         ? "Direct response advertising signal"
-        : "Imported Nielsen advertising signal",
+        : `Imported Nielsen ${inferred.category} advertising signal`,
     status: "active",
     country: "US",
     industry: inferred.category,
     keywords: [
+      commercial.company,
       brand,
+      product,
       nielsenName,
       inferred.category,
       inferred.productType,
@@ -723,11 +902,27 @@ function inferIab(category?: string) {
     };
   }
 
-  if (value.includes("food")) {
+  if (value.includes("food") || value.includes("restaurant") || value.includes("pizza")) {
     return {
       iabTier1: "Food & Drink",
       iabTier2: "Food",
       iabTier3: "Fast Food",
+    };
+  }
+
+  if (value.includes("furniture") || value.includes("home and garden")) {
+    return {
+      iabTier1: "Durable Goods",
+      iabTier2: "Furniture",
+      iabTier3: "Indoor Furniture",
+    };
+  }
+
+  if (value.includes("travel") || value.includes("casino") || value.includes("resort")) {
+    return {
+      iabTier1: "Travel and Tourism",
+      iabTier2: "Accomodations",
+      iabTier3: "Hotels and Resorts",
     };
   }
 
