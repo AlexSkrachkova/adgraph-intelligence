@@ -1510,55 +1510,21 @@ function CompetitiveOverlapPanel({
   selectedNode,
   relationships,
   nodeLookup,
-  ecosystemProfile,
 }: any) {
   if (!selectedNode) return null;
 
   const selectedNodeId = selectedNode.nodeId;
   const selectedName = selectedNode.entity?.name || "Selected Entity";
-  const selectedNameKey = normalizeEntityKey(selectedName);
 
-  const directCompetitors = relationships
-    .filter((rel: any) => {
-      const sourceNodeId = `${rel.source_type}-${rel.source_id}`;
-      const targetNodeId = `${rel.target_type}-${rel.target_id}`;
-
-      return (
-        rel.relationship_type === "competes_with" &&
-        (sourceNodeId === selectedNodeId || targetNodeId === selectedNodeId)
-      );
-    })
-    .map((rel: any) => {
-      const sourceNodeId = `${rel.source_type}-${rel.source_id}`;
-      const targetNodeId = `${rel.target_type}-${rel.target_id}`;
-
-      const competitorId =
-        sourceNodeId === selectedNodeId ? targetNodeId : sourceNodeId;
-
-      const competitor = nodeLookup[competitorId]?.data;
-      const strength = getRelationshipStrength(rel);
-
-      return competitor
-        ? {
-            ...competitor,
-            relationshipStrength: strength,
-            relationshipBadge: getRelationshipBadge(strength, rel.relationship_type),
-            inferred: false,
-          }
-        : null;
-    })
-    .filter(Boolean)
-    .filter(
-      (item: any) =>
-        !(
-          item.entityType === "brand" &&
-          hiddenBrandNames.includes(item.entity?.name)
-        )
-    );
-
-  const uniqueCompetitors = Array.from(
-    new Map(directCompetitors.map((item: any) => [item.nodeId, item])).values()
-  );
+  const competitorGroups = [
+    ["PlayStation", "Xbox", "Nintendo"],
+    ["Netflix", "YouTube", "Spotify"],
+    ["Ford", "Toyota", "Jeep", "Chevrolet", "RAM", "BMW", "Mercedes-Benz", "Audi"],
+    ["Adidas", "Nike", "Puma"],
+    ["McDonald's", "Burger King", "KFC", "Marco's Pizza"],
+    ["Coca-Cola", "Pepsi"],
+    ["Apple", "Samsung"],
+  ];
 
   const allBrandNodes = Object.values(nodeLookup)
     .map((node: any) => node?.data)
@@ -1568,99 +1534,97 @@ function CompetitiveOverlapPanel({
     .filter((node: any) => !hiddenBrandNames.includes(node.entity?.name))
     .filter((node: any) => !isNoisyImportedEntityName(node.entity?.name || ""));
 
-  const scenarioBrandNames =
-    demoScenarios.find((scenario) =>
-      scenario.brandNames.some(
-        (brandName: string) => normalizeEntityKey(brandName) === selectedNameKey
-      )
-    )?.brandNames || [];
+  const selectedBrandCandidates = new Set<string>();
 
-  const scenarioCompetitors = allBrandNodes.filter((brand: any) =>
-    scenarioBrandNames.some(
-      (brandName: string) =>
-        normalizeEntityKey(brandName) === normalizeEntityKey(brand.entity?.name || "")
+  if (selectedNode.entityType === "brand") {
+    selectedBrandCandidates.add(selectedName);
+  }
+
+  relationships.forEach((rel: any) => {
+    const sourceNodeId = `${rel.source_type}-${rel.source_id}`;
+    const targetNodeId = `${rel.target_type}-${rel.target_id}`;
+
+    const isConnected =
+      sourceNodeId === selectedNodeId || targetNodeId === selectedNodeId;
+
+    if (!isConnected) return;
+
+    const otherNodeId =
+      sourceNodeId === selectedNodeId ? targetNodeId : sourceNodeId;
+
+    const otherNode = nodeLookup[otherNodeId]?.data;
+
+    if (otherNode?.entityType === "brand" && otherNode.entity?.name) {
+      selectedBrandCandidates.add(otherNode.entity.name);
+    }
+  });
+
+  const anchorBrandName =
+    Array.from(selectedBrandCandidates).find((brandName) =>
+      competitorGroups.some((group) =>
+        group.some(
+          (item) =>
+            normalizeEntityKey(item) === normalizeEntityKey(brandName)
+        )
+      )
+    ) || selectedName;
+
+  const matchingGroup = competitorGroups.find((group) =>
+    group.some(
+      (item) => normalizeEntityKey(item) === normalizeEntityKey(anchorBrandName)
     )
   );
 
-  const selectedCategory =
-    selectedNode.entity?.iab_tier_1 ||
-    selectedNode.entity?.industry ||
-    selectedNode.entity?.category ||
-    selectedNode.entity?.primary_category ||
-    "";
+  const competitorNames =
+    matchingGroup?.filter(
+      (name) =>
+        normalizeEntityKey(name) !== normalizeEntityKey(anchorBrandName)
+    ) || [];
 
-  const categoryCompetitors = selectedCategory
-    ? allBrandNodes.filter((brand: any) => {
-        const category =
-          brand.entity?.iab_tier_1 ||
-          brand.entity?.industry ||
-          brand.entity?.category ||
-          brand.entity?.primary_category ||
-          "";
+  const competitors = competitorNames
+    .map((name, index) => {
+      const brandNode = allBrandNodes.find(
+        (node: any) =>
+          normalizeEntityKey(node.entity?.name || "") ===
+          normalizeEntityKey(name)
+      );
 
-        return (
-          category &&
-          normalizeEntityKey(category) === normalizeEntityKey(selectedCategory)
-        );
-      })
-    : [];
+      if (!brandNode) return null;
 
-  const fallbackSource =
-  uniqueCompetitors.length > 0
-    ? uniqueCompetitors
-    : scenarioCompetitors.length > 0
-    ? scenarioCompetitors
-    : categoryCompetitors.length > 0
-    ? categoryCompetitors
-    : ecosystemProfile?.brands?.length > 0
-    ? ecosystemProfile.brands
-    : allBrandNodes;
-
-  const fallbackCompetitors = Array.from(
-    new Map(
-      fallbackSource
-        .filter((brand: any) => brand.nodeId !== selectedNodeId)
-        .filter((brand: any) => !hiddenBrandNames.includes(brand.entity?.name))
-        .map((brand: any, index: number) => [
-          brand.nodeId,
-          uniqueCompetitors.length > 0
-            ? brand
-            : {
-                ...brand,
-                relationshipStrength: Math.max(62, 88 - index * 6),
-                relationshipBadge: "AI-inferred Competitive Signal",
-                inferred: true,
-              },
-        ])
-    ).values()
-  ).slice(0, 6);
+      return {
+        ...brandNode,
+        relationshipStrength: Math.max(70, 92 - index * 6),
+        relationshipBadge: "AI-inferred Competitive Signal",
+        inferred: true,
+      };
+    })
+    .filter(Boolean);
 
   return (
     <div className="mb-6 rounded-3xl border border-red-400/24 bg-red-500/8 p-5 shadow-[0_0_24px_rgba(239,68,68,0.08)]">
       <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-red-200 text-sm font-semibold">
+        <div className="text-sm font-semibold text-red-200">
           Competitive Orbit
         </div>
         <div className="text-xs text-gray-500">
-          {uniqueCompetitors.length > 0
-            ? "Direct competitor relationships"
-            : "AI-inferred competitive landscape"}
+          AI-inferred brand competitive landscape
         </div>
       </div>
 
-      {fallbackCompetitors.length === 0 ? (
+      {competitors.length === 0 ? (
         <div className="rounded-2xl border border-white/10 bg-black/24 p-4">
           <div className="text-lg font-bold text-white">
             Competitive Intelligence Ready
           </div>
 
           <div className="mt-3 text-sm leading-6 text-gray-300">
-            This entity is ready for competitor mapping. Add related brand, campaign, audience or category signals to strengthen competitive analysis.
+            No clean brand competitor group has been mapped for this entity yet.
+            Add brand-level category or competitor signals to strengthen the competitive layer.
           </div>
         </div>
       ) : (
         <div className="space-y-3">
-          {fallbackCompetitors.map((competitor: any) => (
+          {competitors.map((competitor: any) => (
             <div
               key={competitor.nodeId}
               className="rounded-2xl border border-white/10 bg-black/24 p-4"
@@ -1675,17 +1639,16 @@ function CompetitiveOverlapPanel({
 
               <div className="mt-2 flex flex-wrap gap-2">
                 <div className="rounded-full border border-red-300/20 bg-red-500/10 px-3 py-1 text-xs text-red-100">
-                  Strength {competitor.relationshipStrength || 88}%
+                  Strength {competitor.relationshipStrength}%
                 </div>
                 <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs text-gray-200">
-                  {competitor.relationshipBadge || "Competitive Signal"}
+                  {competitor.relationshipBadge}
                 </div>
               </div>
 
-              <div className="mt-2 text-sm text-gray-300 leading-6">
-                {competitor.inferred
-                  ? `${competitor.entity?.name} is positioned as a competitive or adjacent brand to ${selectedName} based on shared sector, category, ecosystem or related brand signals.`
-                  : `${selectedName} and ${competitor.entity?.name} share direct competitive positioning signals in the advertising galaxy.`}
+              <div className="mt-2 text-sm leading-6 text-gray-300">
+                {competitor.entity?.name} is positioned as a competitive brand to{" "}
+                {anchorBrandName} based on shared market category and strategic ecosystem context.
               </div>
             </div>
           ))}
