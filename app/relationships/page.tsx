@@ -1606,15 +1606,15 @@ function CompetitiveOverlapPanel({
     : [];
 
   const fallbackSource =
-    uniqueCompetitors.length > 0
-      ? uniqueCompetitors
-      : ecosystemProfile?.brands?.length > 0
-      ? ecosystemProfile.brands
-      : scenarioCompetitors.length > 0
-      ? scenarioCompetitors
-      : categoryCompetitors.length > 0
-      ? categoryCompetitors
-      : allBrandNodes;
+  uniqueCompetitors.length > 0
+    ? uniqueCompetitors
+    : scenarioCompetitors.length > 0
+    ? scenarioCompetitors
+    : categoryCompetitors.length > 0
+    ? categoryCompetitors
+    : ecosystemProfile?.brands?.length > 0
+    ? ecosystemProfile.brands
+    : allBrandNodes;
 
   const fallbackCompetitors = Array.from(
     new Map(
